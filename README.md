@@ -58,6 +58,10 @@ Things only you can do. Work top to bottom.
 Copy [`firestore.rules`](firestore.rules) into **Firestore → Rules → Publish**,
 with the UIDs from step 1.6 pasted into the guest list at the top.
 
+The committed file is a **template** — nothing deploys it, you paste it into the
+console by hand. Your filled-in copy lives in `firestore.rules.local`, which is
+gitignored. UIDs aren't credentials, but there's no reason to publish them.
+
 **Adding a second person later** is one line: create their user in
 Authentication → Users, copy the UID, uncomment the second entry in `us()`,
 paste it in, Publish. No migration, nothing lost, no other file changes.
