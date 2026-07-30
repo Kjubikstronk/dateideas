@@ -19,8 +19,8 @@ type Props = {
 
 export default function Device({ children, status }: Props) {
   return (
-    <div className="safe-frame flex min-h-[100svh] flex-col sm:p-6 lg:p-8">
-      <div className="device boot mx-auto flex w-full max-w-6xl flex-1 flex-col overflow-hidden">
+    <div className="safe-frame flex h-[100svh] flex-col overflow-hidden sm:p-6 lg:p-8">
+      <div className="device boot mx-auto flex w-full min-h-0 max-w-6xl flex-1 flex-col overflow-hidden">
         {/* Status bar — the printed legend across the top of the case. */}
         <header className="flex items-center justify-between gap-3 px-3 py-2 sm:px-4 sm:py-3">
           <div className="flex items-center gap-2">
@@ -33,7 +33,7 @@ export default function Device({ children, status }: Props) {
         </header>
 
         {/* The recessed display. */}
-        <div className="screen m-2 mt-0 flex flex-1 flex-col overflow-hidden sm:m-3 sm:mt-0">
+        <div className="screen m-2 mt-0 flex min-h-0 flex-1 flex-col overflow-hidden sm:m-3 sm:mt-0">
           {children}
         </div>
       </div>

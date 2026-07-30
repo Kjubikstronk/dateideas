@@ -126,7 +126,7 @@ export default function Home() {
   const dayEntries = selected ? (byDay.get(selected) ?? []) : []
 
   const calendarPane = (
-    <div className="flex min-h-0 flex-col overflow-y-auto">
+    <div className="flex min-h-0 flex-col overflow-y-auto pb-28">
       <Calendar
         month={month}
         onMonthChange={setMonth}
@@ -191,7 +191,7 @@ export default function Home() {
         {calendarPane}
       </div>
       {mapPane}
-      <div className="w-64 shrink-0 overflow-y-auto border-l-[3px] border-[var(--color-ink)]">
+      <div className="w-64 shrink-0 overflow-y-auto border-l-[3px] border-[var(--color-ink)] pb-28">
         {ideasPane}
       </div>
     </div>
@@ -203,7 +203,7 @@ export default function Home() {
         {view === 'calendar' && calendarPane}
         {view === 'map' && mapPane}
         {view === 'ideas' && (
-          <div className="min-h-0 flex-1 overflow-y-auto">{ideasPane}</div>
+          <div className="min-h-0 flex-1 overflow-y-auto pb-28">{ideasPane}</div>
         )}
       </div>
       <TabBar view={view} onChange={setView} />

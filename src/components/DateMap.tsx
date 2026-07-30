@@ -127,7 +127,7 @@ function LiveMap(props: Props) {
         // pixel design, and landed on top of our locate button. Scroll and
         // pinch both still zoom.
         disableDefaultUI
-        className="h-full w-full"
+        className="absolute inset-0"
       >
         {placed.map((it) => (
           <AdvancedMarker
@@ -456,7 +456,7 @@ function MapFallback(props: Props) {
   }, [placed])
 
   return (
-    <div className="relative h-full w-full overflow-hidden bg-[var(--color-paper)]">
+    <div className="absolute inset-0 overflow-hidden bg-[var(--color-paper)]">
       <div
         aria-hidden="true"
         className="absolute inset-0 opacity-40"
