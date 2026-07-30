@@ -29,7 +29,7 @@ export default function App() {
  * makes the public deploy safe to hand out.
  */
 function Gate() {
-  const { user, loading, leave } = useAuth()
+  const { user, loading } = useAuth()
   // Counter, not a boolean — a <dialog> can close itself without telling React.
   const [reportReq, setReportReq] = useState(0)
   const reportButton = (
@@ -81,20 +81,7 @@ function Gate() {
   }
 
   return (
-    <Device
-      status={
-        <>
-          {reportButton}
-          <button
-            type="button"
-            onClick={() => void leave()}
-            className="pixel-btn legend px-3 py-1"
-          >
-            leave
-          </button>
-        </>
-      }
-    >
+    <Device status={reportButton}>
       <Suspense fallback={<Booting />}>
         <Home />
       </Suspense>

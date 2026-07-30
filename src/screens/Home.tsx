@@ -6,6 +6,7 @@ import DateMap from '../components/DateMap'
 import EditSheet from '../components/EditSheet'
 import MapsProvider from '../components/MapsProvider'
 import PixelHeart from '../components/PixelHeart'
+import { useAuth } from '../lib/auth'
 import { useDates } from '../lib/dates'
 import { useIsWide } from '../lib/useMediaQuery'
 import type { DateIdea, Place } from '../types'
@@ -367,6 +368,34 @@ function AgendaPane({
         {...rest}
       />
       <Section title="been there" items={past} {...rest} />
+
+      <SignOut />
+    </div>
+  )
+}
+
+/**
+ * Signing out lives at the bottom of the list rather than in the header.
+ * You'd almost never use it — the session persists deliberately — so it
+ * shouldn't compete for space on a 375px status bar. But it has to exist for
+ * the times you hand someone your phone.
+ */
+function SignOut() {
+  const { user, leave } = useAuth()
+  if (!user) return null
+
+  return (
+    <div className="border-t-[3px] border-[var(--color-ink)] pt-4">
+      <p className="legend mb-2 text-[var(--color-ink)]/60">
+        signed in as {user.email}
+      </p>
+      <button
+        type="button"
+        onClick={() => void leave()}
+        className="pixel-btn legend px-3 py-1"
+      >
+        leave
+      </button>
     </div>
   )
 }
