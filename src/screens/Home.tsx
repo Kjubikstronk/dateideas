@@ -13,7 +13,7 @@ import type { DateIdea, Place } from '../types'
 type View = 'calendar' | 'map' | 'ideas'
 
 export default function Home() {
-  const { items, byDay, ideas, loading, error, add, update, remove } = useDates()
+  const { items, byDay, loading, error, add, update, remove } = useDates()
 
   const [month, setMonth] = useState(() => startOfMonth(new Date()))
   const [selected, setSelected] = useState<string | null>(null)
@@ -54,6 +54,36 @@ export default function Home() {
     () => activeDay ?? items.find((i) => i.id === activeId)?.scheduledFor ?? null,
     [activeDay, activeId, items],
   )
+
+  /**
+   * The agenda: every record, grouped, so nothing can hide.
+   *
+   * A date needs a day to appear on the calendar and a place to appear on the
+   * map — miss either and it was previously invisible. This list has no such
+   * requirement, which makes it the one complete view of everything.
+   */
+  const agenda = useMemo(() => {
+    const today = format(new Date(), 'yyyy-MM-dd')
+    const upcoming: DateIdea[] = []
+    const past: DateIdea[] = []
+    const someday: DateIdea[] = []
+
+    for (const it of items) {
+      if (!it.scheduledFor) someday.push(it)
+      else if (it.scheduledFor >= today && it.status !== 'done' && it.status !== 'cancelled')
+        upcoming.push(it)
+      else past.push(it)
+    }
+
+    const byDay = (a: DateIdea, b: DateIdea) =>
+      (a.scheduledFor ?? '').localeCompare(b.scheduledFor ?? '')
+
+    upcoming.sort(byDay)
+    past.sort((a, b) => byDay(b, a)) // most recent first
+    someday.sort((a, b) => b.createdAt - a.createdAt)
+
+    return { upcoming, past, someday }
+  }, [items])
 
   if (error) {
     return (
@@ -102,7 +132,7 @@ export default function Home() {
   )
 
   const mapPane = (
-    <div className="relative min-h-0 flex-1">
+    <div className="relative min-h-0 min-w-0 flex-1 overflow-hidden">
       <DateMap
         items={items}
         activeId={activeId}
@@ -122,8 +152,8 @@ export default function Home() {
   )
 
   const ideasPane = (
-    <IdeasPane
-      ideas={ideas}
+    <AgendaPane
+      agenda={agenda}
       onUpdate={update}
       onDelete={remove}
       onEdit={openEdit}
@@ -135,11 +165,11 @@ export default function Home() {
   const body = isWide ? (
     // Wide: the shell is a two-screen console, everything visible and linked.
     <div className="flex min-h-0 flex-1">
-      <div className="flex w-[26rem] shrink-0 flex-col border-r-[3px] border-[var(--color-ink)]">
+      <div className="flex w-[24rem] shrink-0 flex-col border-r-[3px] border-[var(--color-ink)]">
         {calendarPane}
       </div>
       {mapPane}
-      <div className="w-72 shrink-0 overflow-y-auto border-l-[3px] border-[var(--color-ink)]">
+      <div className="w-64 shrink-0 overflow-y-auto border-l-[3px] border-[var(--color-ink)]">
         {ideasPane}
       </div>
     </div>
@@ -199,7 +229,7 @@ function TabBar({ view, onChange }: { view: View; onChange: (v: View) => void })
   const tabs: [View, string][] = [
     ['calendar', 'calendar'],
     ['map', 'map'],
-    ['ideas', 'someday'],
+    ['ideas', 'all dates'],
   ]
 
   return (
@@ -274,32 +304,91 @@ function DayPanel({
   )
 }
 
-function IdeasPane({ ideas, ...rest }: ListProps & { ideas: DateIdea[] }) {
+function AgendaPane({
+  agenda,
+  ...rest
+}: ListProps & { agenda: { upcoming: DateIdea[]; past: DateIdea[]; someday: DateIdea[] } }) {
+  const { upcoming, past, someday } = agenda
+  const empty = !upcoming.length && !past.length && !someday.length
+
+  if (empty) {
+    return (
+      <div className="flex flex-col items-center gap-3 p-8 text-center">
+        <PixelHeart size={28} color="var(--color-lav)" outline />
+        <p className="prose text-sm text-[var(--color-ink)]/60">
+          Nothing yet. Add somewhere you both want to go.
+        </p>
+      </div>
+    )
+  }
+
   return (
-    <div className="space-y-3 p-3">
-      <h3 className="font-[family-name:var(--font-display)] text-lg font-bold">
-        someday
+    <div className="space-y-5 p-3">
+      <Section
+        title="next up"
+        items={upcoming}
+        empty="Nothing planned. Pick a day for one of your ideas."
+        {...rest}
+      />
+      <Section
+        title="someday"
+        items={someday}
+        empty="No loose ideas right now."
+        hint="no day picked yet"
+        {...rest}
+      />
+      <Section title="been there" items={past} {...rest} />
+    </div>
+  )
+}
+
+function Section({
+  title,
+  items,
+  empty,
+  hint,
+  ...rest
+}: ListProps & {
+  title: string
+  items: DateIdea[]
+  empty?: string
+  hint?: string
+}) {
+  // A section with nothing in it and nothing to say is just noise.
+  if (!items.length && !empty) return null
+
+  return (
+    <section className="space-y-2">
+      <h3 className="flex items-baseline gap-2">
+        <span className="font-[family-name:var(--font-display)] text-lg font-bold">
+          {title}
+        </span>
+        {items.length > 0 && (
+          <span className="legend text-[var(--color-ink)]/60">{items.length}</span>
+        )}
       </h3>
 
-      {ideas.length === 0 ? (
-        <p className="prose text-sm text-[var(--color-ink)]/60">
-          Nothing on the wishlist. Add somewhere you both want to go.
-        </p>
+      {hint && items.length > 0 && (
+        <p className="legend text-[var(--color-ink)]/60">{hint}</p>
+      )}
+
+      {items.length === 0 ? (
+        <p className="prose text-sm text-[var(--color-ink)]/60">{empty}</p>
       ) : (
         <ul className="space-y-2">
-          {ideas.map((idea) => (
+          {items.map((item) => (
             <DateCard
-              key={idea.id}
-              item={idea}
+              key={item.id}
+              item={item}
               onUpdate={rest.onUpdate}
               onDelete={rest.onDelete}
               onEdit={rest.onEdit}
-              active={rest.activeId === idea.id}
+              active={rest.activeId === item.id}
               onHover={rest.onHover}
             />
           ))}
         </ul>
       )}
-    </div>
+    </section>
   )
 }

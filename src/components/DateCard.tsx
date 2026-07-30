@@ -81,10 +81,14 @@ export default function DateCard({
             </p>
           )}
 
-          {item.place && (
+          {/* A date needs a day to reach the calendar and a place to reach the
+              map. Saying which one is missing is how you get it un-lost. */}
+          {item.place ? (
             <p className="prose truncate text-xs text-[var(--color-ink)]/60">
               {item.place.name}
             </p>
+          ) : (
+            <p className="legend text-[var(--color-ink)]/60">no place yet</p>
           )}
 
           {item.note && !cancelled && (

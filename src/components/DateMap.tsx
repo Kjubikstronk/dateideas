@@ -110,8 +110,10 @@ function LiveMap(props: Props) {
         defaultCenter={{ lat: 52.372, lng: 4.895 }}
         defaultZoom={12}
         gestureHandling="greedy"
+        // No zoomControl: Google's buttons are unstyleable, clash with the
+        // pixel design, and landed on top of our locate button. Scroll and
+        // pinch both still zoom.
         disableDefaultUI
-        zoomControl
         className="h-full w-full"
       >
         {placed.map((it) => (
@@ -166,7 +168,7 @@ function LiveMap(props: Props) {
         <ActiveCard {...props} />
       )}
 
-      <Legend />
+      <Legend hidden={!!candidate || !!props.activeId} />
     </>
   )
 }
@@ -182,7 +184,7 @@ function SearchBar({
   const { query, setQuery, results, busy, failed, choose } = search
 
   return (
-    <div className="absolute inset-x-2 top-2 z-20 max-w-sm">
+    <div className="absolute left-2 right-2 top-2 z-20 max-w-[17rem]">
       <input
         className="pixel-input text-sm"
         value={query}
@@ -393,7 +395,9 @@ function Pin({ item, active }: { item: DateIdea; active: boolean }) {
 }
 
 /** The overview needs a key, or the pin colours mean nothing. */
-function Legend() {
+function Legend({ hidden }: { hidden?: boolean }) {
+  if (hidden) return null
+
   const rows: [string, DateIdea['status']][] = [
     ['planned', 'planned'],
     ['someday', 'idea'],
@@ -402,7 +406,7 @@ function Legend() {
   ]
 
   return (
-    <div className="pixel-box-sm absolute right-2 top-2 z-10 space-y-1 p-2">
+    <div className="pixel-box-sm absolute bottom-2 left-2 z-10 space-y-1 p-2">
       {rows.map(([label, status]) => (
         <p key={label} className="flex items-center gap-1.5">
           <PixelHeart size={10} color={pinColor(status)} outline={status === 'idea'} />

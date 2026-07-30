@@ -23,5 +23,9 @@ export function useMediaQuery(query: string) {
   return matches
 }
 
-/** Matches the `lg` breakpoint the rest of the app uses. */
-export const useIsWide = () => useMediaQuery('(min-width: 1024px)')
+/**
+ * The three-pane console needs real width: a 26rem calendar plus an 18rem
+ * ideas column leaves under 300px for the map at 1024, which is uselessly
+ * narrow. Below this we use the phone layout, which is fully functional.
+ */
+export const useIsWide = () => useMediaQuery('(min-width: 1280px)')
