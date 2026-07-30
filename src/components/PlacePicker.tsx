@@ -1,6 +1,5 @@
-import { useEffect, useRef, useState } from 'react'
-import { useMapsLibrary } from '@vis.gl/react-google-maps'
 import { HAS_MAPS } from '../lib/maps'
+import { usePlaceSearch } from '../lib/places'
 import type { Place } from '../types'
 
 type Props = {
@@ -9,82 +8,12 @@ type Props = {
 }
 
 /**
- * Venue search. Type "sush" and pick the place; address, coordinates, photo and
- * rating come back filled in.
- *
- * Two billing details worth keeping:
- *  - A session token ties the keystrokes and the final detail fetch into one
- *    billable session instead of charging per keystroke.
- *  - `fetchFields` only asks for the fields actually stored; Places bills by
- *    field tier, so requesting everything would cost noticeably more.
+ * Venue search inside the editor. The map has its own search bar; both run on
+ * the same `usePlaceSearch` hook so billing behaviour and result shape stay
+ * identical between them.
  */
 export default function PlacePicker({ value, onChange }: Props) {
-  const places = useMapsLibrary('places')
-
-  const [query, setQuery] = useState('')
-  const [results, setResults] = useState<google.maps.places.AutocompleteSuggestion[]>([])
-  const [busy, setBusy] = useState(false)
-  const [failed, setFailed] = useState(false)
-  const session = useRef<google.maps.places.AutocompleteSessionToken | null>(null)
-
-  useEffect(() => {
-    if (!places || query.trim().length < 2) {
-      setResults([])
-      return
-    }
-
-    let cancelled = false
-    const timer = setTimeout(async () => {
-      setBusy(true)
-      setFailed(false)
-      try {
-        session.current ??= new places.AutocompleteSessionToken()
-        const { suggestions } =
-          await places.AutocompleteSuggestion.fetchAutocompleteSuggestions({
-            input: query,
-            sessionToken: session.current,
-          })
-        if (!cancelled) setResults(suggestions.slice(0, 5))
-      } catch {
-        if (!cancelled) {
-          setFailed(true)
-          setResults([])
-        }
-      } finally {
-        if (!cancelled) setBusy(false)
-      }
-    }, 250) // don't fire a request on every keystroke
-
-    return () => {
-      cancelled = true
-      clearTimeout(timer)
-    }
-  }, [places, query])
-
-  async function pick(suggestion: google.maps.places.AutocompleteSuggestion) {
-    const prediction = suggestion.placePrediction
-    if (!prediction) return
-
-    const place = prediction.toPlace()
-    await place.fetchFields({
-      fields: ['id', 'displayName', 'formattedAddress', 'location', 'photos', 'rating'],
-    })
-
-    onChange({
-      name: place.displayName ?? prediction.text.text,
-      address: place.formattedAddress ?? '',
-      lat: place.location?.lat() ?? null,
-      lng: place.location?.lng() ?? null,
-      placeId: place.id ?? null,
-      photoUrl: place.photos?.[0]?.getURI({ maxWidth: 640 }) ?? null,
-      rating: place.rating ?? null,
-    })
-
-    // A session ends when a place is chosen; the next search starts a new one.
-    session.current = null
-    setQuery('')
-    setResults([])
-  }
+  const { query, setQuery, results, busy, failed, choose } = usePlaceSearch()
 
   if (value) {
     return (
@@ -182,7 +111,10 @@ export default function PlacePicker({ value, onChange }: Props) {
               <button
                 type="button"
                 className="pixel-btn w-full px-2 py-2 text-left"
-                onClick={() => void pick(s)}
+                onClick={async () => {
+                  const picked = await choose(s)
+                  if (picked) onChange(picked)
+                }}
               >
                 <span className="block truncate font-[family-name:var(--font-display)] text-sm font-bold">
                   {s.placePrediction?.mainText?.text ?? s.placePrediction?.text.text}

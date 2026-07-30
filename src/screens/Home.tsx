@@ -8,7 +8,7 @@ import MapsProvider from '../components/MapsProvider'
 import PixelHeart from '../components/PixelHeart'
 import { useDates } from '../lib/dates'
 import { useIsWide } from '../lib/useMediaQuery'
-import type { DateIdea } from '../types'
+import type { DateIdea, Place } from '../types'
 
 type View = 'calendar' | 'map' | 'ideas'
 
@@ -23,13 +23,22 @@ export default function Home() {
   // A counter, not a boolean — see the note on EditSheet's `openRequest`.
   const [openReq, setOpenReq] = useState(0)
   const [editing, setEditing] = useState<DateIdea | null>(null)
+  const [seedPlace, setSeedPlace] = useState<Place | null>(null)
 
   const openNew = () => {
     setEditing(null)
+    setSeedPlace(null)
     setOpenReq((n) => n + 1)
   }
   const openEdit = (item: DateIdea) => {
     setEditing(item)
+    setSeedPlace(null)
+    setOpenReq((n) => n + 1)
+  }
+  /** Map-first flow: found somewhere, start a date from it. */
+  const openFromPlace = (place: Place) => {
+    setEditing(null)
+    setSeedPlace(place)
     setOpenReq((n) => n + 1)
   }
 
@@ -99,6 +108,7 @@ export default function Home() {
         activeId={activeId}
         activeDay={linkedDay}
         onActivate={setActiveId}
+        onAddPlace={openFromPlace}
         onOpen={(id) => {
           // Tapping a pin on a phone jumps to the day it belongs to.
           const item = items.find((i) => i.id === id)
@@ -172,6 +182,7 @@ export default function Home() {
           openRequest={openReq}
           editing={editing}
           defaultDay={selected}
+          defaultPlace={seedPlace}
           onClose={() => setOpenReq(0)}
           onSave={(draft) => {
             if (editing) update(editing.id, draft)

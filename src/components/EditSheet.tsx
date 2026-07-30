@@ -24,6 +24,8 @@ type Props = {
   editing: DateIdea | null
   /** Pre-selected day when adding from a calendar cell. */
   defaultDay?: string | null
+  /** Pre-filled place when adding from the map. */
+  defaultPlace?: Place | null
   onClose: () => void
   onSave: (draft: DateDraft) => void
 }
@@ -32,6 +34,7 @@ export default function EditSheet({
   openRequest,
   editing,
   defaultDay,
+  defaultPlace,
   onClose,
   onSave,
 }: Props) {
@@ -53,11 +56,11 @@ export default function EditSheet({
     setEmoji(editing?.emoji ?? '🍜')
     setTitle(editing?.title ?? '')
     setNote(editing?.note ?? '')
-    setPlace(editing?.place ?? null)
+    setPlace(editing?.place ?? defaultPlace ?? null)
     setDay(editing?.scheduledFor ?? defaultDay ?? '')
     setTime(editing?.time ?? '')
     // Keyed on openRequest so reopening always starts from a clean form.
-  }, [openRequest, open, editing, defaultDay])
+  }, [openRequest, open, editing, defaultDay, defaultPlace])
 
   // <dialog> needs imperative open/close to get the backdrop and focus trap.
   useEffect(() => {

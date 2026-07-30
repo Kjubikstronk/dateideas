@@ -1,9 +1,10 @@
-import { useEffect, useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { format, parseISO } from 'date-fns'
 import { AdvancedMarker, Map, useMap } from '@vis.gl/react-google-maps'
-import { placedOnly, type DateIdea } from '../types'
+import { placedOnly, type DateIdea, type Place } from '../types'
 import PixelHeart from './PixelHeart'
 import { HAS_MAPS, MAPS_MAP_ID } from '../lib/maps'
+import { fetchPlaceById, usePlaceSearch } from '../lib/places'
 
 /**
  * The map is deliberately NOT recoloured bubblegum.
@@ -25,26 +26,86 @@ export const pinColor = (status: DateIdea['status']) =>
 
 type Props = {
   items: DateIdea[]
-  /** Currently highlighted record — driven by hover here or in a list. */
   activeId: string | null
-  /** A whole day highlighted from the calendar: every pin on it lights up. */
   activeDay?: string | null
   onActivate: (id: string | null) => void
   onOpen?: (id: string) => void
+  /** Start a new date from a place found on the map. */
+  onAddPlace?: (place: Place) => void
 }
 
 const isLit = (item: DateIdea, p: Props) =>
-  p.activeId === item.id ||
-  (!!p.activeDay && item.scheduledFor === p.activeDay)
+  p.activeId === item.id || (!!p.activeDay && item.scheduledFor === p.activeDay)
+
+/**
+ * A stable id for the map instance, so overlays rendered OUTSIDE `<Map>` can
+ * still reach it via `useMap(MAP_ID)`.
+ *
+ * They have to be outside: putting ordinary DOM children inside `<Map>` stops
+ * Google initialising the canvas — the map gets stuck showing its static
+ * placeholder image forever, with no error in the console.
+ */
+const MAP_ID = 'date-map'
 
 export default function DateMap(props: Props) {
-  // Without a key there is nothing to render, so fall back to a plain plot of
-  // the same pins. Also covers the key being over quota in production.
   if (!HAS_MAPS) return <MapFallback {...props} />
+  return <LiveMap {...props} />
+}
+
+function LiveMap(props: Props) {
+  const map = useMap(MAP_ID)
+  const search = usePlaceSearch()
+
+  /** A place you're looking at but haven't committed to yet. */
+  const [candidate, setCandidate] = useState<Place | null>(null)
+  const [me, setMe] = useState<{ lat: number; lng: number } | null>(null)
+
+  const placed = useMemo(() => placedOnly(props.items), [props.items])
+
+  // Frame every pin on first load, so you open the map to the overview.
+  useEffect(() => {
+    if (!map || placed.length === 0) return
+    const bounds = new google.maps.LatLngBounds()
+    for (const item of placed) bounds.extend({ lat: item.place.lat, lng: item.place.lng })
+    map.fitBounds(bounds, 64)
+  }, [map, placed])
+
+  // Tapping a point of interest, exactly like Google Maps. The map hands us a
+  // placeId; `stop()` suppresses Google's own info window so ours shows instead.
+  const { onActivate } = props
+  const placesLib = search.places
+  useEffect(() => {
+    if (!map || !placesLib) return
+    const listener = map.addListener(
+      'click',
+      async (e: google.maps.MapMouseEvent & { placeId?: string; stop?: () => void }) => {
+        if (!e.placeId) return
+        e.stop?.()
+        const place = await fetchPlaceById(placesLib, e.placeId)
+        if (place) {
+          setCandidate(place)
+          onActivate(null)
+        }
+      },
+    )
+    return () => listener.remove()
+    // `onActivate` and `placesLib` are pulled out of props so this doesn't
+    // re-subscribe on every render.
+  }, [map, placesLib, onActivate])
+
+  function goTo(place: Place) {
+    setCandidate(place)
+    onActivate(null)
+    if (map && place.lat != null && place.lng != null) {
+      map.panTo({ lat: place.lat, lng: place.lng })
+      map.setZoom(16)
+    }
+  }
 
   return (
     <>
       <Map
+        id={MAP_ID}
         mapId={MAPS_MAP_ID || 'DEMO_MAP_ID'}
         defaultCenter={{ lat: 52.372, lng: 4.895 }}
         defaultZoom={12}
@@ -53,70 +114,216 @@ export default function DateMap(props: Props) {
         zoomControl
         className="h-full w-full"
       >
-        <FitToPins items={props.items} />
-        {placedOnly(props.items).map((it) => (
-            <AdvancedMarker
-              key={it.id}
-              position={{ lat: it.place.lat, lng: it.place.lng }}
-              title={it.title}
-              onMouseEnter={() => props.onActivate(it.id)}
-              onMouseLeave={() => props.onActivate(null)}
-              onClick={() => {
-                // On touch there is no hover, so a tap does the reveal.
-                props.onActivate(it.id)
-                props.onOpen?.(it.id)
-              }}
-            >
-              <Pin item={it} active={isLit(it, props)} />
-            </AdvancedMarker>
-          ))}
+        {placed.map((it) => (
+          <AdvancedMarker
+            key={it.id}
+            position={{ lat: it.place.lat, lng: it.place.lng }}
+            title={it.title}
+            onMouseEnter={() => onActivate(it.id)}
+            onMouseLeave={() => onActivate(null)}
+            onClick={() => {
+              setCandidate(null)
+              onActivate(it.id)
+              props.onOpen?.(it.id)
+            }}
+          >
+            <Pin item={it} active={isLit(it, props)} />
+          </AdvancedMarker>
+        ))}
+
+        {candidate?.lat != null && candidate.lng != null && (
+          <AdvancedMarker position={{ lat: candidate.lat, lng: candidate.lng }}>
+            <span className="beat block">
+              <PixelHeart size={30} color="var(--color-lav)" />
+            </span>
+          </AdvancedMarker>
+        )}
+
+        {me && (
+          <AdvancedMarker position={me} title="You are here">
+            <span
+              aria-hidden="true"
+              className="block h-3.5 w-3.5 border-2 border-[var(--color-ink)] bg-[var(--color-aqua)]"
+            />
+          </AdvancedMarker>
+        )}
       </Map>
 
-      <ActiveCard {...props} />
+      {/* Overlays live outside <Map> — see the note on MAP_ID. */}
+      <SearchBar search={search} onPick={goTo} />
+      <LocateButton onFound={setMe} />
+
+      {candidate ? (
+        <CandidateCard
+          place={candidate}
+          onAdd={() => {
+            props.onAddPlace?.(candidate)
+            setCandidate(null)
+          }}
+          onDismiss={() => setCandidate(null)}
+        />
+      ) : (
+        <ActiveCard {...props} />
+      )}
+
       <Legend />
     </>
   )
 }
 
-/** Frames every pin on first load, so you open the map to the overview. */
-function FitToPins({ items }: { items: DateIdea[] }) {
-  const map = useMap()
-  const placed = useMemo(() => placedOnly(items), [items])
+/** Search without leaving the map. Picking a result drops a candidate pin. */
+function SearchBar({
+  search,
+  onPick,
+}: {
+  search: ReturnType<typeof usePlaceSearch>
+  onPick: (p: Place) => void
+}) {
+  const { query, setQuery, results, busy, failed, choose } = search
 
-  useEffect(() => {
-    if (!map || placed.length === 0) return
-    const bounds = new google.maps.LatLngBounds()
-    for (const item of placed) {
-      bounds.extend({ lat: item.place.lat, lng: item.place.lng })
-    }
-    map.fitBounds(bounds, 64)
-  }, [map, placed])
+  return (
+    <div className="absolute inset-x-2 top-2 z-20 max-w-sm">
+      <input
+        className="pixel-input text-sm"
+        value={query}
+        onChange={(e) => setQuery(e.target.value)}
+        placeholder="search the map…"
+        autoComplete="off"
+        aria-label="Search for a place on the map"
+      />
 
-  return null
+      <div aria-live="polite">
+        {busy && (
+          <p className="legend mt-1 border-2 border-[var(--color-ink)] bg-[var(--color-card)] px-2 py-1">
+            looking…
+          </p>
+        )}
+        {failed && (
+          <p className="legend mt-1 border-2 border-[var(--color-ink)] bg-[var(--color-card)] px-2 py-1 text-[var(--color-deep)]">
+            search isn&rsquo;t responding
+          </p>
+        )}
+      </div>
+
+      {results.length > 0 && (
+        <ul className="mt-1 space-y-1">
+          {results.map((s, i) => (
+            <li key={s.placePrediction?.placeId ?? i}>
+              <button
+                type="button"
+                className="pixel-btn w-full px-2 py-2 text-left"
+                onClick={async () => {
+                  const picked = await choose(s)
+                  if (picked) onPick(picked)
+                }}
+              >
+                <span className="block truncate font-[family-name:var(--font-display)] text-sm font-bold">
+                  {s.placePrediction?.mainText?.text ?? s.placePrediction?.text.text}
+                </span>
+                {s.placePrediction?.secondaryText && (
+                  <span className="prose block truncate text-xs font-normal text-[var(--color-ink)]/60">
+                    {s.placePrediction.secondaryText.text}
+                  </span>
+                )}
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
 }
 
-function Pin({ item, active }: { item: DateIdea; active: boolean }) {
+type GeoState = 'idle' | 'locating' | 'denied' | 'unavailable'
+
+function LocateButton({ onFound }: { onFound: (c: { lat: number; lng: number }) => void }) {
+  const map = useMap(MAP_ID)
+  const [state, setState] = useState<GeoState>('idle')
+
+  function locate() {
+    if (!navigator.geolocation) return setState('unavailable')
+    setState('locating')
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const here = { lat: pos.coords.latitude, lng: pos.coords.longitude }
+        onFound(here)
+        map?.panTo(here)
+        map?.setZoom(15)
+        setState('idle')
+      },
+      (err) => {
+        // 1 = permission denied, and it's the only one you can act on.
+        setState(err.code === 1 ? 'denied' : 'unavailable')
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 60_000 },
+    )
+  }
+
   return (
-    <span
-      className="block transition-transform duration-75"
-      style={{ transform: active ? 'scale(1.5)' : undefined }}
-    >
-      <PixelHeart
-        size={active ? 26 : 22}
-        color={pinColor(item.status)}
-        outline={item.status === 'idea'}
-      />
-    </span>
+    <div className="absolute bottom-2 right-2 z-20 flex flex-col items-end gap-1">
+      {state === 'denied' && (
+        <p className="legend max-w-[12rem] border-2 border-[var(--color-ink)] bg-[var(--color-card)] px-2 py-1 text-[var(--color-deep)]">
+          location is blocked — allow it in your browser settings
+        </p>
+      )}
+      {state === 'unavailable' && (
+        <p className="legend max-w-[12rem] border-2 border-[var(--color-ink)] bg-[var(--color-card)] px-2 py-1 text-[var(--color-deep)]">
+          couldn&rsquo;t get your location
+        </p>
+      )}
+      <button
+        type="button"
+        onClick={locate}
+        className="pixel-btn px-3 py-2 text-base"
+        aria-label="Find my location"
+        disabled={state === 'locating'}
+      >
+        {state === 'locating' ? '…' : '◎'}
+      </button>
+    </div>
   )
 }
 
 /**
- * What you asked for: the pin tells you when you're going.
- *
- * Anchored to the bottom of the map rather than floating beside the cursor —
- * a tooltip that tracks the pointer is unusable on a phone, and this same card
- * serves the tap interaction without a second component.
+ * A place you've found but not committed to. The whole point of the map-first
+ * flow: see somewhere, add it as a date without opening anything else first.
  */
+function CandidateCard({
+  place,
+  onAdd,
+  onDismiss,
+}: {
+  place: Place
+  onAdd: () => void
+  onDismiss: () => void
+}) {
+  return (
+    <div className="absolute inset-x-2 bottom-2 z-30 sm:inset-x-auto sm:left-2 sm:max-w-xs">
+      <div className="pixel-box boot p-3">
+        <p className="font-[family-name:var(--font-display)] font-bold leading-tight">
+          {place.name}
+        </p>
+        {place.address && (
+          <p className="prose mt-1 text-xs text-[var(--color-ink)]/60">{place.address}</p>
+        )}
+        {place.rating != null && (
+          <p className="legend mt-1 text-[var(--color-deep)]">{place.rating.toFixed(1)} ★</p>
+        )}
+
+        <div className="mt-3 flex gap-2">
+          <button type="button" className="pixel-btn pixel-btn-primary flex-1 px-3 py-2 text-sm" onClick={onAdd}>
+            add as a date
+          </button>
+          <button type="button" className="pixel-btn legend px-2 py-1" onClick={onDismiss}>
+            nope
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/** Hovering or tapping an existing pin: the date it belongs to. */
 function ActiveCard({ items, activeId }: Props) {
   const item = items.find((i) => i.id === activeId)
   if (!item) return null
@@ -170,7 +377,22 @@ function ActiveCard({ items, activeId }: Props) {
   )
 }
 
-/** The overview needs a key, or the three pin colours mean nothing. */
+function Pin({ item, active }: { item: DateIdea; active: boolean }) {
+  return (
+    <span
+      className="block transition-transform duration-75"
+      style={{ transform: active ? 'scale(1.5)' : undefined }}
+    >
+      <PixelHeart
+        size={active ? 26 : 22}
+        color={pinColor(item.status)}
+        outline={item.status === 'idea'}
+      />
+    </span>
+  )
+}
+
+/** The overview needs a key, or the pin colours mean nothing. */
 function Legend() {
   const rows: [string, DateIdea['status']][] = [
     ['planned', 'planned'],
@@ -194,11 +416,10 @@ function Legend() {
 /**
  * No Maps key: plot the pins by their real coordinates on a plain field.
  * Positions stay truthful relative to each other, so the overview still works
- * — you just don't get streets. Used by `npm run ui`, and as graceful
- * degradation if the key ever fails in production.
+ * — you just don't get streets, search, or tappable places.
  */
 function MapFallback(props: Props) {
-  const { items, activeId, onActivate, onOpen } = props
+  const { items, onActivate, onOpen } = props
   const placed = placedOnly(items)
 
   const box = useMemo(() => {
@@ -218,8 +439,6 @@ function MapFallback(props: Props) {
 
   return (
     <div className="relative h-full w-full overflow-hidden bg-[var(--color-paper)]">
-      {/* Graph paper, so the plot reads as a deliberate diagram rather than a
-          map that failed to load. */}
       <div
         aria-hidden="true"
         className="absolute inset-0 opacity-40"
@@ -244,7 +463,7 @@ function MapFallback(props: Props) {
             <button
               key={item.id}
               type="button"
-              className="absolute -translate-x-1/2 -translate-y-1/2 p-2 transition-transform duration-75"
+              className="absolute p-2 transition-transform duration-75"
               style={{
                 left: `${left}%`,
                 top: `${top}%`,
@@ -273,7 +492,7 @@ function MapFallback(props: Props) {
           )
         })}
 
-      <ActiveCard items={items} activeId={activeId} onActivate={onActivate} />
+      <ActiveCard {...props} />
       <Legend />
     </div>
   )
