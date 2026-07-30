@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { useMapsLibrary } from '@vis.gl/react-google-maps'
+import { useMap, useMapsLibrary } from '@vis.gl/react-google-maps'
+import { MAP_INSTANCE_ID, lastViewport } from './maps'
 import type { Place } from '../types'
 
 /** Only the fields we store. Places bills by field tier, so asking for more
@@ -58,6 +59,7 @@ export async function fetchPlaceById(
  */
 export function usePlaceSearch() {
   const places = useMapsLibrary('places')
+  const map = useMap(MAP_INSTANCE_ID)
 
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<google.maps.places.AutocompleteSuggestion[]>([])
@@ -77,10 +79,17 @@ export function usePlaceSearch() {
       setFailed(false)
       try {
         session.current ??= new places.AutocompleteSessionToken()
+
+        // Prefer results near where you're looking. `locationBias`, not
+        // `locationRestriction`: somewhere far away should still be findable
+        // when you're planning a trip — it just shouldn't come first.
+        const bias = map?.getBounds()?.toJSON() ?? lastViewport()
+
         const { suggestions } =
           await places.AutocompleteSuggestion.fetchAutocompleteSuggestions({
             input: query,
             sessionToken: session.current,
+            ...(bias ? { locationBias: bias } : {}),
           })
         if (!cancelled) setResults(suggestions.slice(0, 5))
       } catch {
@@ -97,7 +106,7 @@ export function usePlaceSearch() {
       cancelled = true
       clearTimeout(timer)
     }
-  }, [places, query])
+  }, [places, query, map])
 
   async function choose(
     suggestion: google.maps.places.AutocompleteSuggestion,

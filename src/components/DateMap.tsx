@@ -3,7 +3,7 @@ import { format, parseISO } from 'date-fns'
 import { AdvancedMarker, Map, useMap } from '@vis.gl/react-google-maps'
 import { placedOnly, type DateIdea, type Place } from '../types'
 import PixelHeart from './PixelHeart'
-import { HAS_MAPS, MAPS_MAP_ID } from '../lib/maps'
+import { HAS_MAPS, MAPS_MAP_ID, MAP_INSTANCE_ID, rememberViewport } from '../lib/maps'
 import { fetchPlaceById, usePlaceSearch } from '../lib/places'
 
 /**
@@ -44,14 +44,12 @@ const isLit = (item: DateIdea, p: Props) =>
   p.activeId === item.id || (!!p.activeDay && item.scheduledFor === p.activeDay)
 
 /**
- * A stable id for the map instance, so overlays rendered OUTSIDE `<Map>` can
- * still reach it via `useMap(MAP_ID)`.
- *
- * They have to be outside: putting ordinary DOM children inside `<Map>` stops
- * Google initialising the canvas — the map gets stuck showing its static
- * placeholder image forever, with no error in the console.
+ * Overlays render OUTSIDE `<Map>` and reach it via `useMap(MAP_ID)`. They have
+ * to be outside: putting ordinary DOM children inside `<Map>` stops Google
+ * initialising the canvas — the map gets stuck showing its static placeholder
+ * image forever, with no error in the console.
  */
-const MAP_ID = 'date-map'
+const MAP_ID = MAP_INSTANCE_ID
 
 export default function DateMap(props: Props) {
   if (!HAS_MAPS) return <MapFallback {...props} />
@@ -105,6 +103,14 @@ function LiveMap(props: Props) {
     map.panTo({ lat: fly.lat, lng: fly.lng })
     map.setZoom(16)
   }, [map, fly?.nonce])  // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Remember where we're looking so place search stays local, even after a
+  // reload or when the map tab isn't mounted.
+  useEffect(() => {
+    if (!map) return
+    const l = map.addListener('idle', () => rememberViewport(map.getBounds()))
+    return () => l.remove()
+  }, [map])
 
   function goTo(place: Place) {
     setCandidate(place)
