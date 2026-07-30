@@ -53,9 +53,10 @@ export default function Login() {
         className="boot w-full max-w-xs space-y-5"
         noValidate
       >
-        <div className="flex flex-col items-center gap-3 text-center">
+        {/* Just the heart. Anything else here would tell a stranger what
+            they'd found, and there's nothing worth saying to them. */}
+        <div className="flex justify-center">
           <PixelHeart size={56} className="beat" />
-          <p className="legend text-[var(--color-ink)]/60">two people only</p>
         </div>
 
         <div className="space-y-3">
