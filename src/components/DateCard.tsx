@@ -131,9 +131,10 @@ export default function DateCard({
 
         <span className="shrink-0 pt-1">
           <PixelHeart
-            size={12}
+            size={14}
             color={pinColor(item.status)}
             outline={item.status === 'idea'}
+            bordered
           />
         </span>
       </button>

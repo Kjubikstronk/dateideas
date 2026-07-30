@@ -149,7 +149,7 @@ function LiveMap(props: Props) {
         {candidate?.lat != null && candidate.lng != null && (
           <AdvancedMarker position={{ lat: candidate.lat, lng: candidate.lng }}>
             <span className="beat block">
-              <PixelHeart size={30} color="var(--color-lav)" />
+              <PixelHeart size={32} color="var(--color-lav)" bordered />
             </span>
           </AdvancedMarker>
         )}
@@ -399,9 +399,10 @@ function Pin({ item, active }: { item: DateIdea; active: boolean }) {
       style={{ transform: active ? 'scale(1.5)' : undefined }}
     >
       <PixelHeart
-        size={active ? 26 : 22}
+        size={active ? 28 : 24}
         color={pinColor(item.status)}
         outline={item.status === 'idea'}
+        bordered
       />
     </span>
   )
@@ -422,7 +423,7 @@ function Legend({ hidden }: { hidden?: boolean }) {
     <div className="pixel-box-sm absolute bottom-2 left-2 z-10 space-y-1 p-2">
       {rows.map(([label, status]) => (
         <p key={label} className="flex items-center gap-1.5">
-          <PixelHeart size={10} color={pinColor(status)} outline={status === 'idea'} />
+          <PixelHeart size={14} color={pinColor(status)} outline={status === 'idea'} bordered />
           <span className="legend text-[var(--color-ink)]/70">{label}</span>
         </p>
       ))}
@@ -501,9 +502,10 @@ function MapFallback(props: Props) {
               }`}
             >
               <PixelHeart
-                size={22}
+                size={24}
                 color={pinColor(item.status)}
                 outline={item.status === 'idea'}
+                bordered
               />
             </button>
           )
