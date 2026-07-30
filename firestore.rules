@@ -46,6 +46,16 @@ service cloud.firestore {
         && request.resource.data.createdBy == resource.data.createdBy;
     }
 
+    // Bug reports and suggestions. Either of you can tick one off or bin it,
+    // so `done` is freely updatable — but authorship still can't be rewritten.
+    match /reports/{reportId} {
+      allow read, delete: if isUs();
+      allow create: if isUs()
+        && request.resource.data.createdBy == request.auth.uid;
+      allow update: if isUs()
+        && request.resource.data.createdBy == resource.data.createdBy;
+    }
+
     // Anything not named above is denied. Adding a collection later means
     // adding a rule for it here, on purpose.
     match /{document=**} {

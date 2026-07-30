@@ -1,6 +1,7 @@
-import { Suspense, lazy } from 'react'
+import { Suspense, lazy, useState } from 'react'
 import Device from './components/Device'
 import PixelHeart from './components/PixelHeart'
+import ReportSheet from './components/ReportSheet'
 import Login from './screens/Login'
 import { AuthProvider, useAuth } from './lib/auth'
 import { isConfigured } from './lib/firebase'
@@ -29,15 +30,28 @@ export default function App() {
  */
 function Gate() {
   const { user, loading, leave } = useAuth()
+  // Counter, not a boolean — a <dialog> can close itself without telling React.
+  const [reportReq, setReportReq] = useState(0)
+  const reportButton = (
+    <button
+      type="button"
+      onClick={() => setReportReq((n) => n + 1)}
+      className="pixel-btn legend px-2 py-1"
+      title="Report a bug or suggest something"
+    >
+      bug?
+    </button>
+  )
 
   // Dev-only UI preview. `PREVIEW` is hard-wired to false in any production
   // build, so this branch cannot exist on the deployed site.
   if (PREVIEW) {
     return (
-      <Device status={<span className="legend px-2 py-1">preview</span>}>
+      <Device status={reportButton}>
         <Suspense fallback={<Booting />}>
           <Home />
         </Suspense>
+        <ReportSheet openRequest={reportReq} onClose={() => setReportReq(0)} />
       </Device>
     )
   }
@@ -69,18 +83,22 @@ function Gate() {
   return (
     <Device
       status={
-        <button
-          type="button"
-          onClick={() => void leave()}
-          className="pixel-btn legend px-3 py-1"
-        >
-          leave
-        </button>
+        <>
+          {reportButton}
+          <button
+            type="button"
+            onClick={() => void leave()}
+            className="pixel-btn legend px-3 py-1"
+          >
+            leave
+          </button>
+        </>
       }
     >
       <Suspense fallback={<Booting />}>
         <Home />
       </Suspense>
+      <ReportSheet openRequest={reportReq} onClose={() => setReportReq(0)} />
     </Device>
   )
 }
