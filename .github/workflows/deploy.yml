@@ -26,7 +26,16 @@ jobs:
           node-version: 22
           cache: npm
 
-      - run: npm ci
+      # `npm install`, not `npm ci`.
+      #
+      # Vite 8 (rolldown) and Tailwind 4 (oxide) both ship optional native
+      # bindings, and npm records only the variants it resolved on the machine
+      # that generated the lockfile. A lockfile written on Windows therefore
+      # can't satisfy `npm ci` on a Linux runner — it fails on missing
+      # @emnapi/* packages that only the Linux tree needs. `npm install` still
+      # honours the lockfile where it can and reconciles the platform-specific
+      # bits instead of refusing outright.
+      - run: npm install --no-audit --no-fund
 
       - run: npm run build
         env:
