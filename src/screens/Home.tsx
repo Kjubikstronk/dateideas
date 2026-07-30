@@ -216,19 +216,24 @@ export default function Home() {
         {body}
 
         {/* Adding a date is the one thing you do most, so it gets a permanent
-            thumb-reachable button rather than living behind a menu. It clears
-            the tab bar on narrow screens. */}
-        <button
-          type="button"
-          onClick={openNew}
-          className={[
-            'pixel-btn pixel-btn-primary absolute right-3 z-20 px-4 py-3',
-            'font-[family-name:var(--font-display)] text-base',
-            isWide ? 'bottom-3' : 'bottom-20',
-          ].join(' ')}
-        >
-          + new date
-        </button>
+            thumb-reachable button rather than living behind a menu.
+
+            Not on the phone's map tab though: that view already adds dates by
+            tapping a place, and a floating button there covers both the locate
+            control and the card. */}
+        {(isWide || view !== 'map') && (
+          <button
+            type="button"
+            onClick={openNew}
+            className={[
+              'pixel-btn pixel-btn-primary absolute right-3 z-20 px-4 py-3',
+              'font-[family-name:var(--font-display)] text-base',
+              isWide ? 'bottom-3' : 'bottom-20',
+            ].join(' ')}
+          >
+            + new date
+          </button>
+        )}
 
         <EditSheet
           openRequest={openReq}

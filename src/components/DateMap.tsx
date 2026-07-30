@@ -319,7 +319,7 @@ function CandidateCard({
   onDismiss: () => void
 }) {
   return (
-    <div className="absolute inset-x-2 bottom-2 z-30 sm:inset-x-auto sm:left-2 sm:max-w-xs">
+    <div className="absolute inset-x-2 bottom-20 z-30 sm:inset-x-auto sm:bottom-2 sm:left-2 sm:max-w-xs">
       <div className="pixel-box boot p-3">
         <p className="font-[family-name:var(--font-display)] font-bold leading-tight">
           {place.name}
@@ -350,7 +350,7 @@ function ActiveCard({ items, activeId }: Props) {
   if (!item) return null
 
   return (
-    <div className="pointer-events-none absolute inset-x-2 bottom-2 z-10 sm:inset-x-auto sm:left-2 sm:max-w-xs">
+    <div className="pointer-events-none absolute inset-x-2 bottom-20 z-10 sm:inset-x-auto sm:bottom-2 sm:left-2 sm:max-w-xs">
       <div className="pixel-box boot p-3">
         <p className="flex items-start gap-2">
           <span aria-hidden="true" className="text-lg leading-none">
