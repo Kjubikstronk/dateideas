@@ -1,0 +1,55 @@
+rules_version = '2';
+
+// The actual security boundary for this app. These run on Google's servers, so
+// nothing a browser does can get around them — which is what lets the site
+// itself be public.
+//
+// Paste into Firebase Console → Firestore Database → Rules → Publish.
+//
+// This copy is a TEMPLATE and is not deployed by anything — the live rules
+// live in the Firebase console. Real UIDs stay out of it deliberately: they
+// aren't credentials, but publishing them to a public repo buys nothing.
+// Your filled-in copy is in firestore.rules.local, which is gitignored.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ─────────────────────────────────────────────────────────────
+    // THE GUEST LIST. The only thing you ever need to edit here.
+    //
+    // To add her later: create her user in Authentication → Users,
+    // copy the UID, uncomment the line below, paste it in, Publish.
+    // Nothing else changes and nothing is lost.
+    // ─────────────────────────────────────────────────────────────
+    function us() {
+      return [
+        'REPLACE_WITH_YOUR_UID',
+        // 'REPLACE_WITH_HER_UID',
+      ];
+    }
+
+    function isUs() {
+      return request.auth != null && request.auth.uid in us();
+    }
+
+    match /dates/{dateId} {
+      allow read, delete: if isUs();
+
+      // A new document must be stamped with the UID of whoever created it, so
+      // `createdBy` can't be forged to look like it came from the other person.
+      allow create: if isUs()
+        && request.resource.data.createdBy == request.auth.uid;
+
+      // Either of you can edit anything — it's a shared plan, not private
+      // notes. But the authorship stamp is immutable once written.
+      allow update: if isUs()
+        && request.resource.data.createdBy == resource.data.createdBy;
+    }
+
+    // Anything not named above is denied. Adding a collection later means
+    // adding a rule for it here, on purpose.
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

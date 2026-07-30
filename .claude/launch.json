@@ -1,0 +1,23 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "dateideas",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 5173
+    },
+    {
+      "name": "dateideas-dist",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "preview", "--", "--port", "4173", "--strictPort"],
+      "port": 4173
+    },
+    {
+      "name": "dateideas-ui",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "ui", "--", "--port", "5174", "--strictPort"],
+      "port": 5174
+    }
+  ]
+}

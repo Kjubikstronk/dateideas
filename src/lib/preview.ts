@@ -1,0 +1,166 @@
+import { addDays, format, subDays } from 'date-fns'
+import type { DateIdea } from '../types'
+
+/**
+ * Dev-only escape hatch: run the whole UI on fake data with no Firebase and no
+ * login, so the calendar and map can be worked on without touching real data.
+ *
+ * `import.meta.env.DEV` is false in every production build, so this cannot ship
+ * — even if VITE_PREVIEW were somehow set in the deploy workflow.
+ *
+ *   npm run preview:ui
+ */
+export const PREVIEW =
+  import.meta.env.DEV && import.meta.env.VITE_PREVIEW === '1'
+
+const day = (offset: number) =>
+  format(offset < 0 ? subDays(new Date(), -offset) : addDays(new Date(), offset), 'yyyy-MM-dd')
+
+export const SAMPLE_DATES: DateIdea[] = [
+  {
+    id: 's1',
+    title: 'Ramen, then the arcade',
+    note: 'The one with the tiny counter. Go early, it fills up.',
+    emoji: '🍜',
+    place: {
+      name: 'Takumi Ramen',
+      address: 'Oudezijds 34, Amsterdam',
+      lat: 52.3719,
+      lng: 4.8952,
+      placeId: 'sample-1',
+      photoUrl: null,
+      rating: 4.6,
+    },
+    scheduledFor: day(2),
+    time: '19:00',
+    status: 'planned',
+    cancelReason: null,
+    memory: null,
+    createdBy: 'preview',
+    createdAt: Date.now(),
+  },
+  {
+    id: 's2',
+    title: 'Picnic at the park',
+    note: 'Bring the blanket and the bad speaker.',
+    emoji: '🧺',
+    place: {
+      name: 'Vondelpark',
+      address: 'Vondelpark, Amsterdam',
+      lat: 52.3579,
+      lng: 4.8686,
+      placeId: 'sample-2',
+      photoUrl: null,
+      rating: 4.8,
+    },
+    scheduledFor: day(9),
+    time: null,
+    status: 'planned',
+    cancelReason: null,
+    memory: null,
+    createdBy: 'preview',
+    createdAt: Date.now(),
+  },
+  {
+    id: 's3',
+    title: 'That rooftop bar',
+    note: 'Someone said the sunset is worth the lift queue.',
+    emoji: '🌇',
+    place: {
+      name: 'Sky Lounge',
+      address: 'Oosterdoksstraat 4, Amsterdam',
+      lat: 52.3776,
+      lng: 4.9067,
+      placeId: 'sample-3',
+      photoUrl: null,
+      rating: 4.3,
+    },
+    scheduledFor: null,
+    time: null,
+    status: 'idea',
+    cancelReason: null,
+    memory: null,
+    createdBy: 'preview',
+    createdAt: Date.now(),
+  },
+  {
+    id: 's4',
+    title: 'Botanical garden',
+    note: '',
+    emoji: '🌿',
+    place: {
+      name: 'Hortus Botanicus',
+      address: 'Plantage Middenlaan 2a, Amsterdam',
+      lat: 52.3667,
+      lng: 4.9083,
+      placeId: 'sample-4',
+      photoUrl: null,
+      rating: 4.5,
+    },
+    scheduledFor: null,
+    time: null,
+    status: 'idea',
+    cancelReason: null,
+    memory: null,
+    createdBy: 'preview',
+    createdAt: Date.now(),
+  },
+  {
+    id: 's5',
+    title: 'Film at the old cinema',
+    note: '',
+    emoji: '🎞️',
+    place: {
+      name: 'The Movies',
+      address: 'Haarlemmerdijk 161, Amsterdam',
+      lat: 52.3846,
+      lng: 4.8846,
+      placeId: 'sample-5',
+      photoUrl: null,
+      rating: 4.4,
+    },
+    scheduledFor: day(-6),
+    time: '20:30',
+    status: 'done',
+    cancelReason: null,
+    memory: { note: 'You fell asleep in the second act.', photoUrl: null, stars: 5 },
+    createdBy: 'preview',
+    createdAt: Date.now(),
+  },
+  {
+    id: 's6',
+    title: 'Flea market wander',
+    note: 'No buying. (We will buy something.)',
+    emoji: '🪩',
+    place: null,
+    scheduledFor: null,
+    time: null,
+    status: 'idea',
+    cancelReason: null,
+    memory: null,
+    createdBy: 'preview',
+    createdAt: Date.now(),
+  },
+  {
+    id: 's7',
+    title: 'Ice skating',
+    note: '',
+    emoji: '⛸️',
+    place: {
+      name: 'Jaap Eden IJsbaan',
+      address: 'Radioweg 64, Amsterdam',
+      lat: 52.3506,
+      lng: 4.9384,
+      placeId: 'sample-7',
+      photoUrl: null,
+      rating: 4.4,
+    },
+    scheduledFor: day(-2),
+    time: '15:00',
+    status: 'cancelled',
+    cancelReason: 'you were ill',
+    memory: null,
+    createdBy: 'preview',
+    createdAt: Date.now(),
+  },
+]
