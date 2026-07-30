@@ -32,6 +32,12 @@ type Props = {
   onOpen?: (id: string) => void
   /** Start a new date from a place found on the map. */
   onAddPlace?: (place: Place) => void
+  /**
+   * Fly the map somewhere. The nonce is what makes it fire: asking to fly to
+   * the same pin twice is a real request, and comparing coordinates alone
+   * would swallow the second one.
+   */
+  flyTo?: { lat: number; lng: number; nonce: number } | null
 }
 
 const isLit = (item: DateIdea, p: Props) =>
@@ -92,6 +98,13 @@ function LiveMap(props: Props) {
     // `onActivate` and `placesLib` are pulled out of props so this doesn't
     // re-subscribe on every render.
   }, [map, placesLib, onActivate])
+
+  const fly = props.flyTo
+  useEffect(() => {
+    if (!map || !fly) return
+    map.panTo({ lat: fly.lat, lng: fly.lng })
+    map.setZoom(16)
+  }, [map, fly?.nonce])  // eslint-disable-line react-hooks/exhaustive-deps
 
   function goTo(place: Place) {
     setCandidate(place)

@@ -35,6 +35,25 @@ export default function Home() {
     setSeedPlace(null)
     setOpenReq((n) => n + 1)
   }
+  const [flyTo, setFlyTo] = useState<{ lat: number; lng: number; nonce: number } | null>(null)
+
+  /**
+   * Tapping a card takes you to the date: its day gets selected in the grid,
+   * its pin lights up, and the map flies to it. On a phone the map is a
+   * separate tab, so going there is the only way the flight is visible.
+   */
+  const locate = (item: DateIdea) => {
+    setActiveId(item.id)
+    if (item.scheduledFor) {
+      setSelected(item.scheduledFor)
+      setMonth(startOfMonth(parseISO(item.scheduledFor)))
+    }
+    if (item.place?.lat != null && item.place.lng != null) {
+      setFlyTo({ lat: item.place.lat, lng: item.place.lng, nonce: Date.now() })
+      if (!isWide) setView('map')
+    }
+  }
+
   /** Map-first flow: found somewhere, start a date from it. */
   const openFromPlace = (place: Place) => {
     setEditing(null)
@@ -124,6 +143,7 @@ export default function Home() {
           onUpdate={update}
           onDelete={remove}
           onEdit={openEdit}
+          onLocate={locate}
           activeId={activeId}
           onHover={setActiveId}
         />
@@ -139,6 +159,7 @@ export default function Home() {
         activeDay={linkedDay}
         onActivate={setActiveId}
         onAddPlace={openFromPlace}
+        flyTo={flyTo}
         onOpen={(id) => {
           // Tapping a pin on a phone jumps to the day it belongs to.
           const item = items.find((i) => i.id === id)
@@ -157,6 +178,7 @@ export default function Home() {
       onUpdate={update}
       onDelete={remove}
       onEdit={openEdit}
+      onLocate={locate}
       activeId={activeId}
       onHover={setActiveId}
     />
@@ -256,6 +278,7 @@ type ListProps = {
   onUpdate: (id: string, patch: Partial<DateIdea>) => void
   onDelete: (id: string) => void
   onEdit: (item: DateIdea) => void
+  onLocate: (item: DateIdea) => void
   activeId: string | null
   onHover: (id: string | null) => void
 }
@@ -294,6 +317,7 @@ function DayPanel({
               onUpdate={rest.onUpdate}
               onDelete={rest.onDelete}
               onEdit={rest.onEdit}
+              onLocate={rest.onLocate}
               active={rest.activeId === entry.id}
               onHover={rest.onHover}
             />
@@ -383,6 +407,7 @@ function Section({
               onUpdate={rest.onUpdate}
               onDelete={rest.onDelete}
               onEdit={rest.onEdit}
+              onLocate={rest.onLocate}
               active={rest.activeId === item.id}
               onHover={rest.onHover}
             />

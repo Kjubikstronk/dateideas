@@ -9,6 +9,8 @@ type Props = {
   onUpdate: (id: string, patch: Partial<DateIdea>) => void
   onDelete: (id: string) => void
   onEdit: (item: DateIdea) => void
+  /** Jump to this date: select its day and fly the map to its pin. */
+  onLocate?: (item: DateIdea) => void
   /** Hide the day line where the surrounding view already shows the date. */
   hideDay?: boolean
   active?: boolean
@@ -22,6 +24,7 @@ export default function DateCard({
   onUpdate,
   onDelete,
   onEdit,
+  onLocate,
   hideDay,
   active,
   onHover,
@@ -52,55 +55,79 @@ export default function DateCard({
       onMouseEnter={() => onHover?.(item.id)}
       onMouseLeave={() => onHover?.(null)}
     >
-      <div className="flex items-start gap-3">
-        <span aria-hidden="true" className={cancelled ? 'text-xl leading-none opacity-40' : 'text-xl leading-none'}>
+      {/* The whole header is the "take me there" target — bigger than any
+          icon and the obvious thing to hit. */}
+      <button
+        type="button"
+        onClick={() => onLocate?.(item)}
+        className="flex w-full items-start gap-3 text-left"
+      >
+        <span
+          aria-hidden="true"
+          className={cancelled ? 'text-xl leading-none opacity-40' : 'text-xl leading-none'}
+        >
           {item.emoji}
         </span>
 
-        <div className="min-w-0 flex-1">
-          <p
+        <span className="min-w-0 flex-1">
+          {/* Lead with whatever identifies the date best. A place is the more
+              memorable half when there is one ("Viper Room" beats "PARTY"),
+              but plenty of dates have no place, and those must not look
+              broken — so the title takes the top line instead. */}
+          <span
             className={[
-              'font-[family-name:var(--font-display)] font-bold leading-tight',
+              'block font-[family-name:var(--font-display)] font-bold leading-tight',
               cancelled && 'text-[var(--color-mute)] line-through',
             ]
               .filter(Boolean)
               .join(' ')}
           >
-            {item.title}
-          </p>
+            {item.place ? item.place.name : item.title}
+          </span>
 
-          {/* When the surrounding view already names the day, the time still
-              has to show — it's the part you're actually checking. */}
+          {item.place ? (
+            <span
+              className={[
+                'mt-0.5 block truncate text-sm',
+                cancelled ? 'text-[var(--color-mute)]' : 'text-[var(--color-ink)]/70',
+              ].join(' ')}
+            >
+              {item.title}
+            </span>
+          ) : (
+            <span className="legend mt-1 block text-[var(--color-ink)]/60">
+              no place yet
+            </span>
+          )}
+
           {item.scheduledFor && (hideDay ? item.time : true) && (
-            <p className="legend mt-1 text-[var(--color-ink)]/60">
+            <span
+              className={
+                cancelled
+                  ? 'legend mt-1.5 block text-[var(--color-mute)]'
+                  : 'legend mt-1.5 block text-[var(--color-deep)]'
+              }
+            >
               {hideDay
                 ? item.time
                 : `${format(parseISO(item.scheduledFor), 'EEE d MMM').toLowerCase()}${
                     item.time ? ` · ${item.time}` : ''
                   }`}
-            </p>
-          )}
-
-          {/* A date needs a day to reach the calendar and a place to reach the
-              map. Saying which one is missing is how you get it un-lost. */}
-          {item.place ? (
-            <p className="prose truncate text-xs text-[var(--color-ink)]/60">
-              {item.place.name}
-            </p>
-          ) : (
-            <p className="legend text-[var(--color-ink)]/60">no place yet</p>
+            </span>
           )}
 
           {item.note && !cancelled && (
-            <p className="prose mt-1 text-sm text-[var(--color-ink)]/75">{item.note}</p>
+            <span className="prose mt-1.5 block text-xs text-[var(--color-ink)]/70">
+              {item.note}
+            </span>
           )}
 
           {cancelled && (
-            <p className="prose mt-1 text-sm text-[var(--color-mute)]">
+            <span className="prose mt-1.5 block text-xs text-[var(--color-mute)]">
               called off{item.cancelReason ? ` — ${item.cancelReason}` : ''}
-            </p>
+            </span>
           )}
-        </div>
+        </span>
 
         <span className="shrink-0 pt-1">
           <PixelHeart
@@ -109,7 +136,7 @@ export default function DateCard({
             outline={item.status === 'idea'}
           />
         </span>
-      </div>
+      </button>
 
       {/* Actions ------------------------------------------------------- */}
 
