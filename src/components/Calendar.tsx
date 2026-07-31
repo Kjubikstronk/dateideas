@@ -81,27 +81,81 @@ export default function Calendar({
   /**
    * Swipe left/right to change month.
    *
-   * Deliberately fussy about what counts: a swipe must be both long enough and
-   * clearly more horizontal than vertical, or scrolling the page with a slightly
-   * angled thumb would flip the month by accident.
+   * The grid tracks your thumb 1:1 while you drag — that movement is the whole
+   * affordance. Nothing else on screen says "this is swipeable", so it has to
+   * say it itself the moment you touch it.
+   *
+   * Deliberately fussy about what counts as a swipe: it only locks to
+   * horizontal once you've moved further sideways than down, so scrolling the
+   * page with an angled thumb never flips the month.
    */
-  const swipe = useRef<{ x: number; y: number } | null>(null)
+  const gridRef = useRef<HTMLDivElement>(null)
+  const swipe = useRef<{ x: number; y: number; axis: 'unknown' | 'x' | 'y' } | null>(null)
+  const [dragX, setDragX] = useState(0)
+  const [settling, setSettling] = useState(false)
+
+  /** Past this, releasing commits to the next month. */
+  const COMMIT_PX = 60
 
   function onTouchStart(e: React.TouchEvent) {
     const t = e.touches[0]
-    swipe.current = { x: t.clientX, y: t.clientY }
+    swipe.current = { x: t.clientX, y: t.clientY, axis: 'unknown' }
+    setSettling(false)
   }
 
-  function onTouchEnd(e: React.TouchEvent) {
-    const start = swipe.current
+  function onTouchMove(e: React.TouchEvent) {
+    const s = swipe.current
+    if (!s) return
+    const t = e.touches[0]
+    const dx = t.clientX - s.x
+    const dy = t.clientY - s.y
+
+    if (s.axis === 'unknown') {
+      // Wait until the intent is clear, then commit to one axis for the rest
+      // of the gesture so it can't wobble between scrolling and paging.
+      if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return
+      s.axis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y'
+    }
+    if (s.axis !== 'x') return
+
+    // Resist a little past the commit point so the edge is felt, not guessed.
+    const over = Math.max(0, Math.abs(dx) - COMMIT_PX)
+    const eased = Math.sign(dx) * (Math.min(Math.abs(dx), COMMIT_PX) + over * 0.35)
+    setDragX(eased)
+  }
+
+  function onTouchEnd() {
+    const s = swipe.current
     swipe.current = null
-    if (!start) return
-    const t = e.changedTouches[0]
-    const dx = t.clientX - start.x
-    const dy = t.clientY - start.y
-    if (Math.abs(dx) < 60) return
-    if (Math.abs(dx) < Math.abs(dy) * 1.5) return
-    onMonthChange(addMonths(month, dx < 0 ? 1 : -1))
+    if (!s || s.axis !== 'x') {
+      setDragX(0)
+      return
+    }
+
+    const width = gridRef.current?.offsetWidth ?? 320
+    const delta = Math.abs(dragX) > COMMIT_PX ? (dragX < 0 ? 1 : -1) : 0
+
+    if (delta === 0) {
+      setSettling(true)
+      setDragX(0)
+      return
+    }
+
+    onMonthChange(addMonths(month, delta))
+    // Put the incoming month just off the edge you swiped toward, with no
+    // transition, then let it settle in — so it reads as one continuous motion
+    // rather than a jump followed by an animation.
+    setSettling(false)
+    setDragX(delta > 0 ? width : -width)
+    // A timeout, not requestAnimationFrame: rAF is starved whenever the page
+    // isn't animating — switch apps mid-swipe and the callback never runs,
+    // stranding the grid off-screen for good. A task boundary is all the
+    // browser needs to commit the pre-transition position, and timers fire
+    // regardless of whether anything is being painted.
+    window.setTimeout(() => {
+      setSettling(true)
+      setDragX(0)
+    }, 0)
   }
 
   // Keep the roving focus inside the visible month when paging with the arrows.
@@ -153,13 +207,23 @@ export default function Calendar({
         ))}
       </div>
 
-      <div
-        className="grid touch-pan-y grid-cols-7 gap-0.5 p-1 sm:gap-1 sm:p-2"
-        role="grid"
-        aria-label={format(month, 'MMMM yyyy')}
-        onTouchStart={onTouchStart}
-        onTouchEnd={onTouchEnd}
-      >
+      <div className="overflow-hidden">
+        <div
+          ref={gridRef}
+          className="grid touch-pan-y grid-cols-7 gap-0.5 p-1 sm:gap-1 sm:p-2"
+          role="grid"
+          aria-label={format(month, 'MMMM yyyy')}
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEnd}
+          onTouchCancel={onTouchEnd}
+          style={{
+            transform: dragX ? `translateX(${dragX}px)` : undefined,
+            // Stepped, like everything else here — a chunky wipe reads as
+            // deliberate where a smooth glide would look borrowed.
+            transition: settling ? 'transform 220ms var(--ease-chunk)' : 'none',
+          }}
+        >
         {days.map((day) => {
           const k = key(day)
           const entries = byDay.get(k) ?? []
@@ -240,8 +304,9 @@ export default function Calendar({
                 />
               )}
             </button>
-          )
-        })}
+            )
+          })}
+        </div>
       </div>
     </div>
   )
