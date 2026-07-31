@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { differenceInCalendarDays, format, parseISO, startOfMonth } from 'date-fns'
 import Calendar from '../components/Calendar'
 import DateCard from '../components/DateCard'
@@ -8,6 +8,7 @@ import MapsProvider from '../components/MapsProvider'
 import PixelHeart from '../components/PixelHeart'
 import { useAuth } from '../lib/auth'
 import { useDates } from '../lib/dates'
+import { useWeather } from '../lib/weather'
 import { useHasHover, useIsWide } from '../lib/useMediaQuery'
 import { memoriesOf, type DateIdea, type Place } from '../types'
 
@@ -25,6 +26,7 @@ export default function Home() {
   const hasHover = useHasHover()
   const { user } = useAuth()
   const me = user?.uid ?? 'preview'
+  const weather = useWeather(items)
 
   // A counter, not a boolean — see the note on EditSheet's `openRequest`.
   const [openReq, setOpenReq] = useState(0)
@@ -58,6 +60,22 @@ export default function Home() {
       setFlyTo({ lat: item.place.lat, lng: item.place.lng, nonce: Date.now() })
       if (!isWide) setView('map')
     }
+  }
+
+  /**
+   * The dice landed. Highlight the idea and bring it into view — deliberately
+   * not `locate`, which jumps to the map tab and hides the very thing you
+   * rolled for.
+   */
+  const surprise = (item: DateIdea) => {
+    setActiveId(item.id)
+    if (item.scheduledFor) setSelected(item.scheduledFor)
+    // After the re-render that highlights it.
+    window.setTimeout(() => {
+      document
+        .querySelector(`[data-date-id="${item.id}"]`)
+        ?.scrollIntoView({ block: 'center', behavior: 'smooth' })
+    }, 0)
   }
 
   /** Map-first flow: found somewhere, start a date from it. */
@@ -175,6 +193,8 @@ export default function Home() {
           onDelete={remove}
           onEdit={openEdit}
           onLocate={locate}
+          onSurprise={surprise}
+          forecasts={weather}
           activeId={activeId}
           onHover={hasHover ? setActiveId : undefined}
         />
@@ -210,6 +230,8 @@ export default function Home() {
       onDelete={remove}
       onEdit={openEdit}
       onLocate={locate}
+      onSurprise={surprise}
+      forecasts={weather}
       activeId={activeId}
       onHover={hasHover ? setActiveId : undefined}
     />
@@ -332,6 +354,8 @@ type ListProps = {
   onDelete: (id: string) => void
   onEdit: (item: DateIdea) => void
   onLocate: (item: DateIdea) => void
+  onSurprise: (item: DateIdea) => void
+  forecasts: Record<string, import('../lib/weather').Forecast>
   activeId: string | null
   /** Absent on touch devices — see useHasHover. */
   onHover?: (id: string | null) => void
@@ -372,6 +396,7 @@ function DayPanel({
               onDelete={rest.onDelete}
               onEdit={rest.onEdit}
               onLocate={rest.onLocate}
+              forecast={rest.forecasts[entry.id]}
               active={rest.activeId === entry.id}
               onHover={rest.onHover}
             />
@@ -426,6 +451,7 @@ function AgendaPane({
         items={someday}
         empty="No loose ideas right now."
         hint="no day picked yet"
+        action={someday.length > 1 ? <SurpriseMe ideas={someday} onPick={rest.onSurprise} /> : null}
         {...rest}
       />
       <Section title="been there" items={past} {...rest} />
@@ -461,12 +487,69 @@ function SignOut() {
   )
 }
 
+/**
+ * Picks one of the someday ideas for you.
+ *
+ * The point isn't randomness — you could scroll — it's not having to decide.
+ * It rolls through a few names first so it feels like a choice being made
+ * rather than a value appearing.
+ */
+function SurpriseMe({
+  ideas,
+  onPick,
+}: {
+  ideas: DateIdea[]
+  onPick: (item: DateIdea) => void
+}) {
+  const [rolling, setRolling] = useState<string | null>(null)
+  const spinRef = useRef<number | null>(null)
+
+  // Switching tabs mid-roll would otherwise leave the interval running and
+  // setting state on a component that no longer exists.
+  useEffect(
+    () => () => {
+      if (spinRef.current !== null) window.clearInterval(spinRef.current)
+    },
+    [],
+  )
+
+  function roll() {
+    if (rolling !== null) return
+    let ticks = 0
+    const spin = window.setInterval(() => {
+      ticks += 1
+      const shown = ideas[Math.floor(Math.random() * ideas.length)]
+      setRolling(shown.title)
+      if (ticks >= 6) {
+        window.clearInterval(spin)
+        spinRef.current = null
+        const landed = ideas[Math.floor(Math.random() * ideas.length)]
+        setRolling(null)
+        onPick(landed)
+      }
+    }, 90)
+    spinRef.current = spin
+  }
+
+  return (
+    <button
+      type="button"
+      onClick={roll}
+      className="pixel-btn legend max-w-[11rem] truncate px-2 py-1"
+      aria-label="Pick one of these for me"
+    >
+      {rolling ?? '🎲 surprise me'}
+    </button>
+  )
+}
+
 function Section({
   title,
   items,
   empty,
   hint,
   badge,
+  action,
   ...rest
 }: ListProps & {
   title: string
@@ -474,6 +557,7 @@ function Section({
   empty?: string
   hint?: string
   badge?: string | null
+  action?: React.ReactNode
 }) {
   // A section with nothing in it and nothing to say is just noise.
   if (!items.length && !empty) return null
@@ -493,6 +577,7 @@ function Section({
             <span className="legend text-[var(--color-ink)]/60">{items.length}</span>
           )
         )}
+        {action && <span className="ml-auto">{action}</span>}
       </h3>
 
       {hint && items.length > 0 && (
@@ -511,6 +596,7 @@ function Section({
               onDelete={rest.onDelete}
               onEdit={rest.onEdit}
               onLocate={rest.onLocate}
+              forecast={rest.forecasts[item.id]}
               active={rest.activeId === item.id}
               onHover={rest.onHover}
             />

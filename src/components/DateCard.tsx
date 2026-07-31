@@ -2,6 +2,7 @@ import { memo, useState } from 'react'
 import { format, parseISO } from 'date-fns'
 import { averageStars, memoriesOf, type DateIdea } from '../types'
 import { useAuth } from '../lib/auth'
+import { FREEZING_C, HOT_C, SKY_EMOJI, type Forecast } from '../lib/weather'
 import PixelHeart from './PixelHeart'
 import { pinColor } from './DateMap'
 
@@ -12,6 +13,8 @@ type Props = {
   onEdit: (item: DateIdea) => void
   /** Jump to this date: select its day and fly the map to its pin. */
   onLocate?: (item: DateIdea) => void
+  /** Only present for upcoming dates with a place, inside the forecast range. */
+  forecast?: Forecast
   /** Hide the day line where the surrounding view already shows the date. */
   hideDay?: boolean
   active?: boolean
@@ -26,6 +29,7 @@ function DateCard({
   onDelete,
   onEdit,
   onLocate,
+  forecast,
   hideDay,
   active,
   onHover,
@@ -79,6 +83,7 @@ function DateCard({
 
   return (
     <li
+      data-date-id={item.id}
       className={[
         'pixel-box-sm p-3 transition-transform duration-75',
         active && 'translate-x-[-1px] translate-y-[-1px]',
@@ -160,6 +165,30 @@ function DateCard({
           {cancelled && (
             <span className="prose mt-1.5 block text-xs text-[var(--color-mute)]">
               called off{item.cancelReason ? ` — ${item.cancelReason}` : ''}
+            </span>
+          )}
+
+          {/* Forecast, but only where it changes what you'd do: a picnic in
+              the rain is worth knowing about, a cinema trip isn't. */}
+          {forecast && !cancelled && (
+            <span className="legend mt-1.5 flex items-center gap-1.5">
+              <span aria-hidden="true" className="text-sm leading-none">
+                {SKY_EMOJI[forecast.sky]}
+              </span>
+              <span
+                className={
+                  forecast.high >= HOT_C
+                    ? 'border-2 border-[var(--color-ink)] bg-[var(--color-hot)] px-1 py-0.5 text-[var(--color-ink)]'
+                    : forecast.high <= FREEZING_C
+                      ? 'border-2 border-[var(--color-ink)] bg-[var(--color-aqua)] px-1 py-0.5 text-[var(--color-ink)]'
+                      : 'text-[var(--color-ink)]/60'
+                }
+              >
+                {forecast.high}°
+              </span>
+              {forecast.high >= HOT_C && (
+                <span className="text-[var(--color-deep)]">bring water</span>
+              )}
             </span>
           )}
 
