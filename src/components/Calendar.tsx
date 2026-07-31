@@ -81,80 +81,94 @@ export default function Calendar({
   /**
    * Swipe left/right to change month.
    *
-   * The grid tracks your thumb 1:1 while you drag — that movement is the whole
-   * affordance. Nothing else on screen says "this is swipeable", so it has to
-   * say it itself the moment you touch it.
+   * The grid tracks your finger 1:1 while you drag — that movement is the
+   * whole affordance. Nothing else says "swipeable", so it has to say it
+   * itself the moment you touch it.
    *
-   * Deliberately fussy about what counts as a swipe: it only locks to
-   * horizontal once you've moved further sideways than down, so scrolling the
-   * page with an angled thumb never flips the month.
+   * Deliberately fussy about what counts: the gesture locks to one axis as
+   * soon as your intent is clear, so a diagonal thumb can't wobble between
+   * scrolling and paging.
+   *
+   * The transform is written straight to the DOM rather than held in state.
+   * Driving it through React re-rendered all 42 cells on every touchmove —
+   * and each render formats two dates per cell — which made the drag visibly
+   * lag the finger. Direct manipulation costs one style write per frame.
    */
   const gridRef = useRef<HTMLDivElement>(null)
-  const swipe = useRef<{ x: number; y: number; axis: 'unknown' | 'x' | 'y' } | null>(null)
-  const [dragX, setDragX] = useState(0)
-  const [settling, setSettling] = useState(false)
+  const drag = useRef<{ x: number; y: number; axis: 'unknown' | 'x' | 'y'; dx: number } | null>(
+    null,
+  )
 
   /** Past this, releasing commits to the next month. */
   const COMMIT_PX = 60
 
+  const shift = (px: number | null, animate: boolean) => {
+    const el = gridRef.current
+    if (!el) return
+    el.style.transition = animate ? 'transform 220ms var(--ease-chunk)' : 'none'
+    el.style.transform = px === null ? '' : `translateX(${px}px)`
+  }
+
   function onTouchStart(e: React.TouchEvent) {
     const t = e.touches[0]
-    swipe.current = { x: t.clientX, y: t.clientY, axis: 'unknown' }
-    setSettling(false)
+    drag.current = { x: t.clientX, y: t.clientY, axis: 'unknown', dx: 0 }
+    // Promote to its own layer for the duration, so each frame is a compositor
+    // move rather than a repaint of the whole grid.
+    if (gridRef.current) gridRef.current.style.willChange = 'transform'
   }
 
   function onTouchMove(e: React.TouchEvent) {
-    const s = swipe.current
-    if (!s) return
+    const d = drag.current
+    if (!d) return
     const t = e.touches[0]
-    const dx = t.clientX - s.x
-    const dy = t.clientY - s.y
+    const dx = t.clientX - d.x
+    const dy = t.clientY - d.y
 
-    if (s.axis === 'unknown') {
-      // Wait until the intent is clear, then commit to one axis for the rest
-      // of the gesture so it can't wobble between scrolling and paging.
+    if (d.axis === 'unknown') {
       if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return
-      s.axis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y'
+      d.axis = Math.abs(dx) > Math.abs(dy) ? 'x' : 'y'
     }
-    if (s.axis !== 'x') return
+    if (d.axis !== 'x') return
 
-    // Resist a little past the commit point so the edge is felt, not guessed.
+    // Resist past the commit point so the threshold is felt, not guessed.
     const over = Math.max(0, Math.abs(dx) - COMMIT_PX)
-    const eased = Math.sign(dx) * (Math.min(Math.abs(dx), COMMIT_PX) + over * 0.35)
-    setDragX(eased)
+    d.dx = Math.sign(dx) * (Math.min(Math.abs(dx), COMMIT_PX) + over * 0.35)
+    shift(d.dx, false)
   }
 
   function onTouchEnd() {
-    const s = swipe.current
-    swipe.current = null
-    if (!s || s.axis !== 'x') {
-      setDragX(0)
+    const d = drag.current
+    drag.current = null
+    const done = () => {
+      if (gridRef.current) gridRef.current.style.willChange = ''
+    }
+
+    if (!d || d.axis !== 'x') {
+      shift(null, false)
+      done()
       return
     }
 
-    const width = gridRef.current?.offsetWidth ?? 320
-    const delta = Math.abs(dragX) > COMMIT_PX ? (dragX < 0 ? 1 : -1) : 0
+    const delta = Math.abs(d.dx) > COMMIT_PX ? (d.dx < 0 ? 1 : -1) : 0
 
     if (delta === 0) {
-      setSettling(true)
-      setDragX(0)
+      shift(null, true)
+      window.setTimeout(done, 240)
       return
     }
 
     onMonthChange(addMonths(month, delta))
-    // Put the incoming month just off the edge you swiped toward, with no
-    // transition, then let it settle in — so it reads as one continuous motion
-    // rather than a jump followed by an animation.
-    setSettling(false)
-    setDragX(delta > 0 ? width : -width)
-    // A timeout, not requestAnimationFrame: rAF is starved whenever the page
-    // isn't animating — switch apps mid-swipe and the callback never runs,
-    // stranding the grid off-screen for good. A task boundary is all the
-    // browser needs to commit the pre-transition position, and timers fire
-    // regardless of whether anything is being painted.
+
+    // Park the incoming month just off the edge you swiped toward, then let it
+    // settle in, so it reads as one continuous motion rather than a jump.
+    const width = gridRef.current?.offsetWidth ?? 320
+    shift(delta > 0 ? width : -width, false)
+    // A timer, not requestAnimationFrame: rAF is starved whenever the page
+    // isn't painting, so switching apps mid-swipe could strand the grid
+    // off-screen for good. A task boundary is all the browser needs.
     window.setTimeout(() => {
-      setSettling(true)
-      setDragX(0)
+      shift(null, true)
+      window.setTimeout(done, 240)
     }, 0)
   }
 
@@ -217,12 +231,6 @@ export default function Calendar({
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEnd}
           onTouchCancel={onTouchEnd}
-          style={{
-            transform: dragX ? `translateX(${dragX}px)` : undefined,
-            // Stepped, like everything else here — a chunky wipe reads as
-            // deliberate where a smooth glide would look borrowed.
-            transition: settling ? 'transform 220ms var(--ease-chunk)' : 'none',
-          }}
         >
         {days.map((day) => {
           const k = key(day)
