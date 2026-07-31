@@ -166,6 +166,30 @@ export const SAMPLE_DATES: DateIdea[] = [
     createdAt: Date.now(),
   },
   {
+    // Still 'planned' with its day already gone — the case the app should
+    // notice and ask about rather than waiting to be told.
+    id: 's8',
+    title: 'Drinks at the rooftop',
+    note: '',
+    emoji: '🍷',
+    place: {
+      name: 'Sky Lounge',
+      address: 'Oosterdoksstraat 4, Amsterdam',
+      lat: 52.3776,
+      lng: 4.9067,
+      placeId: 'sample-3',
+      photoUrl: null,
+      rating: 4.3,
+    },
+    scheduledFor: day(-3),
+    time: '20:00',
+    status: 'planned',
+    cancelReason: null,
+    memory: null,
+    createdBy: 'preview',
+    createdAt: Date.now(),
+  },
+  {
     id: 's7',
     title: 'Ice skating',
     note: '',

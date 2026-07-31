@@ -36,6 +36,18 @@ function DateCard({
 
   const cancelled = item.status === 'cancelled'
 
+  /**
+   * Has the day been and gone?
+   *
+   * You cannot have gone somewhere that hasn't happened yet, so "we went" has
+   * no business existing on a date two weeks out. Same string comparison the
+   * rest of the app uses — yyyy-MM-dd sorts correctly and can't drift by
+   * timezone.
+   */
+  const isPast = item.scheduledFor
+    ? item.scheduledFor <= format(new Date(), 'yyyy-MM-dd')
+    : false
+
   function remember() {
     // Stars alone or a note alone are both valid — don't demand both.
     onUpdate(item.id, {
@@ -178,19 +190,24 @@ function DateCard({
 
           {item.status === 'planned' && (
             <>
-              <button
-                type="button"
-                className="pixel-btn legend px-2 py-1"
-                onClick={() => setMode('remembering')}
-              >
-                we went
-              </button>
+              {/* Only once the day has passed — see isPast. */}
+              {isPast && (
+                <button
+                  type="button"
+                  className="pixel-btn pixel-btn-primary legend px-2 py-1"
+                  onClick={() => setMode('remembering')}
+                >
+                  we went
+                </button>
+              )}
               <button
                 type="button"
                 className="pixel-btn legend px-2 py-1"
                 onClick={() => setMode('calling-off')}
               >
-                call it off
+                {/* Cancelling a future plan and recording that a past one
+                    didn't happen are the same operation, different sentence. */}
+                {isPast ? 'we didn’t' : 'call it off'}
               </button>
             </>
           )}
@@ -307,7 +324,7 @@ function DateCard({
         <div className="mt-3 space-y-2">
           <label className="block space-y-1">
             <span className="legend text-[var(--color-ink)]/60">
-              why? (you can leave this empty)
+              {isPast ? 'what happened? (optional)' : 'why? (you can leave this empty)'}
             </span>
             <input
               className="pixel-input"
@@ -327,7 +344,7 @@ function DateCard({
               className="pixel-btn pixel-btn-primary legend px-2 py-1"
               onClick={callOff}
             >
-              call it off
+              {isPast ? 'we didn’t go' : 'call it off'}
             </button>
             <button
               type="button"

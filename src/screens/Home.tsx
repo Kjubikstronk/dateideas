@@ -87,14 +87,29 @@ export default function Home() {
    */
   const agenda = useMemo(() => {
     const today = format(new Date(), 'yyyy-MM-dd')
+    const unanswered: DateIdea[] = []
     const upcoming: DateIdea[] = []
     const past: DateIdea[] = []
     const someday: DateIdea[] = []
 
     for (const it of items) {
-      if (!it.scheduledFor) someday.push(it)
-      else if (it.scheduledFor >= today && it.status !== 'done' && it.status !== 'cancelled')
-        upcoming.push(it)
+      if (!it.scheduledFor) {
+        someday.push(it)
+        continue
+      }
+
+      const gone = it.scheduledFor <= today
+
+      // The app should ask rather than wait to be told. Two things need an
+      // answer: a plan whose day has passed with nobody saying whether it
+      // happened, and a date we went on that nobody has said anything about.
+      // Both leave this list the moment they're answered.
+      if ((gone && it.status === 'planned') || (it.status === 'done' && !it.memory)) {
+        unanswered.push(it)
+        continue
+      }
+
+      if (!gone && it.status !== 'done' && it.status !== 'cancelled') upcoming.push(it)
       else past.push(it)
     }
 
@@ -103,6 +118,7 @@ export default function Home() {
 
     upcoming.sort(byDay)
     past.sort((a, b) => byDay(b, a)) // most recent first
+    unanswered.sort((a, b) => byDay(b, a)) // the freshest memory first
     someday.sort((a, b) => b.createdAt - a.createdAt)
 
     // Rides along on the "next up" heading rather than taking a row of its own:
@@ -112,7 +128,7 @@ export default function Home() {
     const countdown =
       days === null ? null : days <= 0 ? 'today' : days === 1 ? 'tomorrow' : `in ${days} days`
 
-    return { upcoming, past, someday, countdown }
+    return { unanswered, upcoming, past, someday, countdown }
   }, [items])
 
   if (error) {
@@ -367,14 +383,15 @@ function AgendaPane({
   ...rest
 }: ListProps & {
   agenda: {
+    unanswered: DateIdea[]
     upcoming: DateIdea[]
     past: DateIdea[]
     someday: DateIdea[]
     countdown: string | null
   }
 }) {
-  const { upcoming, past, someday } = agenda
-  const empty = !upcoming.length && !past.length && !someday.length
+  const { unanswered, upcoming, past, someday } = agenda
+  const empty = !unanswered.length && !upcoming.length && !past.length && !someday.length
 
   if (empty) {
     return (
@@ -389,6 +406,10 @@ function AgendaPane({
 
   return (
     <div className="space-y-5 p-3">
+      {/* Top of the list on purpose: it's the only section that's asking you
+          for something, and it disappears once you've answered. */}
+      <Section title="how did it go?" items={unanswered} {...rest} />
+
       <Section
         title="next up"
         badge={agenda.countdown}
