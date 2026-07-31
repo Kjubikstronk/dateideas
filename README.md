@@ -88,6 +88,21 @@ npm run dev
 Then open http://localhost:5173/dateideas/ — note the path, it matches the
 GitHub Pages base.
 
+## Offline, and staying updated
+
+The app precaches its own shell with a service worker and keeps a Firestore
+cache on the device, so it opens and works with no signal — edits queue and
+sync when you resurface.
+
+What still needs a connection, unavoidably: **signing in for the first time**
+(the check happens on Google's servers) and **map tiles**. Already being signed
+in survives offline, because the session token is stored locally.
+
+Because a service worker serves the cached copy first, a new deploy would
+otherwise sit unnoticed. The app checks for updates every time it regains
+focus, and shows a pill when one is waiting — it never reloads on its own,
+since that tends to happen mid-sentence.
+
 ## On your phone
 
 This is built mobile-first — the phone layout is the primary one, and the wide

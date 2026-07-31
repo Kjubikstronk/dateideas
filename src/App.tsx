@@ -1,6 +1,7 @@
 import { Suspense, lazy, useState } from 'react'
 import Device from './components/Device'
 import PixelHeart from './components/PixelHeart'
+import UpdatePill from './components/UpdatePill'
 import Login from './screens/Login'
 import { AuthProvider, useAuth } from './lib/auth'
 import { isConfigured } from './lib/firebase'
@@ -25,6 +26,9 @@ export default function App() {
   return (
     <AuthProvider>
       <Gate />
+      {/* Outside the gate on purpose: an update should be offerable even on
+          the login screen, and it carries no data dependencies. */}
+      <UpdatePill />
     </AuthProvider>
   )
 }
