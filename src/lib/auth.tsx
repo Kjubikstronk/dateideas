@@ -53,6 +53,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       leave: async () => {
         if (!auth) return
         await signOut(auth)
+        // Dynamic import on purpose: a static one would drag the Firestore SDK
+        // into the entry chunk and undo the login screen's code split.
+        const { clearCache } = await import('./db')
+        await clearCache()
       },
     }),
     [user, loading],

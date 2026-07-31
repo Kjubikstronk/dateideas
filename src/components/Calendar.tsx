@@ -78,6 +78,32 @@ export default function Calendar({
     }
   }
 
+  /**
+   * Swipe left/right to change month.
+   *
+   * Deliberately fussy about what counts: a swipe must be both long enough and
+   * clearly more horizontal than vertical, or scrolling the page with a slightly
+   * angled thumb would flip the month by accident.
+   */
+  const swipe = useRef<{ x: number; y: number } | null>(null)
+
+  function onTouchStart(e: React.TouchEvent) {
+    const t = e.touches[0]
+    swipe.current = { x: t.clientX, y: t.clientY }
+  }
+
+  function onTouchEnd(e: React.TouchEvent) {
+    const start = swipe.current
+    swipe.current = null
+    if (!start) return
+    const t = e.changedTouches[0]
+    const dx = t.clientX - start.x
+    const dy = t.clientY - start.y
+    if (Math.abs(dx) < 60) return
+    if (Math.abs(dx) < Math.abs(dy) * 1.5) return
+    onMonthChange(addMonths(month, dx < 0 ? 1 : -1))
+  }
+
   // Keep the roving focus inside the visible month when paging with the arrows.
   const focusInGrid = days.some((d) => key(d) === focusKey)
   const effectiveFocusKey = focusInGrid ? focusKey : key(startOfMonth(month))
@@ -128,9 +154,11 @@ export default function Calendar({
       </div>
 
       <div
-        className="grid grid-cols-7 gap-0.5 p-1 sm:gap-1 sm:p-2"
+        className="grid touch-pan-y grid-cols-7 gap-0.5 p-1 sm:gap-1 sm:p-2"
         role="grid"
         aria-label={format(month, 'MMMM yyyy')}
+        onTouchStart={onTouchStart}
+        onTouchEnd={onTouchEnd}
       >
         {days.map((day) => {
           const k = key(day)

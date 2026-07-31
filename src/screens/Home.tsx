@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { format, parseISO, startOfMonth } from 'date-fns'
+import { differenceInCalendarDays, format, parseISO, startOfMonth } from 'date-fns'
 import Calendar from '../components/Calendar'
 import DateCard from '../components/DateCard'
 import DateMap from '../components/DateMap'
@@ -103,7 +103,14 @@ export default function Home() {
     past.sort((a, b) => byDay(b, a)) // most recent first
     someday.sort((a, b) => b.createdAt - a.createdAt)
 
-    return { upcoming, past, someday }
+    // Rides along on the "next up" heading rather than taking a row of its own:
+    // it's the question you open the app to answer, and it costs no layout.
+    const soonest = upcoming[0]?.scheduledFor
+    const days = soonest ? differenceInCalendarDays(parseISO(soonest), new Date()) : null
+    const countdown =
+      days === null ? null : days <= 0 ? 'today' : days === 1 ? 'tomorrow' : `in ${days} days`
+
+    return { upcoming, past, someday, countdown }
   }, [items])
 
   if (error) {
@@ -355,7 +362,14 @@ function DayPanel({
 function AgendaPane({
   agenda,
   ...rest
-}: ListProps & { agenda: { upcoming: DateIdea[]; past: DateIdea[]; someday: DateIdea[] } }) {
+}: ListProps & {
+  agenda: {
+    upcoming: DateIdea[]
+    past: DateIdea[]
+    someday: DateIdea[]
+    countdown: string | null
+  }
+}) {
   const { upcoming, past, someday } = agenda
   const empty = !upcoming.length && !past.length && !someday.length
 
@@ -374,6 +388,7 @@ function AgendaPane({
     <div className="space-y-5 p-3">
       <Section
         title="next up"
+        badge={agenda.countdown}
         items={upcoming}
         empty="Nothing planned. Pick a day for one of your ideas."
         {...rest}
@@ -423,12 +438,14 @@ function Section({
   items,
   empty,
   hint,
+  badge,
   ...rest
 }: ListProps & {
   title: string
   items: DateIdea[]
   empty?: string
   hint?: string
+  badge?: string | null
 }) {
   // A section with nothing in it and nothing to say is just noise.
   if (!items.length && !empty) return null
@@ -439,8 +456,14 @@ function Section({
         <span className="font-[family-name:var(--font-display)] text-lg font-bold">
           {title}
         </span>
-        {items.length > 0 && (
-          <span className="legend text-[var(--color-ink)]/60">{items.length}</span>
+        {badge ? (
+          <span className="legend border-2 border-[var(--color-ink)] bg-[var(--color-hot)] px-1.5 py-1 text-[var(--color-ink)]">
+            {badge}
+          </span>
+        ) : (
+          items.length > 0 && (
+            <span className="legend text-[var(--color-ink)]/60">{items.length}</span>
+          )
         )}
       </h3>
 

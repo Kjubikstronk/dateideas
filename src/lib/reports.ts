@@ -4,16 +4,14 @@ import {
   collection,
   deleteDoc,
   doc,
-  getFirestore,
   onSnapshot,
   updateDoc,
 } from 'firebase/firestore'
-import { app } from './firebase'
+import { db } from './db'
 import { useAuth } from './auth'
 import { PREVIEW } from './preview'
 
 const COLLECTION = 'reports'
-const db = app ? getFirestore(app) : null
 
 export type Report = {
   id: string

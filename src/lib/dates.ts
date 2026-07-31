@@ -4,21 +4,15 @@ import {
   collection,
   deleteDoc,
   doc,
-  getFirestore,
   onSnapshot,
   updateDoc,
 } from 'firebase/firestore'
-import { app } from './firebase'
+import { db } from './db'
 import { useAuth } from './auth'
 import { PREVIEW, SAMPLE_DATES } from './preview'
 import type { DateDraft, DateIdea } from '../types'
 
 const COLLECTION = 'dates'
-
-// Created here rather than in firebase.ts so the Firestore SDK lands in this
-// module's chunk. Everything that touches data is behind the auth gate, so an
-// unauthenticated visitor never downloads it.
-const db = app ? getFirestore(app) : null
 
 /**
  * The single source of truth for everything on screen.
@@ -95,10 +89,13 @@ export function useDates() {
         ])
         return
       }
-      if (!db || !user) return
+      // Captured to a local so the null check still holds inside the deferred
+      // closure below — TypeScript drops the narrowing across a callback.
+      const store = db
+      if (!store || !user) return
       // The rules require this stamp to match the caller, so it can't be forged.
       await guard(() =>
-        addDoc(collection(db, COLLECTION), {
+        addDoc(collection(store, COLLECTION), {
           ...draft,
           createdBy: user.uid,
           createdAt: Date.now(),
@@ -113,10 +110,11 @@ export function useDates() {
       setItems((prev) => prev.map((it) => (it.id === id ? { ...it, ...patch } : it)))
       return
     }
-    if (!db) return
+    const store = db
+    if (!store) return
     // `createdBy` and `createdAt` are deliberately not patchable — the rules
     // reject an update that changes authorship anyway.
-    await guard(() => updateDoc(doc(db, COLLECTION, id), patch))
+    await guard(() => updateDoc(doc(store, COLLECTION, id), patch))
   }, [guard])
 
   const remove = useCallback(async (id: string) => {
@@ -124,8 +122,9 @@ export function useDates() {
       setItems((prev) => prev.filter((it) => it.id !== id))
       return
     }
-    if (!db) return
-    await guard(() => deleteDoc(doc(db, COLLECTION, id)))
+    const store = db
+    if (!store) return
+    await guard(() => deleteDoc(doc(store, COLLECTION, id)))
   }, [guard])
 
   /** Scheduled dates bucketed by `yyyy-MM-dd`, which is what the grid needs. */
