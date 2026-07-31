@@ -32,6 +32,19 @@ service cloud.firestore {
       return request.auth != null && request.auth.uid in us();
     }
 
+    // Neither of you can touch the other's rating. Without this, "rate blind
+    // then reveal" would be a polite convention rather than a fact — and the
+    // app could overwrite a vote by accident just as easily as on purpose.
+    function onlyMyMemory() {
+      let before = resource.data.memories;
+      let after = request.resource.data.memories;
+      return after == null
+        ? true
+        : (before is map
+            ? after.diff(before).affectedKeys().hasOnly([request.auth.uid])
+            : after.keys().hasOnly([request.auth.uid]));
+    }
+
     match /dates/{dateId} {
       allow read, delete: if isUs();
 
@@ -43,7 +56,8 @@ service cloud.firestore {
       // Either of you can edit anything — it's a shared plan, not private
       // notes. But the authorship stamp is immutable once written.
       allow update: if isUs()
-        && request.resource.data.createdBy == resource.data.createdBy;
+        && request.resource.data.createdBy == resource.data.createdBy
+        && onlyMyMemory();
     }
 
     // Bug reports and suggestions. Either of you can tick one off or bin it,

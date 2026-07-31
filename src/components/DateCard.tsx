@@ -1,6 +1,7 @@
 import { memo, useState } from 'react'
 import { format, parseISO } from 'date-fns'
-import type { DateIdea } from '../types'
+import { averageStars, memoriesOf, type DateIdea } from '../types'
+import { useAuth } from '../lib/auth'
 import PixelHeart from './PixelHeart'
 import { pinColor } from './DateMap'
 
@@ -31,8 +32,14 @@ function DateCard({
 }: Props) {
   const [mode, setMode] = useState<Mode>('idle')
   const [reason, setReason] = useState('')
-  const [stars, setStars] = useState(item.memory?.stars ?? 0)
-  const [memoryNote, setMemoryNote] = useState(item.memory?.note ?? '')
+  const { user } = useAuth()
+  const me = user?.uid ?? 'preview'
+  const memories = memoriesOf(item)
+  const mine = memories[me]
+  const theirs = Object.entries(memories).filter(([uid]) => uid !== me)
+
+  const [stars, setStars] = useState(mine?.stars ?? 0)
+  const [memoryNote, setMemoryNote] = useState(mine?.note ?? '')
 
   const cancelled = item.status === 'cancelled'
 
@@ -49,10 +56,14 @@ function DateCard({
     : false
 
   function remember() {
-    // Stars alone or a note alone are both valid — don't demand both.
+    // Stars alone or a note alone are both valid — don't demand both. Only
+    // ever writes under your own uid, so it can't touch theirs.
     onUpdate(item.id, {
       status: 'done',
-      memory: { note: memoryNote.trim(), stars },
+      memories: {
+        ...memories,
+        [me]: { note: memoryNote.trim(), stars, at: Date.now() },
+      },
     })
     setMode('idle')
   }
@@ -152,14 +163,23 @@ function DateCard({
             </span>
           )}
 
-          {/* What actually happened. The reason the "been there" list is worth
-              scrolling rather than a graveyard of ticked-off plans. */}
-          {item.memory && (
+          {/* What actually happened.
+              Theirs stays hidden until you've said your piece — seeing five
+              hearts before you vote is how you end up agreeing with them
+              rather than with yourself. */}
+          {(mine || theirs.length > 0) && (
             <span className="mt-2 block border-l-[3px] border-[var(--color-aqua)] pl-2">
-              {item.memory.stars > 0 && <Stars value={item.memory.stars} />}
-              {item.memory.note && (
-                <span className="prose mt-1 block text-xs text-[var(--color-ink)]/75">
-                  {item.memory.note}
+              {mine ? (
+                <>
+                  <Verdict label="you" memory={mine} />
+                  {theirs.map(([uid, m]) => (
+                    <Verdict key={uid} label="them" memory={m} />
+                  ))}
+                  <Agreement item={item} />
+                </>
+              ) : (
+                <span className="legend block text-[var(--color-ink)]/60">
+                  they&rsquo;ve said theirs · rate it to see
                 </span>
               )}
             </span>
@@ -228,10 +248,14 @@ function DateCard({
             <>
               <button
                 type="button"
-                className="pixel-btn legend px-2 py-1"
+                className={
+                  mine
+                    ? 'pixel-btn legend px-2 py-1'
+                    : 'pixel-btn pixel-btn-primary legend px-2 py-1'
+                }
                 onClick={() => setMode('remembering')}
               >
-                {item.memory ? 'edit memory' : 'how was it?'}
+                {mine ? 'change yours' : 'how was it?'}
               </button>
               <button
                 type="button"
@@ -256,7 +280,9 @@ function DateCard({
       {mode === 'remembering' && (
         <div className="mt-3 space-y-2">
           <fieldset>
-            <legend className="legend mb-1.5 text-[var(--color-ink)]/60">how was it?</legend>
+            <legend className="legend mb-1.5 text-[var(--color-ink)]/60">
+              how was it? {theirs.length > 0 && !mine ? '(they’ve already voted)' : ''}
+            </legend>
             <div className="flex gap-1">
               {[1, 2, 3, 4, 5].map((n) => (
                 <button
@@ -387,6 +413,48 @@ function DateCard({
         </div>
       )}
     </li>
+  )
+}
+
+function Verdict({ label, memory }: { label: string; memory: { note: string; stars: number } }) {
+  return (
+    <span className="mt-1 block first:mt-0">
+      <span className="flex items-center gap-2">
+        <span className="legend w-9 shrink-0 text-[var(--color-ink)]/60">{label}</span>
+        {memory.stars > 0 ? (
+          <Stars value={memory.stars} />
+        ) : (
+          <span className="legend text-[var(--color-ink)]/45">no score</span>
+        )}
+      </span>
+      {memory.note && (
+        <span className="prose mt-0.5 block pl-11 text-xs text-[var(--color-ink)]/75">
+          {memory.note}
+        </span>
+      )}
+    </span>
+  )
+}
+
+/** The payoff for rating blind. */
+function Agreement({ item }: { item: DateIdea }) {
+  const scores = Object.values(memoriesOf(item))
+    .map((m) => m.stars)
+    .filter((n) => n > 0)
+  if (scores.length < 2) return null
+
+  const avg = averageStars(item)
+  const spread = Math.max(...scores) - Math.min(...scores)
+  const verdict =
+    spread === 0 ? 'you agreed' : spread === 1 ? 'near enough' : 'you disagreed'
+
+  return (
+    <span className="legend mt-1.5 flex items-center gap-2">
+      <span className="border-2 border-[var(--color-ink)] bg-[var(--color-hot)] px-1.5 py-1 text-[var(--color-ink)]">
+        {avg?.toFixed(1)}
+      </span>
+      <span className="text-[var(--color-ink)]/60">{verdict}</span>
+    </span>
   )
 }
 

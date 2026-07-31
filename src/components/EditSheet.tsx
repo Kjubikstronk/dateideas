@@ -110,7 +110,7 @@ export default function EditSheet({
       time: day && time ? time : null,
       status,
       cancelReason: editing?.cancelReason ?? null,
-      memory: editing?.memory ?? null,
+      memories: editing?.memories ?? null,
     })
     onClose()
   }

@@ -9,7 +9,7 @@ import PixelHeart from '../components/PixelHeart'
 import { useAuth } from '../lib/auth'
 import { useDates } from '../lib/dates'
 import { useHasHover, useIsWide } from '../lib/useMediaQuery'
-import type { DateIdea, Place } from '../types'
+import { memoriesOf, type DateIdea, type Place } from '../types'
 
 type View = 'calendar' | 'map' | 'ideas'
 
@@ -23,6 +23,8 @@ export default function Home() {
   const isWide = useIsWide()
   // Touchscreens fake mouseenter while you scroll; see useHasHover.
   const hasHover = useHasHover()
+  const { user } = useAuth()
+  const me = user?.uid ?? 'preview'
 
   // A counter, not a boolean — see the note on EditSheet's `openRequest`.
   const [openReq, setOpenReq] = useState(0)
@@ -104,7 +106,9 @@ export default function Home() {
       // answer: a plan whose day has passed with nobody saying whether it
       // happened, and a date we went on that nobody has said anything about.
       // Both leave this list the moment they're answered.
-      if ((gone && it.status === 'planned') || (it.status === 'done' && !it.memory)) {
+      // Keyed to you, not to the record: her answering doesn't answer for you.
+      const iSaidMyPiece = !!memoriesOf(it)[me]
+      if ((gone && it.status === 'planned') || (it.status === 'done' && !iSaidMyPiece)) {
         unanswered.push(it)
         continue
       }
@@ -129,7 +133,7 @@ export default function Home() {
       days === null ? null : days <= 0 ? 'today' : days === 1 ? 'tomorrow' : `in ${days} days`
 
     return { unanswered, upcoming, past, someday, countdown }
-  }, [items])
+  }, [items, me])
 
   if (error) {
     return (
