@@ -35,6 +35,26 @@ export function useDates() {
   const [items, setItems] = useState<DateIdea[]>(PREVIEW ? SAMPLE_DATES : [])
   const [loading, setLoading] = useState(!PREVIEW)
   const [error, setError] = useState<string | null>(null)
+  const [writeError, setWriteError] = useState<string | null>(null)
+
+  /**
+   * Firestore applies a write locally first and rolls it back if the server
+   * rejects it. Without this, a refused save looked like the date appearing
+   * and then vanishing on its own.
+   */
+  const guard = useCallback(async (run: () => Promise<unknown>) => {
+    try {
+      await run()
+      setWriteError(null)
+    } catch (err) {
+      const code = (err as { code?: string })?.code
+      setWriteError(
+        code === 'permission-denied'
+          ? "That didn't save — this account isn't allowed to write here."
+          : "That didn't save. Check your connection and try again.",
+      )
+    }
+  }, [])
 
   useEffect(() => {
     if (PREVIEW) return
@@ -77,13 +97,15 @@ export function useDates() {
       }
       if (!db || !user) return
       // The rules require this stamp to match the caller, so it can't be forged.
-      await addDoc(collection(db, COLLECTION), {
-        ...draft,
-        createdBy: user.uid,
-        createdAt: Date.now(),
-      })
+      await guard(() =>
+        addDoc(collection(db, COLLECTION), {
+          ...draft,
+          createdBy: user.uid,
+          createdAt: Date.now(),
+        }),
+      )
     },
-    [user],
+    [user, guard],
   )
 
   const update = useCallback(async (id: string, patch: Partial<DateDraft>) => {
@@ -94,8 +116,8 @@ export function useDates() {
     if (!db) return
     // `createdBy` and `createdAt` are deliberately not patchable — the rules
     // reject an update that changes authorship anyway.
-    await updateDoc(doc(db, COLLECTION, id), patch)
-  }, [])
+    await guard(() => updateDoc(doc(db, COLLECTION, id), patch))
+  }, [guard])
 
   const remove = useCallback(async (id: string) => {
     if (PREVIEW) {
@@ -103,8 +125,8 @@ export function useDates() {
       return
     }
     if (!db) return
-    await deleteDoc(doc(db, COLLECTION, id))
-  }, [])
+    await guard(() => deleteDoc(doc(db, COLLECTION, id)))
+  }, [guard])
 
   /** Scheduled dates bucketed by `yyyy-MM-dd`, which is what the grid needs. */
   const byDay = useMemo(() => {
@@ -128,5 +150,16 @@ export function useDates() {
     [items],
   )
 
-  return { items, byDay, ideas, loading, error, add, update, remove }
+  return {
+    items,
+    byDay,
+    ideas,
+    loading,
+    error,
+    writeError,
+    dismissWriteError: () => setWriteError(null),
+    add,
+    update,
+    remove,
+  }
 }

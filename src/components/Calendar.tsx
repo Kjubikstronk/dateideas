@@ -94,9 +94,20 @@ export default function Calendar({
           ◀
         </button>
 
-        <h2 className="font-[family-name:var(--font-display)] text-base font-bold sm:text-lg">
-          {format(month, 'MMMM yyyy').toLowerCase()}
-        </h2>
+        <span className="flex min-w-0 flex-col items-center">
+          <h2 className="truncate font-[family-name:var(--font-display)] text-base font-bold sm:text-lg">
+            {format(month, 'MMMM yyyy').toLowerCase()}
+          </h2>
+          {!isSameMonth(month, new Date()) && (
+            <button
+              type="button"
+              className="legend mt-0.5 px-2 py-1 text-[var(--color-deep)] underline underline-offset-2"
+              onClick={() => onMonthChange(startOfMonth(new Date()))}
+            >
+              back to today
+            </button>
+          )}
+        </span>
 
         <button
           type="button"

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
-import { captureContext, useReports, type Report } from '../lib/reports'
+import { useReports, type Report } from '../lib/reports'
 
 type Props = {
   /** Counter, not a boolean — see the note on EditSheet's `openRequest`. */
@@ -114,17 +114,6 @@ export default function ReportSheet({ openRequest, onClose }: Props) {
                 rows={3}
               />
             </label>
-
-            {/* Say what's attached rather than collecting it silently. */}
-            <details className="pixel-box-sm p-2">
-              <summary className="legend cursor-pointer">what gets sent with it</summary>
-              <ul className="prose mt-2 space-y-0.5 text-xs text-[var(--color-ink)]/70">
-                <li>screen: {captureContext().screen}</li>
-                <li>where you are: {captureContext().view}</li>
-                <li>your phone or browser</li>
-                <li>the time</li>
-              </ul>
-            </details>
 
             <div aria-live="polite">
               {sent && (

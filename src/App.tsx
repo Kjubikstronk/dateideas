@@ -1,7 +1,6 @@
 import { Suspense, lazy, useState } from 'react'
 import Device from './components/Device'
 import PixelHeart from './components/PixelHeart'
-import ReportSheet from './components/ReportSheet'
 import Login from './screens/Login'
 import { AuthProvider, useAuth } from './lib/auth'
 import { isConfigured } from './lib/firebase'
@@ -14,6 +13,13 @@ import { PREVIEW } from './lib/preview'
  * on a phone.
  */
 const Home = lazy(() => import('./screens/Home'))
+
+/**
+ * Lazy for the same reason as Home: it pulls in the Firestore SDK, and a
+ * signed-out visitor must not download that. Importing it eagerly here silently
+ * undid the entry-chunk split and more than doubled first load.
+ */
+const ReportSheet = lazy(() => import('./components/ReportSheet'))
 
 export default function App() {
   return (
@@ -51,7 +57,11 @@ function Gate() {
         <Suspense fallback={<Booting />}>
           <Home />
         </Suspense>
-        <ReportSheet openRequest={reportReq} onClose={() => setReportReq(0)} />
+        {reportReq > 0 && (
+          <Suspense fallback={null}>
+            <ReportSheet openRequest={reportReq} onClose={() => setReportReq(0)} />
+          </Suspense>
+        )}
       </Device>
     )
   }

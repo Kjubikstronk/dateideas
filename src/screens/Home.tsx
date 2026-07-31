@@ -14,7 +14,8 @@ import type { DateIdea, Place } from '../types'
 type View = 'calendar' | 'map' | 'ideas'
 
 export default function Home() {
-  const { items, byDay, loading, error, add, update, remove } = useDates()
+  const { items, byDay, loading, error, writeError, dismissWriteError, add, update, remove } =
+    useDates()
 
   const [month, setMonth] = useState(() => startOfMonth(new Date()))
   const [selected, setSelected] = useState<string | null>(null)
@@ -215,6 +216,23 @@ export default function Home() {
     <MapsProvider>
       <div className="relative flex min-h-0 flex-1 flex-col">
         {body}
+
+        {/* A refused write used to just revert with no explanation. */}
+        {writeError && (
+          <div
+            role="alert"
+            className="absolute inset-x-3 top-3 z-40 flex items-start gap-2 border-[3px] border-[var(--color-ink)] bg-[var(--color-card)] p-3 shadow-[4px_4px_0_var(--color-ink)]"
+          >
+            <p className="flex-1 text-sm text-[var(--color-deep)]">{writeError}</p>
+            <button
+              type="button"
+              className="pixel-btn legend shrink-0 px-2 py-1"
+              onClick={dismissWriteError}
+            >
+              ok
+            </button>
+          </div>
+        )}
 
         {/* Adding a date is the one thing you do most, so it gets a permanent
             thumb-reachable button rather than living behind a menu.

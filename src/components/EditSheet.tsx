@@ -48,6 +48,10 @@ export default function EditSheet({
   const [place, setPlace] = useState<Place | null>(null)
   const [day, setDay] = useState('')
   const [time, setTime] = useState('')
+  const [saving, setSaving] = useState(false)
+  // A ref, not the state above: state updates on the next render, so three
+  // taps in one tick would all read `saving === false` and each save a copy.
+  const savingRef = useRef(false)
 
   // Reset the form whenever the sheet opens, so a cancelled edit never leaks
   // into the next one.
@@ -59,6 +63,8 @@ export default function EditSheet({
     setPlace(editing?.place ?? defaultPlace ?? null)
     setDay(editing?.scheduledFor ?? defaultDay ?? '')
     setTime(editing?.time ?? '')
+    setSaving(false)
+    savingRef.current = false
     // Keyed on openRequest so reopening always starts from a clean form.
   }, [openRequest, open, editing, defaultDay, defaultPlace])
 
@@ -81,7 +87,11 @@ export default function EditSheet({
 
   function submit(e: React.FormEvent) {
     e.preventDefault()
-    if (!title.trim()) return
+    // A double tap on a phone is easy, and onSave isn't awaited — without this
+    // guard the second tap created a duplicate date.
+    if (!title.trim() || savingRef.current) return
+    savingRef.current = true
+    setSaving(true)
 
     // Scheduling is what promotes a wish into a plan. An existing `done` or
     // `cancelled` record keeps its status — re-saving shouldn't rewrite history.
@@ -206,7 +216,7 @@ export default function EditSheet({
           <button
             type="submit"
             className="pixel-btn pixel-btn-primary flex-1 px-4 py-2"
-            disabled={!title.trim()}
+            disabled={!title.trim() || saving}
           >
             {editing ? 'save' : 'add it'}
           </button>
