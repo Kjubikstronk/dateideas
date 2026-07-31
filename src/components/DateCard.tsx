@@ -17,7 +17,7 @@ type Props = {
   onHover?: (id: string | null) => void
 }
 
-type Mode = 'idle' | 'calling-off' | 'deleting'
+type Mode = 'idle' | 'calling-off' | 'deleting' | 'remembering'
 
 function DateCard({
   item,
@@ -31,8 +31,19 @@ function DateCard({
 }: Props) {
   const [mode, setMode] = useState<Mode>('idle')
   const [reason, setReason] = useState('')
+  const [stars, setStars] = useState(item.memory?.stars ?? 0)
+  const [memoryNote, setMemoryNote] = useState(item.memory?.note ?? '')
 
   const cancelled = item.status === 'cancelled'
+
+  function remember() {
+    // Stars alone or a note alone are both valid — don't demand both.
+    onUpdate(item.id, {
+      status: 'done',
+      memory: { note: memoryNote.trim(), stars },
+    })
+    setMode('idle')
+  }
 
   function callOff() {
     onUpdate(item.id, {
@@ -128,6 +139,19 @@ function DateCard({
               called off{item.cancelReason ? ` — ${item.cancelReason}` : ''}
             </span>
           )}
+
+          {/* What actually happened. The reason the "been there" list is worth
+              scrolling rather than a graveyard of ticked-off plans. */}
+          {item.memory && (
+            <span className="mt-2 block border-l-[3px] border-[var(--color-aqua)] pl-2">
+              {item.memory.stars > 0 && <Stars value={item.memory.stars} />}
+              {item.memory.note && (
+                <span className="prose mt-1 block text-xs text-[var(--color-ink)]/75">
+                  {item.memory.note}
+                </span>
+              )}
+            </span>
+          )}
         </span>
 
         <span className="shrink-0 pt-1">
@@ -157,7 +181,7 @@ function DateCard({
               <button
                 type="button"
                 className="pixel-btn legend px-2 py-1"
-                onClick={() => onUpdate(item.id, { status: 'done' })}
+                onClick={() => setMode('remembering')}
               >
                 we went
               </button>
@@ -184,13 +208,22 @@ function DateCard({
           )}
 
           {item.status === 'done' && (
-            <button
-              type="button"
-              className="pixel-btn legend px-2 py-1"
-              onClick={() => onUpdate(item.id, { status: 'planned' })}
-            >
-              undo
-            </button>
+            <>
+              <button
+                type="button"
+                className="pixel-btn legend px-2 py-1"
+                onClick={() => setMode('remembering')}
+              >
+                {item.memory ? 'edit memory' : 'how was it?'}
+              </button>
+              <button
+                type="button"
+                className="pixel-btn legend px-2 py-1"
+                onClick={() => onUpdate(item.id, { status: 'planned' })}
+              >
+                undo
+              </button>
+            </>
           )}
 
           <button
@@ -200,6 +233,73 @@ function DateCard({
           >
             delete
           </button>
+        </div>
+      )}
+
+      {mode === 'remembering' && (
+        <div className="mt-3 space-y-2">
+          <fieldset>
+            <legend className="legend mb-1.5 text-[var(--color-ink)]/60">how was it?</legend>
+            <div className="flex gap-1">
+              {[1, 2, 3, 4, 5].map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  aria-label={`${n} out of 5`}
+                  aria-pressed={stars === n}
+                  // Tapping the star you already chose clears the rating,
+                  // otherwise there's no way back to "didn't rate it".
+                  onClick={() => setStars(stars === n ? 0 : n)}
+                  className="p-1"
+                >
+                  <PixelHeart
+                    size={20}
+                    color="var(--color-hot)"
+                    outline={n > stars}
+                    bordered
+                  />
+                </button>
+              ))}
+            </div>
+          </fieldset>
+
+          <label className="block space-y-1">
+            <span className="legend text-[var(--color-ink)]/60">
+              anything worth remembering?
+            </span>
+            <input
+              className="pixel-input"
+              value={memoryNote}
+              onChange={(e) => setMemoryNote(e.target.value)}
+              placeholder="you fell asleep in the second act"
+              autoFocus
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') remember()
+                if (e.key === 'Escape') setMode('idle')
+              }}
+            />
+          </label>
+
+          <div className="flex gap-2">
+            <button
+              type="button"
+              className="pixel-btn pixel-btn-primary legend px-2 py-1"
+              onClick={remember}
+            >
+              save it
+            </button>
+            <button
+              type="button"
+              className="pixel-btn legend px-2 py-1"
+              onClick={() => {
+                setStars(item.memory?.stars ?? 0)
+                setMemoryNote(item.memory?.note ?? '')
+                setMode('idle')
+              }}
+            >
+              never mind
+            </button>
+          </div>
         </div>
       )}
 
@@ -270,6 +370,16 @@ function DateCard({
         </div>
       )}
     </li>
+  )
+}
+
+function Stars({ value }: { value: number }) {
+  return (
+    <span className="flex items-center gap-0.5" aria-label={`${value} out of 5`}>
+      {[1, 2, 3, 4, 5].map((n) => (
+        <PixelHeart key={n} size={11} color="var(--color-hot)" outline={n > value} bordered />
+      ))}
+    </span>
   )
 }
 

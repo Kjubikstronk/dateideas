@@ -29,9 +29,10 @@ export const hasCoords = (
  */
 export type DateStatus = 'idea' | 'planned' | 'done' | 'cancelled'
 
+/** How a date actually went, recorded after the fact. */
 export type Memory = {
   note: string
-  photoUrl: string | null
+  /** 1–5. Zero means rated nothing, only written. */
   stars: number
 }
 

@@ -147,7 +147,7 @@ export const SAMPLE_DATES: DateIdea[] = [
     time: '20:30',
     status: 'done',
     cancelReason: null,
-    memory: { note: 'You fell asleep in the second act.', photoUrl: null, stars: 5 },
+    memory: { note: 'You fell asleep in the second act.', stars: 5 },
     createdBy: 'preview',
     createdAt: Date.now(),
   },
