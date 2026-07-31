@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { memo, useState } from 'react'
 import { format, parseISO } from 'date-fns'
 import type { DateIdea } from '../types'
 import PixelHeart from './PixelHeart'
@@ -19,7 +19,7 @@ type Props = {
 
 type Mode = 'idle' | 'calling-off' | 'deleting'
 
-export default function DateCard({
+function DateCard({
   item,
   onUpdate,
   onDelete,
@@ -52,8 +52,9 @@ export default function DateCard({
       ]
         .filter(Boolean)
         .join(' ')}
-      onMouseEnter={() => onHover?.(item.id)}
-      onMouseLeave={() => onHover?.(null)}
+      {...(onHover
+        ? { onMouseEnter: () => onHover(item.id), onMouseLeave: () => onHover(null) }
+        : {})}
     >
       {/* The whole header is the "take me there" target — bigger than any
           icon and the obvious thing to hit. */}
@@ -271,3 +272,9 @@ export default function DateCard({
     </li>
   )
 }
+
+/**
+ * Memoised: the agenda re-renders whenever anything in the app changes, and
+ * without this every card rebuilt each time — including on scroll.
+ */
+export default memo(DateCard)

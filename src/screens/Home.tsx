@@ -8,7 +8,7 @@ import MapsProvider from '../components/MapsProvider'
 import PixelHeart from '../components/PixelHeart'
 import { useAuth } from '../lib/auth'
 import { useDates } from '../lib/dates'
-import { useIsWide } from '../lib/useMediaQuery'
+import { useHasHover, useIsWide } from '../lib/useMediaQuery'
 import type { DateIdea, Place } from '../types'
 
 type View = 'calendar' | 'map' | 'ideas'
@@ -21,6 +21,8 @@ export default function Home() {
   const [selected, setSelected] = useState<string | null>(null)
   const [view, setView] = useState<View>('calendar')
   const isWide = useIsWide()
+  // Touchscreens fake mouseenter while you scroll; see useHasHover.
+  const hasHover = useHasHover()
 
   // A counter, not a boolean — see the note on EditSheet's `openRequest`.
   const [openReq, setOpenReq] = useState(0)
@@ -143,7 +145,7 @@ export default function Home() {
         selected={selected}
         onSelect={setSelected}
         linkedDay={linkedDay}
-        onHoverDay={setActiveDay}
+        onHoverDay={hasHover ? setActiveDay : undefined}
       />
       <div className="border-t-[3px] border-[var(--color-ink)]">
         <DayPanel
@@ -154,7 +156,7 @@ export default function Home() {
           onEdit={openEdit}
           onLocate={locate}
           activeId={activeId}
-          onHover={setActiveId}
+          onHover={hasHover ? setActiveId : undefined}
         />
       </div>
     </div>
@@ -189,7 +191,7 @@ export default function Home() {
       onEdit={openEdit}
       onLocate={locate}
       activeId={activeId}
-      onHover={setActiveId}
+      onHover={hasHover ? setActiveId : undefined}
     />
   )
 
@@ -311,7 +313,8 @@ type ListProps = {
   onEdit: (item: DateIdea) => void
   onLocate: (item: DateIdea) => void
   activeId: string | null
-  onHover: (id: string | null) => void
+  /** Absent on touch devices — see useHasHover. */
+  onHover?: (id: string | null) => void
 }
 
 function DayPanel({

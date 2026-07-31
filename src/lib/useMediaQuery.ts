@@ -29,3 +29,11 @@ export function useMediaQuery(query: string) {
  * narrow. Below this we use the phone layout, which is fully functional.
  */
 export const useIsWide = () => useMediaQuery('(min-width: 1280px)')
+
+/**
+ * True only for a real pointer. Touchscreens synthesise mouse events, so
+ * without this a finger dragging past a card fires mouseenter, sets state, and
+ * re-renders the whole app mid-scroll — which is what made scrolling stutter.
+ * Hover-linking has no meaning on a touchscreen anyway.
+ */
+export const useHasHover = () => useMediaQuery('(hover: hover) and (pointer: fine)')

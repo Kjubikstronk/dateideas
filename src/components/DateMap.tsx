@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react'
 import { format, parseISO } from 'date-fns'
-import { AdvancedMarker, Map, useMap } from '@vis.gl/react-google-maps'
-import { placedOnly, type DateIdea, type Place } from '../types'
+// Aliased: the library's `Map` component otherwise shadows the global Map
+// constructor, which broke `new Map()` in this file.
+import { AdvancedMarker, Map as GoogleMap, useMap } from '@vis.gl/react-google-maps'
+import { placedOnly, type DateIdea, type Place, type PlacedDate } from '../types'
 import PixelHeart from './PixelHeart'
 import { HAS_MAPS, MAPS_MAP_ID, MAP_INSTANCE_ID, rememberViewport } from '../lib/maps'
 import { fetchPlaceById, usePlaceSearch } from '../lib/places'
@@ -40,6 +42,31 @@ type Props = {
   flyTo?: { lat: number; lng: number; nonce: number } | null
 }
 
+/** Identifies a place: the Places id when we have one, else its coordinates. */
+const placeKey = (item: PlacedDate) =>
+  item.place.placeId ?? `${item.place.lat.toFixed(5)},${item.place.lng.toFixed(5)}`
+
+/**
+ * Dates sharing a place share a pin.
+ *
+ * Two dates at one venue drew two markers at identical coordinates, one exactly
+ * on top of the other, so the one underneath was invisible and unclickable.
+ */
+function groupByPlace(items: DateIdea[]): [string, PlacedDate[]][] {
+  const buckets = new globalThis.Map<string, PlacedDate[]>()
+  for (const item of placedOnly(items)) {
+    const key = placeKey(item)
+    const bucket = buckets.get(key)
+    if (bucket) bucket.push(item)
+    else buckets.set(key, [item])
+  }
+  // Soonest first inside a pin, so the card leads with what's next.
+  for (const bucket of buckets.values()) {
+    bucket.sort((a, b) => (a.scheduledFor ?? '~').localeCompare(b.scheduledFor ?? '~'))
+  }
+  return [...buckets.entries()]
+}
+
 const isLit = (item: DateIdea, p: Props) =>
   p.activeId === item.id || (!!p.activeDay && item.scheduledFor === p.activeDay)
 
@@ -64,15 +91,17 @@ function LiveMap(props: Props) {
   const [candidate, setCandidate] = useState<Place | null>(null)
   const [me, setMe] = useState<{ lat: number; lng: number } | null>(null)
 
-  const placed = useMemo(() => placedOnly(props.items), [props.items])
+  const groups = useMemo(() => groupByPlace(props.items), [props.items])
 
   // Frame every pin on first load, so you open the map to the overview.
   useEffect(() => {
-    if (!map || placed.length === 0) return
+    if (!map || groups.length === 0) return
     const bounds = new google.maps.LatLngBounds()
-    for (const item of placed) bounds.extend({ lat: item.place.lat, lng: item.place.lng })
+    for (const [, items] of groups) {
+      bounds.extend({ lat: items[0].place.lat, lng: items[0].place.lng })
+    }
     map.fitBounds(bounds, 64)
-  }, [map, placed])
+  }, [map, groups])
 
   // Tapping a point of interest, exactly like Google Maps. The map hands us a
   // placeId; `stop()` suppresses Google's own info window so ours shows instead.
@@ -123,7 +152,7 @@ function LiveMap(props: Props) {
 
   return (
     <>
-      <Map
+      <GoogleMap
         id={MAP_ID}
         mapId={MAPS_MAP_ID || 'DEMO_MAP_ID'}
         defaultCenter={{ lat: 52.372, lng: 4.895 }}
@@ -135,22 +164,26 @@ function LiveMap(props: Props) {
         disableDefaultUI
         className="absolute inset-0"
       >
-        {placed.map((it) => (
-          <AdvancedMarker
-            key={it.id}
-            position={{ lat: it.place.lat, lng: it.place.lng }}
-            title={it.title}
-            onMouseEnter={() => onActivate(it.id)}
-            onMouseLeave={() => onActivate(null)}
-            onClick={() => {
-              setCandidate(null)
-              onActivate(it.id)
-              props.onOpen?.(it.id)
-            }}
-          >
-            <Pin item={it} active={isLit(it, props)} />
-          </AdvancedMarker>
-        ))}
+        {groups.map(([key, items]) => {
+          const lead = items[0]
+          const lit = items.some((it) => isLit(it, props))
+          return (
+            <AdvancedMarker
+              key={key}
+              position={{ lat: lead.place.lat, lng: lead.place.lng }}
+              title={items.map((i) => i.title).join(' · ')}
+              onMouseEnter={() => onActivate(lead.id)}
+              onMouseLeave={() => onActivate(null)}
+              onClick={() => {
+                setCandidate(null)
+                onActivate(lead.id)
+                props.onOpen?.(lead.id)
+              }}
+            >
+              <Pin item={lead} active={lit} count={items.length} />
+            </AdvancedMarker>
+          )
+        })}
 
         {candidate?.lat != null && candidate.lng != null && (
           <AdvancedMarker position={{ lat: candidate.lat, lng: candidate.lng }}>
@@ -168,7 +201,7 @@ function LiveMap(props: Props) {
             />
           </AdvancedMarker>
         )}
-      </Map>
+      </GoogleMap>
 
       {/* Overlays live outside <Map> — see the note on MAP_ID. */}
       <SearchBar search={search} onPick={goTo} />
@@ -344,53 +377,75 @@ function CandidateCard({
   )
 }
 
-/** Hovering or tapping an existing pin: the date it belongs to. */
+/**
+ * Hovering or tapping a pin: everything that happens at that place.
+ *
+ * A pin can hold several dates — dinner there in March, again in June — and
+ * showing only one of them was the whole bug. The place is named once at the
+ * top and each date listed under it.
+ */
 function ActiveCard({ items, activeId }: Props) {
-  const item = items.find((i) => i.id === activeId)
-  if (!item) return null
+  const active = items.find((i) => i.id === activeId)
+  if (!active) return null
+
+  const here = placedOnly(items).filter(
+    (i) => placedOnly([active])[0] && placeKey(i) === placeKey(placedOnly([active])[0]),
+  )
+  // An unplaced date has no pin, so it can only ever be shown on its own.
+  const shown: DateIdea[] = here.length ? here : [active]
 
   return (
     <div className="pointer-events-none absolute inset-x-2 bottom-20 z-10 sm:inset-x-auto sm:bottom-2 sm:left-2 sm:max-w-xs">
-      <div className="pixel-box boot p-3">
-        <p className="flex items-start gap-2">
-          <span aria-hidden="true" className="text-lg leading-none">
-            {item.emoji}
-          </span>
-          <span
-            className={[
-              'font-[family-name:var(--font-display)] font-bold leading-tight',
-              item.status === 'cancelled' && 'text-[var(--color-mute)] line-through',
-            ]
-              .filter(Boolean)
-              .join(' ')}
-          >
-            {item.title}
-          </span>
-        </p>
-
-        <p
-          className={
-            item.status === 'cancelled'
-              ? 'legend mt-2 text-[var(--color-mute)]'
-              : 'legend mt-2 text-[var(--color-deep)]'
-          }
-        >
-          {item.scheduledFor
-            ? `${format(parseISO(item.scheduledFor), 'EEE d MMM').toLowerCase()}${
-                item.time ? ` · ${item.time}` : ''
-              }`
-            : 'no day picked yet'}
-        </p>
-
-        {item.status === 'cancelled' && (
-          <p className="prose mt-1 text-xs text-[var(--color-mute)]">
-            called off{item.cancelReason ? ` — ${item.cancelReason}` : ''}
+      <div className="pixel-box boot max-h-56 overflow-y-auto p-3">
+        {active.place && (
+          <p className="font-[family-name:var(--font-display)] font-bold leading-tight">
+            {active.place.name}
           </p>
         )}
 
-        {item.place && (
-          <p className="prose mt-1 truncate text-xs text-[var(--color-ink)]/60">
-            {item.place.name}
+        <ul className={active.place ? 'mt-2 space-y-2' : 'space-y-2'}>
+          {shown.map((item) => (
+            <li key={item.id} className="flex items-start gap-2">
+              <span aria-hidden="true" className="text-base leading-none">
+                {item.emoji}
+              </span>
+              <span className="min-w-0 flex-1">
+                <span
+                  className={[
+                    'block text-sm leading-tight',
+                    item.status === 'cancelled' && 'text-[var(--color-mute)] line-through',
+                  ]
+                    .filter(Boolean)
+                    .join(' ')}
+                >
+                  {item.title}
+                </span>
+                <span
+                  className={
+                    item.status === 'cancelled'
+                      ? 'legend mt-1 block text-[var(--color-mute)]'
+                      : 'legend mt-1 block text-[var(--color-deep)]'
+                  }
+                >
+                  {item.scheduledFor
+                    ? `${format(parseISO(item.scheduledFor), 'EEE d MMM').toLowerCase()}${
+                        item.time ? ` · ${item.time}` : ''
+                      }`
+                    : 'no day picked yet'}
+                </span>
+                {item.status === 'cancelled' && (
+                  <span className="prose mt-0.5 block text-xs text-[var(--color-mute)]">
+                    called off{item.cancelReason ? ` — ${item.cancelReason}` : ''}
+                  </span>
+                )}
+              </span>
+            </li>
+          ))}
+        </ul>
+
+        {shown.length > 1 && (
+          <p className="legend mt-2 text-[var(--color-ink)]/60">
+            {shown.length} dates here
           </p>
         )}
       </div>
@@ -398,10 +453,18 @@ function ActiveCard({ items, activeId }: Props) {
   )
 }
 
-function Pin({ item, active }: { item: DateIdea; active: boolean }) {
+function Pin({
+  item,
+  active,
+  count = 1,
+}: {
+  item: DateIdea
+  active: boolean
+  count?: number
+}) {
   return (
     <span
-      className="block transition-transform duration-75"
+      className="relative block transition-transform duration-75"
       style={{ transform: active ? 'scale(1.5)' : undefined }}
     >
       <PixelHeart
@@ -410,6 +473,11 @@ function Pin({ item, active }: { item: DateIdea; active: boolean }) {
         outline={item.status === 'idea'}
         bordered
       />
+      {count > 1 && (
+        <span className="legend absolute -right-2 -top-2 border-2 border-[var(--color-ink)] bg-[var(--color-card)] px-1 leading-none">
+          {count}
+        </span>
+      )}
     </span>
   )
 }
@@ -444,12 +512,12 @@ function Legend({ hidden }: { hidden?: boolean }) {
  */
 function MapFallback(props: Props) {
   const { items, onActivate, onOpen } = props
-  const placed = placedOnly(items)
+  const groups = useMemo(() => groupByPlace(items), [items])
 
   const box = useMemo(() => {
-    if (placed.length === 0) return null
-    const lats = placed.map((i) => i.place.lat)
-    const lngs = placed.map((i) => i.place.lng)
+    if (groups.length === 0) return null
+    const lats = groups.map(([, g]) => g[0].place.lat)
+    const lngs = groups.map(([, g]) => g[0].place.lng)
     const pad = 0.15
     const latSpan = Math.max(...lats) - Math.min(...lats) || 0.01
     const lngSpan = Math.max(...lngs) - Math.min(...lngs) || 0.01
@@ -459,7 +527,7 @@ function MapFallback(props: Props) {
       minLng: Math.min(...lngs) - lngSpan * pad,
       maxLng: Math.max(...lngs) + lngSpan * pad,
     }
-  }, [placed])
+  }, [groups])
 
   return (
     <div className="absolute inset-0 overflow-hidden bg-[var(--color-paper)]">
@@ -478,14 +546,15 @@ function MapFallback(props: Props) {
       </p>
 
       {box &&
-        placed.map((item) => {
+        groups.map(([key, group]) => {
+          const item = group[0]
           const left = ((item.place.lng - box.minLng) / (box.maxLng - box.minLng)) * 100
           const top = ((box.maxLat - item.place.lat) / (box.maxLat - box.minLat)) * 100
-          const active = isLit(item, props)
+          const active = group.some((g) => isLit(g, props))
 
           return (
             <button
-              key={item.id}
+              key={key}
               type="button"
               className="absolute p-2 transition-transform duration-75"
               style={{
@@ -501,18 +570,29 @@ function MapFallback(props: Props) {
                 onActivate(item.id)
                 onOpen?.(item.id)
               }}
-              aria-label={`${item.title}${
-                item.scheduledFor
-                  ? `, ${format(parseISO(item.scheduledFor), 'EEEE d MMMM')}`
-                  : ', no day picked yet'
-              }`}
+              aria-label={
+                group.length > 1
+                  ? `${item.place.name}, ${group.length} dates here`
+                  : `${item.title}${
+                      item.scheduledFor
+                        ? `, ${format(parseISO(item.scheduledFor), 'EEEE d MMMM')}`
+                        : ', no day picked yet'
+                    }`
+              }
             >
-              <PixelHeart
-                size={24}
-                color={pinColor(item.status)}
-                outline={item.status === 'idea'}
-                bordered
-              />
+              <span className="relative block">
+                <PixelHeart
+                  size={24}
+                  color={pinColor(item.status)}
+                  outline={item.status === 'idea'}
+                  bordered
+                />
+                {group.length > 1 && (
+                  <span className="legend absolute -right-2 -top-2 border-2 border-[var(--color-ink)] bg-[var(--color-card)] px-1 leading-none">
+                    {group.length}
+                  </span>
+                )}
+              </span>
             </button>
           )
         })}

@@ -253,8 +253,9 @@ export default function Calendar({
               onKeyDown={(e) => onKeyDown(e, day)}
               onFocus={() => setFocusKey(k)}
               onClick={() => onSelect(k)}
-              onMouseEnter={() => onHoverDay?.(k)}
-              onMouseLeave={() => onHoverDay?.(null)}
+              {...(onHoverDay
+                ? { onMouseEnter: () => onHoverDay(k), onMouseLeave: () => onHoverDay(null) }
+                : {})}
               aria-selected={isSelected}
               aria-label={`${format(day, 'EEEE d MMMM')}${
                 entries.length ? `, ${entries.length} planned` : ''
@@ -271,7 +272,7 @@ export default function Calendar({
                     : outside
                       ? ''
                       : 'bg-[var(--color-card)]',
-                !outside && 'hover:-translate-y-0.5',
+                !outside && '[@media(hover:hover)]:hover:-translate-y-0.5',
               ]
                 .filter(Boolean)
                 .join(' ')}

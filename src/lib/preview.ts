@@ -40,6 +40,30 @@ export const SAMPLE_DATES: DateIdea[] = [
     createdAt: Date.now(),
   },
   {
+    // Same venue as s1 on purpose — two dates at one place is the case that
+    // used to draw one marker exactly on top of another.
+    id: 's1b',
+    title: 'Ramen again, obviously',
+    note: '',
+    emoji: '🍜',
+    place: {
+      name: 'Takumi Ramen',
+      address: 'Oudezijds 34, Amsterdam',
+      lat: 52.3719,
+      lng: 4.8952,
+      placeId: 'sample-1',
+      photoUrl: null,
+      rating: 4.6,
+    },
+    scheduledFor: day(16),
+    time: '18:30',
+    status: 'planned',
+    cancelReason: null,
+    memory: null,
+    createdBy: 'preview',
+    createdAt: Date.now(),
+  },
+  {
     id: 's2',
     title: 'Picnic at the park',
     note: 'Bring the blanket and the bad speaker.',
