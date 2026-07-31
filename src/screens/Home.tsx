@@ -287,7 +287,7 @@ function TabBar({ view, onChange }: { view: View; onChange: (v: View) => void })
           onClick={() => onChange(id)}
           aria-current={view === id ? 'page' : undefined}
           className={[
-            'pixel-btn legend py-2',
+            'pixel-btn legend min-h-12 py-2',
             view === id ? 'pixel-btn-primary' : '',
           ].join(' ')}
         >

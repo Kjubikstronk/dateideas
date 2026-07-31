@@ -209,7 +209,7 @@ export default function DateCard({
               why? (you can leave this empty)
             </span>
             <input
-              className="pixel-input text-sm"
+              className="pixel-input"
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               placeholder="it rained"

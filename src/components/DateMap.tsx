@@ -205,7 +205,7 @@ function SearchBar({
   return (
     <div className="absolute left-2 right-2 top-2 z-20 max-w-[17rem]">
       <input
-        className="pixel-input text-sm"
+        className="pixel-input"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="search the map…"

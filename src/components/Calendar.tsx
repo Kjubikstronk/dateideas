@@ -119,7 +119,7 @@ export default function Calendar({
         </button>
       </header>
 
-      <div className="grid grid-cols-7 gap-px px-2">
+      <div className="grid grid-cols-7 gap-px px-1 sm:px-2">
         {WEEKDAYS.map((d) => (
           <div key={d} className="legend py-1 text-center text-[var(--color-ink)]/60">
             {d}
@@ -128,7 +128,7 @@ export default function Calendar({
       </div>
 
       <div
-        className="grid grid-cols-7 gap-1 p-2"
+        className="grid grid-cols-7 gap-0.5 p-1 sm:gap-1 sm:p-2"
         role="grid"
         aria-label={format(month, 'MMMM yyyy')}
       >
