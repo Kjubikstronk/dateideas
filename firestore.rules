@@ -90,10 +90,13 @@ service cloud.firestore {
       allow update: if isMember()
         && request.resource.data.createdBy == resource.data.createdBy
         && onlyMyMemory()
-        // The backfill may set a couple on a record that has none. Nothing may
-        // ever move a record from one couple to another.
+        // A record written before couples existed may either stay that way or
+        // be stamped by the backfill — demanding a coupleId it doesn't have
+        // yet blocks ordinary edits to your own old dates. Once a record has a
+        // couple, nothing may ever move it to another.
         && (resource.data.get('coupleId', null) == null
-              ? request.resource.data.coupleId == myCoupleOrFounder()
+              ? (request.resource.data.get('coupleId', null) == null
+                 || request.resource.data.coupleId == myCoupleOrFounder())
               : request.resource.data.coupleId == resource.data.coupleId);
     }
 
