@@ -16,7 +16,30 @@ service cloud.firestore {
     /** Anyone who has been placed in a couple. */
     function isMember() {
       return request.auth != null
-        && exists(/databases/$(database)/documents/members/$(request.auth.uid));
+        && (exists(/databases/$(database)/documents/members/$(request.auth.uid))
+            || isFounder());
+    }
+
+    /**
+     * TEMPORARY BRIDGE — delete once every account has a members document.
+     *
+     * Membership is a document now, but the accounts that existed before this
+     * change have none, and rules take effect the instant they're deployed.
+     * Without this, the two original accounts are locked out of their own data
+     * between deploying and creating those documents.
+     */
+    function isFounder() {
+      return request.auth.uid in [
+        'Vo3u7ycmqoTmrEHtr52A46kgorN2',
+        '4wb13TLNaXWxWZacX5Bo6tFk4KE3'
+      ];
+    }
+
+    /** A founder with no members document yet still has a couple to write to. */
+    function myCoupleOrFounder() {
+      return exists(/databases/$(database)/documents/members/$(request.auth.uid))
+        ? myCouple()
+        : 'founders';
     }
 
     /** The caller's couple. */
@@ -56,12 +79,12 @@ service cloud.firestore {
       //   allow read: if isMember() && resource.data.coupleId == myCouple();
       allow read: if isMember();
 
-      allow delete: if isMember() && resource.data.coupleId == myCouple();
+      allow delete: if isMember() && resource.data.coupleId == myCoupleOrFounder();
 
       // Both stamps are enforced here, so neither can be forged: the record
       // must belong to your couple, and must be signed by you.
       allow create: if isMember()
-        && request.resource.data.coupleId == myCouple()
+        && request.resource.data.coupleId == myCoupleOrFounder()
         && request.resource.data.createdBy == request.auth.uid;
 
       allow update: if isMember()
@@ -70,7 +93,7 @@ service cloud.firestore {
         // The backfill may set a couple on a record that has none. Nothing may
         // ever move a record from one couple to another.
         && (resource.data.get('coupleId', null) == null
-              ? request.resource.data.coupleId == myCouple()
+              ? request.resource.data.coupleId == myCoupleOrFounder()
               : request.resource.data.coupleId == resource.data.coupleId);
     }
 
