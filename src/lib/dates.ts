@@ -4,10 +4,10 @@ import {
   collection,
   deleteDoc,
   doc,
-  getDocs,
   onSnapshot,
+  query,
   updateDoc,
-  writeBatch,
+  where,
 } from 'firebase/firestore'
 import { db } from './db'
 import { useAuth } from './auth'
@@ -64,15 +64,10 @@ export function useDates() {
 
     setLoading(true)
     const unsub = onSnapshot(
-      collection(db, COLLECTION),
+      query(collection(db, COLLECTION), where('coupleId', '==', coupleId)),
       (snap) => {
         setItems(
-          snap.docs
-            .map((d) => ({ id: d.id, ...(d.data() as Omit<DateIdea, 'id'>) }))
-            // A date with no coupleId predates couples and is still yours —
-            // showing it is what stops anything appearing to vanish before the
-            // backfill has run.
-            .filter((d) => !d.coupleId || d.coupleId === coupleId),
+          snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<DateIdea, 'id'>) })),
         )
         setLoading(false)
         setError(null)
@@ -90,37 +85,7 @@ export function useDates() {
     return unsub
   }, [user, coupleId])
 
-  /**
-   * Stamp anything written before couples existed.
-   *
-   * The live subscription filters on coupleId, so a date without one would
-   * simply vanish from the app. This runs once per session, is a no-op after
-   * the first time, and must happen while yours is the only couple — a legacy
-   * date has no owner, so there'd be no way to tell whose it was later.
-   */
-  useEffect(() => {
-    if (PREVIEW || !db || !user || !coupleId) return
-    let cancelled = false
 
-    void (async () => {
-      try {
-        const all = await getDocs(collection(db, COLLECTION))
-        const orphans = all.docs.filter((d) => !d.data().coupleId)
-        if (cancelled || !orphans.length) return
-
-        const batch = writeBatch(db)
-        for (const d of orphans) batch.update(d.ref, { coupleId })
-        await batch.commit()
-      } catch {
-        // Denied or offline. The app still works for anything already stamped,
-        // and this retries next time it loads.
-      }
-    })()
-
-    return () => {
-      cancelled = true
-    }
-  }, [user, coupleId])
 
   const add = useCallback(
     async (draft: DateDraft) => {
