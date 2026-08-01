@@ -1,4 +1,5 @@
 import { Suspense, lazy, useState } from 'react'
+import Boundary from './components/Boundary'
 import Device from './components/Device'
 import PixelHeart from './components/PixelHeart'
 import UpdatePill from './components/UpdatePill'
@@ -58,13 +59,17 @@ function Gate() {
   if (PREVIEW) {
     return (
       <Device status={reportButton}>
-        <Suspense fallback={<Booting />}>
-          <Home />
-        </Suspense>
-        {reportReq > 0 && (
-          <Suspense fallback={null}>
-            <ReportSheet openRequest={reportReq} onClose={() => setReportReq(0)} />
+        <Boundary>
+          <Suspense fallback={<Booting />}>
+            <Home />
           </Suspense>
+        </Boundary>
+        {reportReq > 0 && (
+          <Boundary>
+            <Suspense fallback={null}>
+              <ReportSheet openRequest={reportReq} onClose={() => setReportReq(0)} />
+            </Suspense>
+          </Boundary>
         )}
       </Device>
     )
