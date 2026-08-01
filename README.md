@@ -88,6 +88,36 @@ npm run dev
 Then open http://localhost:5173/dateideas/ — note the path, it matches the
 GitHub Pages base.
 
+## More than one couple
+
+Two couples share this one deployment without ever seeing each other's dates.
+
+A `members/{uid}` document holds a `coupleId`, every date carries the same
+field, and the rules compare the two. Membership is a document rather than a
+list in the rules, which is the point: **adding someone never means editing or
+re-publishing the rules**, and there are no UIDs in `firestore.rules` at all.
+
+To add a person:
+
+1. Firebase → Authentication → Users → Add user (their password is yours to set)
+2. Create `members/{their-uid}` with `coupleId` set to their couple's id
+
+That's it. Nothing is deployed, nothing is edited. An account with no `members`
+document sees "not paired up yet" rather than an empty app, so a half-finished
+setup says so instead of looking broken.
+
+Bug reports are deliberately *not* scoped to a couple — they go to whoever
+maintains the app, which is the point of the feature.
+
+### Rules
+
+```bash
+npm run rules
+```
+
+Deploys `firestore.rules` straight from the repo. They used to be pasted into
+the console by hand, which is how they drifted from what's in git.
+
 ## Offline, and staying updated
 
 The app precaches its own shell with a service worker and keeps a Firestore
