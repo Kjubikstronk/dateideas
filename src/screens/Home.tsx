@@ -430,39 +430,44 @@ function AgendaPane({
   const { unanswered, upcoming, past, someday } = agenda
   const empty = !unanswered.length && !upcoming.length && !past.length && !someday.length
 
-  if (empty) {
-    return (
-      <div className="flex flex-col items-center gap-3 p-8 text-center">
-        <PixelHeart size={28} color="var(--color-lav)" outline />
-        <p className="prose text-sm text-[var(--color-ink)]/60">
-          Nothing yet. Add somewhere you both want to go.
-        </p>
-      </div>
-    )
-  }
-
   return (
     <div className="space-y-5 p-3">
-      {/* Top of the list on purpose: it's the only section that's asking you
-          for something, and it disappears once you've answered. */}
-      <Section title="how did it go?" items={unanswered} {...rest} />
+      {/* The empty state is a section of this list, not a replacement for it.
+          Returning early here meant a brand-new account — whose list is empty
+          by definition — never got the sign-out below, so it could never sign
+          out at all. */}
+      {empty ? (
+        <div className="flex flex-col items-center gap-3 py-6 text-center">
+          <PixelHeart size={28} color="var(--color-lav)" outline />
+          <p className="prose text-sm text-[var(--color-ink)]/60">
+            Nothing yet. Add somewhere you both want to go.
+          </p>
+        </div>
+      ) : (
+        <>
+          {/* Top of the list on purpose: it's the only section that's asking you
+              for something, and it disappears once you've answered. */}
+          <Section title="how did it go?" items={unanswered} {...rest} />
 
-      <Section
-        title="next up"
-        badge={agenda.countdown}
-        items={upcoming}
-        empty="Nothing planned. Pick a day for one of your ideas."
-        {...rest}
-      />
-      <Section
-        title="someday"
-        items={someday}
-        empty="No loose ideas right now."
-        hint="no day picked yet"
-        {...rest}
-      />
-      <Section title="been there" items={past} {...rest} />
+          <Section
+            title="next up"
+            badge={agenda.countdown}
+            items={upcoming}
+            empty="Nothing planned. Pick a day for one of your ideas."
+            {...rest}
+          />
+          <Section
+            title="someday"
+            items={someday}
+            empty="No loose ideas right now."
+            hint="no day picked yet"
+            {...rest}
+          />
+          <Section title="been there" items={past} {...rest} />
+        </>
+      )}
 
+      {/* Always last, always present — including on an empty account. */}
       <SignOut />
     </div>
   )
