@@ -4,11 +4,14 @@ import {
   collection,
   deleteDoc,
   doc,
+  getDocs,
   onSnapshot,
   updateDoc,
+  writeBatch,
 } from 'firebase/firestore'
 import { db } from './db'
 import { useAuth } from './auth'
+import { useCouple } from './couple'
 import { PREVIEW, SAMPLE_DATES } from './preview'
 import type { DateDraft, DateIdea } from '../types'
 
@@ -26,6 +29,8 @@ const COLLECTION = 'dates'
  */
 export function useDates() {
   const { user } = useAuth()
+  const membership = useCouple()
+  const coupleId = membership.state === 'ready' ? membership.coupleId : null
   const [items, setItems] = useState<DateIdea[]>(PREVIEW ? SAMPLE_DATES : [])
   const [loading, setLoading] = useState(!PREVIEW)
   const [error, setError] = useState<string | null>(null)
@@ -52,7 +57,7 @@ export function useDates() {
 
   useEffect(() => {
     if (PREVIEW) return
-    if (!db || !user) {
+    if (!db || !user || !coupleId) {
       setItems([])
       return
     }
@@ -62,7 +67,12 @@ export function useDates() {
       collection(db, COLLECTION),
       (snap) => {
         setItems(
-          snap.docs.map((d) => ({ id: d.id, ...(d.data() as Omit<DateIdea, 'id'>) })),
+          snap.docs
+            .map((d) => ({ id: d.id, ...(d.data() as Omit<DateIdea, 'id'>) }))
+            // A date with no coupleId predates couples and is still yours —
+            // showing it is what stops anything appearing to vanish before the
+            // backfill has run.
+            .filter((d) => !d.coupleId || d.coupleId === coupleId),
         )
         setLoading(false)
         setError(null)
@@ -78,7 +88,39 @@ export function useDates() {
       },
     )
     return unsub
-  }, [user])
+  }, [user, coupleId])
+
+  /**
+   * Stamp anything written before couples existed.
+   *
+   * The live subscription filters on coupleId, so a date without one would
+   * simply vanish from the app. This runs once per session, is a no-op after
+   * the first time, and must happen while yours is the only couple — a legacy
+   * date has no owner, so there'd be no way to tell whose it was later.
+   */
+  useEffect(() => {
+    if (PREVIEW || !db || !user || !coupleId) return
+    let cancelled = false
+
+    void (async () => {
+      try {
+        const all = await getDocs(collection(db, COLLECTION))
+        const orphans = all.docs.filter((d) => !d.data().coupleId)
+        if (cancelled || !orphans.length) return
+
+        const batch = writeBatch(db)
+        for (const d of orphans) batch.update(d.ref, { coupleId })
+        await batch.commit()
+      } catch {
+        // Denied or offline. The app still works for anything already stamped,
+        // and this retries next time it loads.
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [user, coupleId])
 
   const add = useCallback(
     async (draft: DateDraft) => {
@@ -92,17 +134,19 @@ export function useDates() {
       // Captured to a local so the null check still holds inside the deferred
       // closure below — TypeScript drops the narrowing across a callback.
       const store = db
-      if (!store || !user) return
-      // The rules require this stamp to match the caller, so it can't be forged.
+      if (!store || !user || !coupleId) return
+      // Both stamps are enforced by the rules: coupleId must match yours, and
+      // createdBy must be you, so neither can be forged.
       await guard(() =>
         addDoc(collection(store, COLLECTION), {
           ...draft,
+          coupleId,
           createdBy: user.uid,
           createdAt: Date.now(),
         }),
       )
     },
-    [user, guard],
+    [user, coupleId, guard],
   )
 
   const update = useCallback(async (id: string, patch: Partial<DateDraft>) => {
@@ -150,6 +194,7 @@ export function useDates() {
   )
 
   return {
+    membership,
     items,
     byDay,
     ideas,

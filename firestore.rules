@@ -1,43 +1,36 @@
 rules_version = '2';
 
-// The actual security boundary for this app. These run on Google's servers, so
-// nothing a browser does can get around them — which is what lets the site
-// itself be public.
+// The actual security boundary. These run on Google's servers, so nothing a
+// browser does can get around them — which is what lets the site be public.
 //
-// Paste into Firebase Console → Firestore Database → Rules → Publish.
+// Deployed straight from this file:  npm run rules
 //
-// This copy is a TEMPLATE and is not deployed by anything — the live rules
-// live in the Firebase console. Real UIDs stay out of it deliberately: they
-// aren't credentials, but publishing them to a public repo buys nothing.
-// Your filled-in copy is in firestore.rules.local, which is gitignored.
+// No UIDs live here any more. Membership is a document, not a rule, so adding
+// a person never means editing or re-publishing this file again — which also
+// means this copy is the real one, not a template with the truth kept
+// elsewhere.
 
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // ─────────────────────────────────────────────────────────────
-    // THE GUEST LIST. The only thing you ever need to edit here.
-    //
-    // To add her later: create her user in Authentication → Users,
-    // copy the UID, uncomment the line below, paste it in, Publish.
-    // Nothing else changes and nothing is lost.
-    // ─────────────────────────────────────────────────────────────
-    function us() {
-      return [
-        'REPLACE_WITH_YOUR_UID',
-        // 'REPLACE_WITH_HER_UID',
-      ];
+    /** Anyone who has been placed in a couple. */
+    function isMember() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/members/$(request.auth.uid));
     }
 
-    function isUs() {
-      return request.auth != null && request.auth.uid in us();
+    /** The caller's couple. */
+    function myCouple() {
+      return get(/databases/$(database)/documents/members/$(request.auth.uid)).data.coupleId;
     }
 
-    // Neither of you can touch the other's rating. Without this, "rate blind
-    // then reveal" would be a polite convention rather than a fact — and the
-    // app could overwrite a vote by accident just as easily as on purpose.
+    /**
+     * Neither of you can touch the other's rating. Without this, "rate blind
+     * then reveal" would be a polite convention rather than a fact.
+     */
     function onlyMyMemory() {
-      let before = resource.data.memories;
-      let after = request.resource.data.memories;
+      let before = resource.data.get('memories', null);
+      let after = request.resource.data.get('memories', null);
       return after == null
         ? true
         : (before is map
@@ -45,28 +38,49 @@ service cloud.firestore {
             : after.keys().hasOnly([request.auth.uid]));
     }
 
-    match /dates/{dateId} {
-      allow read, delete: if isUs();
-
-      // A new document must be stamped with the UID of whoever created it, so
-      // `createdBy` can't be forged to look like it came from the other person.
-      allow create: if isUs()
-        && request.resource.data.createdBy == request.auth.uid;
-
-      // Either of you can edit anything — it's a shared plan, not private
-      // notes. But the authorship stamp is immutable once written.
-      allow update: if isUs()
-        && request.resource.data.createdBy == resource.data.createdBy
-        && onlyMyMemory();
+    /**
+     * Which couple you belong to. Readable only by you, and never written from
+     * the app — membership is granted, not claimed.
+     */
+    match /members/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
     }
 
-    // Bug reports and suggestions. Either of you can tick one off or bin it,
-    // so `done` is freely updatable — but authorship still can't be rewritten.
-    match /reports/{reportId} {
-      allow read, delete: if isUs();
-      allow create: if isUs()
+    match /dates/{dateId} {
+      // TRANSITIONAL: reads are not yet narrowed to your own couple, because
+      // records written before coupleId existed have no couple to match, and
+      // Firestore rejects outright any query it cannot prove is safe — the
+      // backfill included. Tighten to the commented line once every record is
+      // stamped, and BEFORE a second couple exists:
+      //
+      //   allow read: if isMember() && resource.data.coupleId == myCouple();
+      allow read: if isMember();
+
+      allow delete: if isMember() && resource.data.coupleId == myCouple();
+
+      // Both stamps are enforced here, so neither can be forged: the record
+      // must belong to your couple, and must be signed by you.
+      allow create: if isMember()
+        && request.resource.data.coupleId == myCouple()
         && request.resource.data.createdBy == request.auth.uid;
-      allow update: if isUs()
+
+      allow update: if isMember()
+        && request.resource.data.createdBy == resource.data.createdBy
+        && onlyMyMemory()
+        // The backfill may set a couple on a record that has none. Nothing may
+        // ever move a record from one couple to another.
+        && (resource.data.get('coupleId', null) == null
+              ? request.resource.data.coupleId == myCouple()
+              : request.resource.data.coupleId == resource.data.coupleId);
+    }
+
+    // Bugs and suggestions are shared across everyone using the app — they go
+    // to whoever maintains it rather than to a couple.
+    match /reports/{reportId} {
+      allow read, delete: if isMember();
+      allow create: if isMember()
+        && request.resource.data.createdBy == request.auth.uid;
+      allow update: if isMember()
         && request.resource.data.createdBy == resource.data.createdBy;
     }
 

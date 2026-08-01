@@ -44,6 +44,12 @@ export type Memory = {
  */
 export type DateIdea = {
   id: string
+  /**
+   * Which couple this belongs to. The rules compare it against yours, so two
+   * couples share one deployment without ever seeing each other's dates.
+   * Optional only because records written before couples existed lack it.
+   */
+  coupleId?: string
   title: string
   note: string
   /** Shown at full size in lists and detail; the dense calendar grid uses

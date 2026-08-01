@@ -15,8 +15,18 @@ import { memoriesOf, type DateIdea, type Place } from '../types'
 type View = 'calendar' | 'map' | 'ideas'
 
 export default function Home() {
-  const { items, byDay, loading, error, writeError, dismissWriteError, add, update, remove } =
-    useDates()
+  const {
+    membership,
+    items,
+    byDay,
+    loading,
+    error,
+    writeError,
+    dismissWriteError,
+    add,
+    update,
+    remove,
+  } = useDates()
 
   const [month, setMonth] = useState(() => startOfMonth(new Date()))
   const [selected, setSelected] = useState<string | null>(null)
@@ -147,7 +157,24 @@ export default function Home() {
     )
   }
 
-  if (loading) {
+  // Signed in, but no members/{uid} document says which couple you're in.
+  // Without one there's nothing to show and nowhere to save.
+  if (membership.state === 'unassigned') {
+    return (
+      <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
+        <PixelHeart size={40} color="var(--color-lav)" outline />
+        <p className="font-[family-name:var(--font-display)] text-lg font-bold">
+          not paired up yet
+        </p>
+        <p className="prose max-w-xs text-sm text-[var(--color-ink)]/70">
+          This account isn&rsquo;t in a couple, so there are no dates to show.
+          Whoever set this up needs to add you.
+        </p>
+      </div>
+    )
+  }
+
+  if (loading || membership.state === 'loading') {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8">
         <PixelHeart size={32} color="var(--color-lav)" className="beat" />

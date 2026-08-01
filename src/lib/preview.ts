@@ -1,4 +1,5 @@
 import { addDays, format, subDays } from 'date-fns'
+import { PREVIEW_COUPLE } from './couple'
 import type { DateIdea } from '../types'
 
 /**
@@ -36,6 +37,7 @@ export const SAMPLE_DATES: DateIdea[] = [
     status: 'planned',
     cancelReason: null,
     memories: null,
+    coupleId: PREVIEW_COUPLE,
     createdBy: 'preview',
     createdAt: Date.now(),
   },
@@ -60,6 +62,7 @@ export const SAMPLE_DATES: DateIdea[] = [
     status: 'planned',
     cancelReason: null,
     memories: null,
+    coupleId: PREVIEW_COUPLE,
     createdBy: 'preview',
     createdAt: Date.now(),
   },
@@ -82,6 +85,7 @@ export const SAMPLE_DATES: DateIdea[] = [
     status: 'planned',
     cancelReason: null,
     memories: null,
+    coupleId: PREVIEW_COUPLE,
     createdBy: 'preview',
     createdAt: Date.now(),
   },
@@ -104,6 +108,7 @@ export const SAMPLE_DATES: DateIdea[] = [
     status: 'idea',
     cancelReason: null,
     memories: null,
+    coupleId: PREVIEW_COUPLE,
     createdBy: 'preview',
     createdAt: Date.now(),
   },
@@ -126,6 +131,7 @@ export const SAMPLE_DATES: DateIdea[] = [
     status: 'idea',
     cancelReason: null,
     memories: null,
+    coupleId: PREVIEW_COUPLE,
     createdBy: 'preview',
     createdAt: Date.now(),
   },
@@ -151,6 +157,7 @@ export const SAMPLE_DATES: DateIdea[] = [
       preview: { note: 'You fell asleep in the second act.', stars: 5, at: Date.now() },
       them: { note: 'I did not. I rested my eyes.', stars: 4, at: Date.now() },
     },
+    coupleId: PREVIEW_COUPLE,
     createdBy: 'preview',
     createdAt: Date.now(),
   },
@@ -165,6 +172,7 @@ export const SAMPLE_DATES: DateIdea[] = [
     status: 'idea',
     cancelReason: null,
     memories: null,
+    coupleId: PREVIEW_COUPLE,
     createdBy: 'preview',
     createdAt: Date.now(),
   },
@@ -189,6 +197,7 @@ export const SAMPLE_DATES: DateIdea[] = [
     status: 'planned',
     cancelReason: null,
     memories: null,
+    coupleId: PREVIEW_COUPLE,
     createdBy: 'preview',
     createdAt: Date.now(),
   },
@@ -211,6 +220,7 @@ export const SAMPLE_DATES: DateIdea[] = [
     status: 'cancelled',
     cancelReason: 'you were ill',
     memories: null,
+    coupleId: PREVIEW_COUPLE,
     createdBy: 'preview',
     createdAt: Date.now(),
   },
