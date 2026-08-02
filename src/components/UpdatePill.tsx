@@ -59,7 +59,7 @@ export default function UpdatePill() {
   return (
     <div
       role="status"
-      className="safe-bottom fixed inset-x-3 bottom-3 z-50 mx-auto flex max-w-sm items-center gap-3 border-[3px] border-[var(--color-ink)] bg-[var(--color-aqua)] p-3 shadow-[4px_4px_0_var(--color-ink)]"
+      className="pointer-events-auto flex w-full max-w-sm items-center gap-3 border-[3px] border-[var(--color-ink)] bg-[var(--color-aqua)] p-3 shadow-[4px_4px_0_var(--color-ink)]"
     >
       <p className="flex-1 text-sm">A newer version is ready.</p>
       <button
