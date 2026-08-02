@@ -1,6 +1,7 @@
 import { Suspense, lazy, useState } from 'react'
 import Boundary from './components/Boundary'
 import Device from './components/Device'
+import InstallPrompt from './components/InstallPrompt'
 import PixelHeart from './components/PixelHeart'
 import UpdatePill from './components/UpdatePill'
 import Login from './screens/Login'
@@ -27,9 +28,14 @@ export default function App() {
   return (
     <AuthProvider>
       <Gate />
-      {/* Outside the gate on purpose: an update should be offerable even on
-          the login screen, and it carries no data dependencies. */}
-      <UpdatePill />
+      {/* Outside the gate on purpose: an update or an install nudge should be
+          offerable even on the login screen, and neither carries any data
+          dependencies. Stacked in one fixed container so they never overlap
+          if both happen to be relevant at once. */}
+      <div className="safe-bottom pointer-events-none fixed inset-x-3 bottom-3 z-50 mx-auto flex max-w-sm flex-col items-stretch gap-2">
+        <UpdatePill />
+        <InstallPrompt />
+      </div>
     </AuthProvider>
   )
 }
