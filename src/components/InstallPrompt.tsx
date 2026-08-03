@@ -19,6 +19,18 @@ function isStandalone() {
   )
 }
 
+/**
+ * A device with a home screen worth adding to.
+ *
+ * Desktop Chrome fires `beforeinstallprompt` just as readily as a phone does,
+ * so without this the nudge appears on Windows — where "add to your home
+ * screen" means nothing. A coarse pointer is the signal that actually matches
+ * the intent; screen width would misjudge a small laptop window.
+ */
+function hasHomeScreen() {
+  return window.matchMedia('(pointer: coarse)').matches
+}
+
 function isIOS() {
   return (
     /iphone|ipad|ipod/i.test(navigator.userAgent) ||
@@ -71,7 +83,7 @@ export default function InstallPrompt() {
     setDismissed(true)
   }
 
-  if (dismissed || isStandalone()) return null
+  if (dismissed || isStandalone() || !hasHomeScreen()) return null
 
   const ios = isIOS()
   const inApp = isInAppBrowser()
