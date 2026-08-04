@@ -6,6 +6,7 @@ import DateMap from '../components/DateMap'
 import EditSheet from '../components/EditSheet'
 import MapsProvider from '../components/MapsProvider'
 import PixelHeart from '../components/PixelHeart'
+import { pinColor } from '../components/DateMap'
 import { useAuth } from '../lib/auth'
 import { useDates } from '../lib/dates'
 import { useWeather } from '../lib/weather'
@@ -205,6 +206,8 @@ export default function Home() {
           onEdit={openEdit}
           onLocate={locate}
           forecasts={weather}
+          soonestId={agenda.upcoming[0]?.id ?? null}
+          countdown={agenda.countdown}
           activeId={activeId}
           onHover={hasHover ? setActiveId : undefined}
         />
@@ -241,20 +244,52 @@ export default function Home() {
       onEdit={openEdit}
       onLocate={locate}
       forecasts={weather}
+      soonestId={agenda.upcoming[0]?.id ?? null}
+      countdown={agenda.countdown}
       activeId={activeId}
       onHover={hasHover ? setActiveId : undefined}
     />
   )
 
+  /**
+   * A quiet lifetime stat for the desktop strip.
+   *
+   * Both halves come from data already in memory — no extra field, no extra
+   * read. It stays hidden until there's something to say, so a new couple
+   * isn't greeted by "0 dates".
+   */
+  const milestone = useMemo(() => {
+    const been = items.filter((i) => i.status === 'done').length
+    if (!been) return null
+    const first = Math.min(...items.map((i) => i.createdAt))
+    return `${been} ${been === 1 ? 'date' : 'dates'} · since ${format(new Date(first), 'MMM yyyy').toLowerCase()}`
+  }, [items])
+
   const body = isWide ? (
     // Wide: the shell is a two-screen console, everything visible and linked.
-    <div className="flex min-h-0 flex-1">
-      <div className="flex w-[24rem] shrink-0 flex-col border-r-[3px] border-[var(--color-ink)]">
-        {calendarPane}
+    <div className="flex min-h-0 flex-1 flex-col">
+      {/* One strip across the top ties the three panes together — without it
+          they read as three unrelated boxes that happen to be adjacent. */}
+      <div className="flex shrink-0 items-center justify-between border-b-[3px] border-[var(--color-ink)] bg-[var(--color-card)] px-4 py-2">
+        <span className="font-[family-name:var(--font-display)] text-base font-bold">
+          our dates
+        </span>
+        {milestone && (
+          <span className="legend text-[var(--color-ink)]/60">{milestone}</span>
+        )}
       </div>
-      {mapPane}
-      <div className="w-64 shrink-0 overflow-y-auto border-l-[3px] border-[var(--color-ink)] pb-28">
-        {ideasPane}
+
+      <div className="flex min-h-0 flex-1">
+        <div className="flex w-[24rem] shrink-0 flex-col border-r-[3px] border-[var(--color-ink)]">
+          {calendarPane}
+        </div>
+        {mapPane}
+        {/* Wider than it was: cards were coming out narrower here than on a
+            375px phone, which made the widest screen the worst place to read
+            them. */}
+        <div className="w-80 shrink-0 overflow-y-auto border-l-[3px] border-[var(--color-ink)] pb-28">
+          {ideasPane}
+        </div>
       </div>
     </div>
   ) : (
@@ -367,6 +402,9 @@ type ListProps = {
   activeId: string | null
   /** Absent on touch devices — see useHasHover. */
   onHover?: (id: string | null) => void
+  /** The single soonest upcoming date — the only card that shows a countdown. */
+  soonestId?: string | null
+  countdown?: string | null
 }
 
 function DayPanel({
@@ -392,7 +430,12 @@ function DayPanel({
       </h3>
 
       {entries.length === 0 ? (
-        <p className="prose text-sm text-[var(--color-ink)]/60">Nothing here yet.</p>
+        <div className="flex flex-col items-center gap-3 py-6 text-center">
+          <PixelHeart size={24} color="var(--color-lav)" outline />
+          <p className="prose max-w-[18rem] text-sm text-[var(--color-ink)]/60">
+            Nothing here yet — pick a day with something on it, or add one.
+          </p>
+        </div>
       ) : (
         <ul className="space-y-2">
           {entries.map((entry) => (
@@ -458,12 +501,13 @@ function AgendaPane({
           />
           <Section
             title="someday"
+            glyph="idea"
             items={someday}
             empty="No loose ideas right now."
             hint="no day picked yet"
             {...rest}
           />
-          <Section title="been there" items={past} {...rest} />
+          <Section title="been there" glyph="done" items={past} {...rest} />
         </>
       )}
 
@@ -505,6 +549,7 @@ function Section({
   empty,
   hint,
   badge,
+  glyph,
   ...rest
 }: ListProps & {
   title: string
@@ -512,13 +557,23 @@ function Section({
   empty?: string
   hint?: string
   badge?: string | null
+  /** Carries the same colour this status wears on the map. */
+  glyph?: DateIdea['status']
 }) {
   // A section with nothing in it and nothing to say is just noise.
   if (!items.length && !empty) return null
 
   return (
     <section className="space-y-2">
-      <h3 className="flex items-baseline gap-2">
+      <h3 className="flex items-center gap-2">
+        {glyph && (
+          <PixelHeart
+            size={14}
+            color={pinColor(glyph)}
+            outline={glyph === 'idea'}
+            bordered
+          />
+        )}
         <span className="font-[family-name:var(--font-display)] text-lg font-bold">
           {title}
         </span>
@@ -527,6 +582,7 @@ function Section({
             {badge}
           </span>
         ) : (
+          !glyph &&
           items.length > 0 && (
             <span className="legend text-[var(--color-ink)]/60">{items.length}</span>
           )
@@ -540,11 +596,13 @@ function Section({
       {items.length === 0 ? (
         <p className="prose text-sm text-[var(--color-ink)]/60">{empty}</p>
       ) : (
-        <ul className="space-y-2">
+        <ul>
           {items.map((item) => (
             <DateCard
               key={item.id}
               item={item}
+              flat
+              countdown={rest.soonestId === item.id ? rest.countdown : null}
               onUpdate={rest.onUpdate}
               onDelete={rest.onDelete}
               onEdit={rest.onEdit}

@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="design_doc_mode" content="canvas">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400;700&family=Space+Grotesk:wght@400;500&family=Silkscreen&display=swap" rel="stylesheet">
+<style>
+body { margin:0; background:#FFE5F1; font-family:'Space Grotesk',sans-serif; color:#1A1033; }
+.disp { font-family:'Pixelify Sans',sans-serif; }
+.leg { font-family:'Silkscreen',monospace; text-transform:uppercase; letter-spacing:0.06em; font-size:11px; }
+* { box-sizing:border-box; }
+button { font-family:inherit; cursor:pointer; border-radius:0; }
+</style>
+</helmet>
+
+<div style="max-width:1500px;margin:0 auto;padding:40px 24px 120px;">
+
+  <div style="margin-bottom:56px;">
+    <p class="leg" style="color:#B31E67;margin:0 0 6px;">design critique</p>
+    <h1 class="disp" style="font-size:34px;font-weight:700;margin:0 0 8px;">The date planner: what's working, what isn't</h1>
+    <p style="font-size:16px;line-height:1.6;color:#1A1033;max-width:640px;margin:0;">Recreated from the current code below, then a critique and specific proposals — spacing, hierarchy, colour, and the card actions — with a redesigned mobile and desktop pass at the end.</p>
+  </div>
+
+  <!-- ============ SECTION 1: CURRENT ============ -->
+  <h2 class="disp" style="font-size:22px;font-weight:700;margin:0 0 20px;border-bottom:3px solid #1A1033;padding-bottom:10px;">1. Current design, as built</h2>
+
+  <div style="display:flex;gap:32px;flex-wrap:wrap;align-items:flex-start;margin-bottom:16px;">
+
+    <!-- MOBILE: calendar tab -->
+    <div>
+      <p class="leg" style="color:#6B6480;margin:0 0 8px;">mobile · 375px · calendar tab</p>
+      <div style="width:375px;border:3px solid #1A1033;box-shadow:6px 6px 0 #1A1033;background:#FF5CA8;padding:10px;">
+        <div style="background:#FFE5F1;min-height:560px;display:flex;flex-direction:column;">
+          <!-- calendar header -->
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 8px;">
+            <button style="width:44px;height:36px;border:3px solid #1A1033;background:#FFFDFE;box-shadow:3px 3px 0 #1A1033;font-size:14px;">◀</button>
+            <span class="disp" style="font-weight:700;font-size:16px;">august 2026</span>
+            <button style="width:44px;height:36px;border:3px solid #1A1033;background:#FFFDFE;box-shadow:3px 3px 0 #1A1033;font-size:14px;">▶</button>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;padding:0 6px;">
+            <div class="leg" style="text-align:center;color:#6B648099;padding:4px 0;">mo</div>
+            <div class="leg" style="text-align:center;color:#6B648099;padding:4px 0;">tu</div>
+            <div class="leg" style="text-align:center;color:#6B648099;padding:4px 0;">we</div>
+            <div class="leg" style="text-align:center;color:#6B648099;padding:4px 0;">th</div>
+            <div class="leg" style="text-align:center;color:#6B648099;padding:4px 0;">fr</div>
+            <div class="leg" style="text-align:center;color:#6B648099;padding:4px 0;">sa</div>
+            <div class="leg" style="text-align:center;color:#6B648099;padding:4px 0;">su</div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;padding:4px 6px;">
+            <div style="aspect-ratio:1;border:2px solid transparent;"></div>
+            <div style="aspect-ratio:1;border:2px solid transparent;"></div>
+            <div style="aspect-ratio:1;border:2px solid transparent;"></div>
+            <div style="aspect-ratio:1;border:2px solid transparent;"></div>
+            <div style="aspect-ratio:1;border:2px solid transparent;"></div>
+            <div style="aspect-ratio:1;border:2px solid transparent;"></div>
+            <div style="aspect-ratio:1;border:2px solid #1A1033;background:#FFFDFE;position:relative;"></div>
+            <!-- week with entries -->
+            <div style="aspect-ratio:1;border:2px solid #1A1033;background:#FFFDFE;"></div>
+            <div style="aspect-ratio:1;border:2px solid #1A1033;background:#FF5CA8;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;">
+              <span class="disp" style="font-size:12px;font-weight:700;">4</span>
+              <svg width="8" height="7" viewBox="0 0 9 8"><rect width="9" height="8" fill="#1A1033" opacity="0"/><path d="M2 0h2v1H2zM5 0h2v1H5zM0 1h9v2H0zM0 3h9v2H0zM1 5h7v1H1zM2 6h5v1H2zM3 7h3v1H3z" fill="#1A1033"/></svg>
+            </div>
+            <div style="aspect-ratio:1;border:2px solid #1A1033;background:#FFFDFE;"></div>
+            <div style="aspect-ratio:1;border:2px solid #1A1033;background:#FFFDFE;"></div>
+            <div style="aspect-ratio:1;border:2px solid #1A1033;background:#FFFDFE;position:relative;">
+              <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:repeating-linear-gradient(90deg,#FF5CA8 0 4px,#1A1033 4px 8px);"></div>
+            </div>
+            <div style="aspect-ratio:1;border:2px solid #1A1033;background:#FFFDFE;"></div>
+          </div>
+
+          <!-- day panel with expanded card -->
+          <div style="border-top:3px solid #1A1033;padding:12px;flex:1;">
+            <h3 class="disp" style="font-size:18px;font-weight:700;margin:0 0 10px;">tuesday 4 august</h3>
+            <div style="border:3px solid #1A1033;box-shadow:4px 4px 0 #1A1033;background:#FFFDFE;padding:12px;">
+              <div style="display:flex;gap:10px;">
+                <span style="font-size:20px;">🍜</span>
+                <div style="flex:1;min-width:0;">
+                  <span class="disp" style="display:block;font-weight:700;font-size:15px;">Ramen-ya</span>
+                  <span style="display:block;font-size:14px;color:#1A1033b3;">dinner before the show</span>
+                  <span class="leg" style="display:block;margin-top:6px;color:#B31E67;">7:30pm</span>
+                </div>
+              </div>
+              <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
+                <button style="min-height:32px;padding:6px 10px;border:3px solid #1A1033;background:#FFFDFE;box-shadow:3px 3px 0 #1A1033;" class="leg">edit</button>
+                <button style="min-height:32px;padding:6px 10px;border:3px solid #1A1033;background:#FF5CA8;box-shadow:3px 3px 0 #1A1033;" class="leg">we went</button>
+                <button style="min-height:32px;padding:6px 10px;border:3px solid #1A1033;background:#FFFDFE;box-shadow:3px 3px 0 #1A1033;" class="leg">call it off</button>
+                <button style="min-height:32px;padding:6px 10px;border:3px solid #1A1033;background:#FFFDFE;box-shadow:3px 3px 0 #1A1033;margin-left:auto;color:#B31E67;" class="leg">delete</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- tab bar -->
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;border-top:3px solid #1A1033;background:#FFE5F1;padding:4px;">
+            <button style="min-height:48px;border:3px solid #1A1033;background:#FF5CA8;box-shadow:3px 3px 0 #1A1033;" class="leg">calendar</button>
+            <button style="min-height:48px;border:3px solid #1A1033;background:#FFFDFE;box-shadow:3px 3px 0 #1A1033;" class="leg">map</button>
+            <button style="min-height:48px;border:3px solid #1A1033;background:#FFFDFE;box-shadow:3px 3px 0 #1A1033;" class="leg">all dates</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- MOBILE: list tab -->
+    <div>
+      <p class="leg" style="color:#6B6480;margin:0 0 8px;">mobile · 375px · list tab (button soup)</p>
+      <div style="width:375px;border:3px solid #1A1033;box-shadow:6px 6px 0 #1A1033;background:#FF5CA8;padding:10px;">
+        <div style="background:#FFE5F1;min-height:560px;display:flex;flex-direction:column;">
+          <div style="padding:12px;flex:1;overflow:hidden;">
+
+            <!-- how did it go -->
+            <div style="margin-bottom:20px;">
+              <h3 class="disp" style="font-size:18px;font-weight:700;margin:0 0 8px;">how did it go?</h3>
+              <div style="border:3px solid #1A1033;box-shadow:4px 4px 0 #1A1033;background:#FFFDFE;padding:12px;">
+                <div style="display:flex;gap:10px;">
+                  <span style="font-size:20px;">🎢</span>
+                  <div style="flex:1;min-width:0;">
+                    <span class="disp" style="display:block;font-weight:700;font-size:15px;">Six Flags</span>
+                    <span style="display:block;font-size:14px;color:#1A1033b3;">roller coasters</span>
+                    <span class="leg" style="display:block;margin-top:6px;color:#B31E67;">sat 1 aug</span>
+                    <span class="leg" style="display:block;margin-top:6px;color:#1A103399;">they've said theirs · rate it to see</span>
+                  </div>
+                </div>
+                <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
+                  <button style="min-height:32px;padding:6px 10px;border:3px solid #1A1033;background:#FFFDFE;box-shadow:3px 3px 0 #1A1033;" class="leg">edit</button>
+                  <button style="min-height:32px;padding:6px 10px;border:3px solid #1A1033;background:#FF5CA8;box-shadow:3px 3px 0 #1A1033;" class="leg">how was it?</button>
+                  <button style="min-height:32px;padding:6px 10px;border:3px solid #1A1033;background:#FFFDFE;box-shadow:3px 3px 0 #1A1033;" class="leg">undo</button>
+                  <button style="min-height:32px;padding:6px 10px;border:3px solid #1A1033;background:#FFFDFE;box-shadow:3px 3px 0 #1A1033;margin-left:auto;color:#B31E67;" class="leg">delete</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- next up -->
+            <div style="margin-bottom:20px;">
+              <h3 style="display:flex;align-items:baseline;gap:8px;margin:0 0 8px;">
+                <span class="disp" style="font-size:18px;font-weight:700;">next up</span>
+                <span class="leg" style="border:2px solid #1A1033;background:#FF5CA8;padding:3px 6px;">in 3 days</span>
+              </h3>
+              <div style="border:3px solid #1A1033;box-shadow:4px 4px 0 #1A1033;background:#FFFDFE;padding:12px;">
+                <div style="display:flex;gap:10px;">
+                  <span style="font-size:20px;">🍜</span>
+                  <div style="flex:1;min-width:0;">
+                    <span class="disp" style="display:block;font-weight:700;font-size:15px;">Ramen-ya</span>
+                    <span style="display:block;font-size:14px;color:#1A1033b3;">dinner before the show</span>
+                    <span class="leg" style="display:block;margin-top:6px;color:#B31E67;">tue 4 aug · 7:30pm</span>
+                  </div>
+                </div>
+                <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
+                  <button style="min-height:32px;padding:6px 10px;border:3px solid #1A1033;background:#FFFDFE;box-shadow:3px 3px 0 #1A1033;" class="leg">edit</button>
+                  <button style="min-height:32px;padding:6px 10px;border:3px solid #1A1033;background:#FFFDFE;box-shadow:3px 3px 0 #1A1033;" class="leg">call it off</button>
+                  <button style="min-height:32px;padding:6px 10px;border:3px solid #1A1033;background:#FFFDFE;box-shadow:3px 3px 0 #1A1033;margin-left:auto;color:#B31E67;" class="leg">delete</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- someday -->
+            <div>
+              <h3 style="display:flex;align-items:baseline;gap:8px;margin:0 0 8px;">
+                <span class="disp" style="font-size:18px;font-weight:700;">someday</span>
+                <span class="leg" style="color:#1A103399;">2</span>
+              </h3>
+              <div style="border:3px solid #1A1033;box-shadow:4px 4px 0 #1A1033;background:#FFFDFE;padding:12px;">
+                <div style="display:flex;gap:10px;">
+                  <span style="font-size:20px;">🏔️</span>
+                  <div style="flex:1;min-width:0;">
+                    <span class="disp" style="display:block;font-weight:700;font-size:15px;">weekend hike</span>
+                    <span class="leg" style="display:block;margin-top:2px;color:#1A103399;">no place yet</span>
+                  </div>
+                </div>
+                <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;">
+                  <button style="min-height:32px;padding:6px 10px;border:3px solid #1A1033;background:#FFFDFE;box-shadow:3px 3px 0 #1A1033;" class="leg">edit</button>
+                  <button style="min-height:32px;padding:6px 10px;border:3px solid #1A1033;background:#FFFDFE;box-shadow:3px 3px 0 #1A1033;margin-left:auto;color:#B31E67;" class="leg">delete</button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;border-top:3px solid #1A1033;background:#FFE5F1;padding:4px;">
+            <button style="min-height:48px;border:3px solid #1A1033;background:#FFFDFE;box-shadow:3px 3px 0 #1A1033;" class="leg">calendar</button>
+            <button style="min-height:48px;border:3px solid #1A1033;background:#FFFDFE;box-shadow:3px 3px 0 #1A1033;" class="leg">map</button>
+            <button style="min-height:48px;border:3px solid #1A1033;background:#FF5CA8;box-shadow:3px 3px 0 #1A1033;" class="leg">all dates</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DESKTOP current -->
+  <p class="leg" style="color:#6B6480;margin:24px 0 8px;">desktop · three-pane, flat</p>
+  <div style="width:1180px;border:3px solid #1A1033;box-shadow:6px 6px 0 #1A1033;background:#FF5CA8;padding:10px;margin-bottom:16px;">
+    <div style="background:#FFE5F1;display:flex;height:460px;">
+      <div style="width:280px;border-right:3px solid #1A1033;padding:12px;overflow:hidden;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+          <span style="font-size:12px;">◀</span>
+          <span class="disp" style="font-weight:700;font-size:14px;">august 2026</span>
+          <span style="font-size:12px;">▶</span>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;">
+          <div style="aspect-ratio:1;border:2px solid #1A1033;background:#FFFDFE;"></div>
+          <div style="aspect-ratio:1;border:2px solid #1A1033;background:#FF5CA8;"></div>
+          <div style="aspect-ratio:1;border:2px solid #1A1033;background:#FFFDFE;"></div>
+          <div style="aspect-ratio:1;border:2px solid #1A1033;background:#FFFDFE;"></div>
+          <div style="aspect-ratio:1;border:2px solid #1A1033;background:#B8A6FF;"></div>
+          <div style="aspect-ratio:1;border:2px solid #1A1033;background:#FFFDFE;"></div>
+          <div style="aspect-ratio:1;border:2px solid #1A1033;background:#FFFDFE;"></div>
+        </div>
+        <div style="margin-top:14px;border:3px solid #1A1033;box-shadow:4px 4px 0 #1A1033;background:#FFFDFE;padding:10px;">
+          <span class="disp" style="font-size:13px;font-weight:700;">Ramen-ya</span>
+          <div style="display:flex;gap:6px;margin-top:8px;">
+            <span class="leg" style="border:2px solid #1A1033;padding:2px 5px;">edit</span>
+            <span class="leg" style="border:2px solid #1A1033;background:#FF5CA8;padding:2px 5px;">we went</span>
+          </div>
+        </div>
+      </div>
+      <div style="flex:1;background:#d9e8d3;position:relative;">
+        <div style="position:absolute;left:10px;top:10px;font-size:11px;background:#fff;padding:4px 8px;border:1px solid #999;">google map (unchanged)</div>
+        <div style="position:absolute;left:8px;bottom:8px;border:3px solid #1A1033;box-shadow:4px 4px 0 #1A1033;background:#FFFDFE;padding:8px;font-size:11px;">legend · pins</div>
+      </div>
+      <div style="width:220px;border-left:3px solid #1A1033;padding:12px;overflow:hidden;">
+        <span class="disp" style="font-weight:700;font-size:14px;">how did it go?</span>
+        <div style="margin-top:8px;border:3px solid #1A1033;box-shadow:4px 4px 0 #1A1033;background:#FFFDFE;padding:8px;font-size:11px;">Six Flags — rate it to see</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ SECTION 2: CRITIQUE ============ -->
+  <h2 class="disp" style="font-size:22px;font-weight:700;margin:64px 0 20px;border-bottom:3px solid #1A1033;padding-bottom:10px;">2. Critique</h2>
+
+  <div style="display:flex;flex-direction:column;gap:20px;max-width:760px;">
+
+    <div>
+      <h3 class="disp" style="font-size:17px;font-weight:700;margin:0 0 6px;color:#B31E67;">1 — one surface, used everywhere</h3>
+      <p style="font-size:15px;line-height:1.65;margin:0;"><code>.pixel-box</code> is the app's only surface: 3px ink border, flat offset shadow, card-white fill. It's used for the calendar's day panel entries, every list card, the map's legend, the map's candidate/active card, and the sheets. That's correct as a base unit — but nothing ever sits below it or above it. A collapsed list row gets the exact same border-and-shadow treatment as the one card you're actively editing. The device bezel (6px shadow) is the only thing heavier than a card (4px), so every screen has exactly two volumes: "bezel" and "everything else." That's the real cause of "nothing has hierarchy" — it's not a spacing problem, it's a missing middle tier.</p>
+    </div>
+
+    <div>
+      <h3 class="disp" style="font-size:17px;font-weight:700;margin:0 0 6px;color:#B31E67;">2 — the action row doesn't know which state it's in</h3>
+      <p style="font-size:15px;line-height:1.65;margin:0;">Look at what <code>DateCard</code> actually renders in idle mode: edit, plus up to two of (we went / call it off / back on / how was it? / undo), plus delete, pushed right — three or four buttons of identical weight bar one pink fill. On a 375px card that's a wrapped row of buttons the instant a status label runs long. The primary action (rate it, mark it done) already gets <code>pixel-btn-primary</code> — the fix isn't inventing a new visual language, it's stopping there and demoting everything else, every time.</p>
+    </div>
+
+    <div>
+      <h3 class="disp" style="font-size:17px;font-weight:700;margin:0 0 6px;color:#B31E67;">3 — empty states are inconsistent, not just plain</h3>
+      <p style="font-size:15px;line-height:1.65;margin:0;">Three of the four empty states already carry a <code>PixelHeart</code> glyph and a voice ("Nothing yet. Add somewhere you both want to go."). The fourth — <code>DayPanel</code>'s "Nothing here yet." for a day with no plans — drops both. It's not that empty states need character added; one of them is missing character the others already have.</p>
+    </div>
+
+    <div>
+      <h3 class="disp" style="font-size:17px;font-weight:700;margin:0 0 6px;color:#B31E67;">4 — lavender and aqua carry real meaning, it's just contextual</h3>
+      <p style="font-size:15px;line-height:1.65;margin:0;">Lavender means "idea" (unpinned pin colour, outline heart, linked-day highlight); aqua means "done" (pin colour, cold-weather badge, the verdict divider). That's a real, consistent system — it just only surfaces on a map pin or a rating divider, never in the chrome. The list, which has four sections mapped to exactly these same statuses, uses none of it: "someday" gets a plain grey count, "been there" gets nothing at all. The system exists; it stops one layer short of the screen where it would do the most work.</p>
+    </div>
+
+    <div>
+      <h3 class="disp" style="font-size:17px;font-weight:700;margin:0 0 6px;color:#B31E67;">5 — desktop is three bordered boxes, not one console</h3>
+      <p style="font-size:15px;line-height:1.65;margin:0;">The three panes are separated by a 3px ink border and nothing else — no shared header, no visual signal that they're one device rather than three adjacent windows. The ideas column is also fixed at 16rem (256px), narrower than a single mobile card (375px minus padding), so the same card that breathes on a phone gets squeezed on the screen with the most room.</p>
+    </div>
+
+    <div>
+      <h3 class="disp" style="font-size:17px;font-weight:700;margin:0 0 6px;color:#B31E67;">6 — nothing on screen is about the two of you</h3>
+      <p style="font-size:15px;line-height:1.65;margin:0;">Checked every screen: the most personal text in the app is the raw sign-in email at the bottom of the list. There's no name, no couple identity, no sense of history (how many dates, how long you've been doing this) anywhere in the primary views. Agree this is the weakest point of the six — it's a real gap, not a matter of taste.</p>
+    </div>
+  </div>
+
+  <!-- ============ SECTION 3: PROPOSALS ============ -->
+  <h2 class="disp" style="font-size:22px;font-weight:700;margin:64px 0 20px;border-bottom:3px solid #1A1033;padding-bottom:10px;">3. Proposed changes</h2>
+
+  <div style="display:flex;flex-direction:column;gap:28px;max-width:760px;margin-bottom:40px;">
+
+    <div>
+      <h3 class="disp" style="font-size:17px;font-weight:700;margin:0 0 6px;">add a middle surface tier: flat rows vs. raised cards</h3>
+      <p style="font-size:15px;line-height:1.65;margin:0 0 8px;">Collapsed list rows drop the border and shadow entirely — just the row content on the paper background, separated by a 1px hairline at 20% ink. The full <code>pixel-box</code> treatment (3px border, 4px shadow) is reserved for whichever single card is expanded or active. Calendar day cells and the map's own background stay flat paper too, so the raised cards are the only things that visually "sit on top" of a screen. This is a token change, not a per-screen one: two new classes, <code>.row-flat</code> and <code>.row-active</code>, sitting between <code>.pixel-box</code> and plain text.</p>
+    </div>
+
+    <div>
+      <h3 class="disp" style="font-size:17px;font-weight:700;margin:0 0 6px;">collapse the action row to one button + an overflow sheet</h3>
+      <p style="font-size:15px;line-height:1.65;margin:0 0 8px;">Idle state shows exactly one <code>pixel-btn-primary</code> action (whichever is contextually primary — "we went," "how was it?," or nothing if there's truly nothing to do) plus a single 44px "⋯" button. Edit / call it off / undo / delete move into the sheet component that already exists for <code>EditSheet</code> — no new UI pattern, just a second use of one you've already built. Delete stays behind a confirm step exactly as today.</p>
+    </div>
+
+    <div>
+      <h3 class="disp" style="font-size:17px;font-weight:700;margin:0 0 6px;">give every empty state the same glyph and voice</h3>
+      <p style="font-size:15px;line-height:1.65;margin:0 0 8px;">Give <code>DayPanel</code>'s empty state the outline <code>PixelHeart</code> the other three already use, and let its line match their tone: "Nothing here yet — pick a day with something on it, or add one." One-line fix, makes all four consistent.</p>
+    </div>
+
+    <div>
+      <h3 class="disp" style="font-size:17px;font-weight:700;margin:0 0 6px;">extend the pin colours into the list's section headers</h3>
+      <p style="font-size:15px;line-height:1.65;margin:0 0 8px;">Each agenda section heading gets a small <code>PixelHeart</code> in its status colour instead of a plain count: lavender outline heart for "someday" (idea), aqua filled heart for "been there" (done), the existing hot badge stays on "next up" (planned). No new colour meaning invented — this is the map's own legend, reused as the list's legend, so the two views teach each other instead of one being pink-only and the other being the "real" system.</p>
+    </div>
+
+    <div>
+      <h3 class="disp" style="font-size:17px;font-weight:700;margin:0 0 6px;">a shared strip above the three desktop panes</h3>
+      <p style="font-size:15px;line-height:1.65;margin:0 0 8px;">A slim header — nameplate + a lifetime counter ("14 dates · 3 years") — runs above all three panes so they read as one console with a shared top edge, the way the mobile tab bar already unifies the phone. Ideas pane widens from 16rem to roughly 20rem so a card isn't narrower there than it is on a 375px phone.</p>
+    </div>
+
+    <div>
+      <h3 class="disp" style="font-size:17px;font-weight:700;margin:0 0 6px;">a nameplate, not an email address</h3>
+      <p style="font-size:15px;line-height:1.65;margin:0 0 8px;">Add an editable device nameplate ("Mina &amp; Jules") in Pixelify Sans, shown on the bezel or the desktop strip above, and a small lifetime stat near sign-out. Sign-out keeps the email — it's still useful for confirming which account — but it stops being the only personal string in the app.</p>
+    </div>
+
+    <p style="font-size:14px;line-height:1.6;color:#6B6480;border-top:2px solid #1A103333;padding-top:12px;">No hard constraint is broken by any of this: hot pink stays fills/borders-only (list headings above use it only as a badge fill, never as text colour — text stays deep pink or ink); every tap target below is 44px+; inputs are untouched; the map keeps Google's colours; category icons stay emoji. The overflow sheet is the one new-looking pattern, and it isn't new — it's <code>EditSheet</code>'s existing sheet, reused.</p>
+  </div>
+
+  <!-- REDESIGNED MOBILE -->
+  <h3 class="disp" style="font-size:19px;font-weight:700;margin:0 0 8px;">redesigned — mobile · 375px</h3>
+  <div style="display:flex;gap:32px;flex-wrap:wrap;align-items:flex-start;margin-bottom:16px;">
+
+    <div>
+      <p class="leg" style="color:#6B6480;margin:0 0 8px;">calendar tab</p>
+      <div style="width:375px;border:3px solid #1A1033;box-shadow:6px 6px 0 #1A1033;background:#FF5CA8;padding:10px;">
+        <div style="background:#FFE5F1;min-height:560px;display:flex;flex-direction:column;">
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 8px;">
+            <button style="width:44px;height:36px;border:3px solid #1A1033;background:#FFFDFE;box-shadow:3px 3px 0 #1A1033;font-size:14px;">◀</button>
+            <span class="disp" style="font-weight:700;font-size:16px;">august 2026</span>
+            <button style="width:44px;height:36px;border:3px solid #1A1033;background:#FFFDFE;box-shadow:3px 3px 0 #1A1033;font-size:14px;">▶</button>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:1px;padding:0 6px;">
+            <div class="leg" style="text-align:center;color:#6B648099;padding:4px 0;">mo</div>
+            <div class="leg" style="text-align:center;color:#6B648099;padding:4px 0;">tu</div>
+            <div class="leg" style="text-align:center;color:#6B648099;padding:4px 0;">we</div>
+            <div class="leg" style="text-align:center;color:#6B648099;padding:4px 0;">th</div>
+            <div class="leg" style="text-align:center;color:#6B648099;padding:4px 0;">fr</div>
+            <div class="leg" style="text-align:center;color:#6B648099;padding:4px 0;">sa</div>
+            <div class="leg" style="text-align:center;color:#6B648099;padding:4px 0;">su</div>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;padding:4px 6px;">
+            <div style="aspect-ratio:1;"></div><div style="aspect-ratio:1;"></div><div style="aspect-ratio:1;"></div>
+            <div style="aspect-ratio:1;"></div><div style="aspect-ratio:1;"></div><div style="aspect-ratio:1;"></div>
+            <div style="aspect-ratio:1;border:1px solid #1A103333;"></div>
+            <div style="aspect-ratio:1;border:1px solid #1A103333;"></div>
+            <div style="aspect-ratio:1;border:3px solid #1A1033;background:#FF5CA8;box-shadow:2px 2px 0 #1A1033;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+              <span class="disp" style="font-size:12px;font-weight:700;">4</span>
+            </div>
+            <div style="aspect-ratio:1;border:1px solid #1A103333;"></div>
+            <div style="aspect-ratio:1;border:1px solid #1A103333;"></div>
+            <div style="aspect-ratio:1;border:1px solid #1A103333;position:relative;">
+              <div style="position:absolute;bottom:0;left:0;right:0;height:3px;background:repeating-linear-gradient(90deg,#FF5CA8 0 4px,#1A1033 4px 8px);"></div>
+            </div>
+            <div style="aspect-ratio:1;border:1px solid #1A103333;"></div>
+          </div>
+
+          <div style="border-top:3px solid #1A1033;padding:12px;flex:1;">
+            <h3 class="disp" style="font-size:18px;font-weight:700;margin:0 0 10px;">tuesday 4 august</h3>
+            <div style="border:3px solid #1A1033;box-shadow:4px 4px 0 #1A1033;background:#FFFDFE;padding:12px;">
+              <div style="display:flex;gap:10px;">
+                <span style="font-size:20px;">🍜</span>
+                <div style="flex:1;min-width:0;">
+                  <span class="disp" style="display:block;font-weight:700;font-size:15px;">Ramen-ya</span>
+                  <span style="display:block;font-size:14px;color:#1A1033b3;">dinner before the show</span>
+                  <span class="leg" style="display:block;margin-top:6px;color:#B31E67;">7:30pm</span>
+                </div>
+              </div>
+              <div style="display:flex;gap:8px;margin-top:12px;">
+                <button style="flex:1;min-height:44px;padding:8px 12px;border:3px solid #1A1033;background:#FF5CA8;box-shadow:3px 3px 0 #1A1033;" class="leg">we went</button>
+                <button style="width:44px;min-height:44px;border:3px solid #1A1033;background:#FFFDFE;box-shadow:3px 3px 0 #1A1033;font-size:16px;" aria-label="more actions">⋯</button>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;border-top:3px solid #1A1033;background:#FFE5F1;padding:4px;">
+            <button style="min-height:48px;border:3px solid #1A1033;background:#FF5CA8;box-shadow:3px 3px 0 #1A1033;" class="leg">calendar</button>
+            <button style="min-height:48px;border:3px solid #1A1033;background:#FFFDFE;box-shadow:3px 3px 0 #1A1033;" class="leg">map</button>
+            <button style="min-height:48px;border:3px solid #1A1033;background:#FFFDFE;box-shadow:3px 3px 0 #1A1033;" class="leg">all dates</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <p class="leg" style="color:#6B6480;margin:0 0 8px;">list tab — flat rows, one open card, section legend</p>
+      <div style="width:375px;border:3px solid #1A1033;box-shadow:6px 6px 0 #1A1033;background:#FF5CA8;padding:10px;">
+        <div style="background:#FFE5F1;min-height:560px;display:flex;flex-direction:column;">
+          <div style="padding:12px;flex:1;overflow:hidden;">
+
+            <div style="margin-bottom:18px;">
+              <h3 style="display:flex;align-items:center;gap:8px;margin:0 0 8px;">
+                <span class="disp" style="font-size:18px;font-weight:700;">how did it go?</span>
+              </h3>
+              <div style="border:3px solid #1A1033;box-shadow:4px 4px 0 #1A1033;background:#FFFDFE;padding:12px;">
+                <div style="display:flex;gap:10px;">
+                  <span style="font-size:20px;">🎢</span>
+                  <div style="flex:1;min-width:0;">
+                    <span class="disp" style="display:block;font-weight:700;font-size:15px;">Six Flags</span>
+                    <span class="leg" style="display:block;margin-top:6px;color:#1A103399;">they've said theirs · rate it to see</span>
+                  </div>
+                </div>
+                <div style="display:flex;gap:8px;margin-top:12px;">
+                  <button style="flex:1;min-height:44px;padding:8px 12px;border:3px solid #1A1033;background:#FF5CA8;box-shadow:3px 3px 0 #1A1033;" class="leg">how was it?</button>
+                  <button style="width:44px;min-height:44px;border:3px solid #1A1033;background:#FFFDFE;box-shadow:3px 3px 0 #1A1033;font-size:16px;">⋯</button>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-bottom:18px;">
+              <h3 style="display:flex;align-items:center;gap:8px;margin:0 0 8px;">
+                <span class="disp" style="font-size:18px;font-weight:700;">next up</span>
+                <span class="leg" style="border:2px solid #1A1033;background:#FF5CA8;padding:3px 6px;">in 3 days</span>
+              </h3>
+              <div style="display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid #1A103333;">
+                <span style="font-size:18px;">🍜</span>
+                <div style="flex:1;min-width:0;">
+                  <span class="disp" style="display:block;font-weight:700;font-size:14px;">Ramen-ya</span>
+                  <span class="leg" style="display:block;color:#B31E67;">tue 4 aug · 7:30pm</span>
+                </div>
+                <button style="width:44px;height:44px;border:none;background:none;font-size:16px;flex-shrink:0;">⋯</button>
+              </div>
+            </div>
+
+            <div>
+              <h3 style="display:flex;align-items:center;gap:6px;margin:0 0 8px;">
+                <svg width="12" height="11" viewBox="0 0 9 8"><path d="M2 0h2v1H2zM5 0h2v1H5zM0 1h9v2H0zM0 3h9v2H0zM1 5h7v1H1zM2 6h5v1H2zM3 7h3v1H3z" fill="none" stroke="#B8A6FF" stroke-width="1"/><path d="M2 1h2v1H2zM5 1h2v1H5zM1 2h1v2H1zM7 2h1v2H7zM2 6h1v1H2zM6 6h1v1H6z" fill="#B8A6FF"/></svg>
+                <span class="disp" style="font-size:18px;font-weight:700;">someday</span>
+              </h3>
+              <div style="display:flex;align-items:center;gap:10px;padding:10px 4px;border-bottom:1px solid #1A103333;">
+                <span style="font-size:18px;">🏔️</span>
+                <div style="flex:1;min-width:0;">
+                  <span class="disp" style="display:block;font-weight:700;font-size:14px;">weekend hike</span>
+                  <span class="leg" style="display:block;color:#1A103399;">no place yet</span>
+                </div>
+                <button style="width:44px;height:44px;border:none;background:none;font-size:16px;flex-shrink:0;">⋯</button>
+              </div>
+            </div>
+
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:4px;border-top:3px solid #1A1033;background:#FFE5F1;padding:4px;">
+            <button style="min-height:48px;border:3px solid #1A1033;background:#FFFDFE;box-shadow:3px 3px 0 #1A1033;" class="leg">calendar</button>
+            <button style="min-height:48px;border:3px solid #1A1033;background:#FFFDFE;box-shadow:3px 3px 0 #1A1033;" class="leg">map</button>
+            <button style="min-height:48px;border:3px solid #1A1033;background:#FF5CA8;box-shadow:3px 3px 0 #1A1033;" class="leg">all dates</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REDESIGNED overflow sheet callout -->
+  <p class="leg" style="color:#6B6480;margin:0 0 8px;">the "⋯" opens the existing sheet pattern</p>
+  <div style="width:375px;border:3px solid #1A1033;box-shadow:4px 4px 0 #1A1033;background:#FFFDFE;padding:14px;margin-bottom:32px;">
+    <span class="disp" style="font-weight:700;font-size:15px;display:block;margin-bottom:10px;">Ramen-ya</span>
+    <div style="display:flex;flex-direction:column;gap:2px;">
+      <button style="min-height:44px;text-align:left;padding:0 8px;border:none;background:none;font-size:15px;border-bottom:1px solid #1A103322;">edit</button>
+      <button style="min-height:44px;text-align:left;padding:0 8px;border:none;background:none;font-size:15px;border-bottom:1px solid #1A103322;">call it off</button>
+      <button style="min-height:44px;text-align:left;padding:0 8px;border:none;background:none;font-size:15px;color:#B31E67;">delete</button>
+    </div>
+  </div>
+
+  <!-- REDESIGNED DESKTOP -->
+  <h3 class="disp" style="font-size:19px;font-weight:700;margin:0 0 8px;">redesigned — desktop, unified with a top strip</h3>
+  <div style="width:1180px;border:3px solid #1A1033;box-shadow:6px 6px 0 #1A1033;background:#FF5CA8;padding:10px;margin-bottom:24px;">
+    <div style="background:#FFE5F1;">
+      <div style="display:flex;align-items:center;justify-content:space-between;padding:10px 16px;border-bottom:3px solid #1A1033;background:#FFFDFE;">
+        <span class="disp" style="font-weight:700;font-size:16px;">mina &amp; jules</span>
+        <span class="leg" style="color:#6B6480;">14 dates · since 2023</span>
+      </div>
+      <div style="display:flex;height:440px;">
+        <div style="width:280px;border-right:3px solid #1A1033;padding:12px;overflow:hidden;">
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+            <span style="font-size:12px;">◀</span>
+            <span class="disp" style="font-weight:700;font-size:14px;">august 2026</span>
+            <span style="font-size:12px;">▶</span>
+          </div>
+          <div style="display:grid;grid-template-columns:repeat(7,1fr);gap:2px;">
+            <div style="aspect-ratio:1;border:1px solid #1A103333;"></div>
+            <div style="aspect-ratio:1;border:3px solid #1A1033;background:#FF5CA8;box-shadow:1px 1px 0 #1A1033;"></div>
+            <div style="aspect-ratio:1;border:1px solid #1A103333;"></div>
+            <div style="aspect-ratio:1;border:1px solid #1A103333;"></div>
+            <div style="aspect-ratio:1;border:3px solid #1A1033;background:#B8A6FF;box-shadow:1px 1px 0 #1A1033;"></div>
+            <div style="aspect-ratio:1;border:1px solid #1A103333;"></div>
+            <div style="aspect-ratio:1;border:1px solid #1A103333;"></div>
+          </div>
+          <div style="margin-top:14px;border:3px solid #1A1033;box-shadow:4px 4px 0 #1A1033;background:#FFFDFE;padding:10px;">
+            <span class="disp" style="font-size:13px;font-weight:700;">Ramen-ya</span>
+            <div style="display:flex;gap:6px;margin-top:8px;">
+              <button style="flex:1;min-height:32px;border:3px solid #1A1033;background:#FF5CA8;box-shadow:2px 2px 0 #1A1033;" class="leg">we went</button>
+              <button style="width:32px;min-height:32px;border:3px solid #1A1033;background:#FFFDFE;box-shadow:2px 2px 0 #1A1033;">⋯</button>
+            </div>
+          </div>
+        </div>
+        <div style="flex:1;background:#d9e8d3;position:relative;">
+          <div style="position:absolute;left:10px;top:10px;font-size:11px;background:#fff;padding:4px 8px;border:1px solid #999;">google map (unchanged)</div>
+          <div style="position:absolute;left:8px;bottom:8px;border:3px solid #1A1033;box-shadow:4px 4px 0 #1A1033;background:#FFFDFE;padding:8px;font-size:11px;">legend · pins</div>
+        </div>
+        <div style="width:320px;border-left:3px solid #1A1033;padding:12px;overflow:hidden;">
+          <h4 style="display:flex;align-items:center;gap:6px;margin:0 0 8px;">
+            <svg width="12" height="11" viewBox="0 0 9 8"><path d="M2 1h2v1H2zM5 1h2v1H5zM0 2h9v2H0zM0 4h9v2H0zM1 6h7v1H1zM2 7h5v1H2z" fill="#5BE0E6"/></svg>
+            <span class="disp" style="font-weight:700;font-size:14px;">been there</span>
+          </h4>
+          <div style="display:flex;align-items:center;gap:8px;padding:8px 4px;border-bottom:1px solid #1A103333;">
+            <span style="font-size:15px;">🎢</span>
+            <div style="flex:1;min-width:0;">
+              <span class="disp" style="display:block;font-weight:700;font-size:13px;">Six Flags</span>
+              <span class="leg" style="display:block;font-size:10px;color:#1A103399;">rate it to see</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+</x-dc>
+</body>
+</html>

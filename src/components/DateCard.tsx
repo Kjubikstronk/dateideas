@@ -1,4 +1,4 @@
-import { memo, useState } from 'react'
+import { memo, useEffect, useRef, useState } from 'react'
 import { format, parseISO } from 'date-fns'
 import { averageStars, memoriesOf, type DateIdea } from '../types'
 import { useAuth } from '../lib/auth'
@@ -17,6 +17,16 @@ type Props = {
   forecast?: Forecast
   /** Hide the day line where the surrounding view already shows the date. */
   hideDay?: boolean
+  /**
+   * A row in a list rather than a card in its own right.
+   *
+   * Giving every entry a bordered, shadowed box meant nothing on screen was
+   * louder than anything else. Rows in the agenda sit flat on the paper and
+   * lift into a card only while you're actually working on one.
+   */
+  flat?: boolean
+  /** Days until this one, shown only on the single soonest upcoming date. */
+  countdown?: string | null
   active?: boolean
   onHover?: (id: string | null) => void
 }
@@ -31,11 +41,16 @@ function DateCard({
   onLocate,
   forecast,
   hideDay,
+  flat,
+  countdown,
   active,
   onHover,
 }: Props) {
   const [mode, setMode] = useState<Mode>('idle')
   const [reason, setReason] = useState('')
+  // Counter, not a boolean — a <dialog> can close itself without telling React.
+  const [sheetReq, setSheetReq] = useState(0)
+  const sheetRef = useRef<HTMLDialogElement>(null)
   const { user } = useAuth()
   const me = user?.uid ?? 'preview'
   const memories = memoriesOf(item)
@@ -72,6 +87,34 @@ function DateCard({
     setMode('idle')
   }
 
+  const sheetOpen = sheetReq > 0
+  const closeSheet = () => setSheetReq(0)
+
+  useEffect(() => {
+    const el = sheetRef.current
+    if (!el) return
+    if (sheetOpen && !el.open) el.showModal()
+    else if (!sheetOpen && el.open) el.close()
+  }, [sheetReq, sheetOpen])
+
+  /**
+   * The one action worth a button of its own.
+   *
+   * Every card used to carry up to four equally-weighted buttons — edit, we
+   * went, call it off, delete — so nothing read as the obvious next step and
+   * the list became a wall of chrome. Only what the date is actually asking
+   * for gets a button; the rest lives behind the overflow.
+   */
+  const primary =
+    item.status === 'planned' && isPast
+      ? { label: 'we went', run: () => setMode('remembering') }
+      : item.status === 'done'
+        ? {
+            label: mine ? 'change yours' : 'how was it?',
+            run: () => setMode('remembering'),
+          }
+        : null
+
   function callOff() {
     onUpdate(item.id, {
       status: 'cancelled',
@@ -85,7 +128,15 @@ function DateCard({
     <li
       data-date-id={item.id}
       className={[
-        'pixel-box-sm p-3 transition-transform duration-75',
+        'transition-transform duration-75',
+        // A flat row lifts into a card the moment it's the thing you're
+        // handling, so the raised treatment means "this one" rather than
+        // "all of them".
+        flat && mode === 'idle'
+          ? 'border-b border-[rgba(26,16,51,0.2)] px-3 py-2.5 last:border-b-0'
+          : 'pixel-box-sm p-3',
+        // Cancelled dates recede as a group rather than merely greying out.
+        cancelled ? (flat && mode === 'idle' ? 'px-3 py-2' : 'p-2') : '',
         active && 'translate-x-[-1px] translate-y-[-1px]',
         cancelled && 'bg-[var(--color-card)]/60',
       ]
@@ -117,7 +168,7 @@ function DateCard({
           <span
             className={[
               'block font-[family-name:var(--font-display)] font-bold leading-tight',
-              cancelled && 'text-[var(--color-mute)] line-through',
+              cancelled ? 'text-sm text-[var(--color-mute)] line-through' : '',
             ]
               .filter(Boolean)
               .join(' ')}
@@ -153,6 +204,9 @@ function DateCard({
                 : `${format(parseISO(item.scheduledFor), 'EEE d MMM').toLowerCase()}${
                     item.time ? ` · ${item.time}` : ''
                   }`}
+              {countdown && !cancelled && (
+                <span className="ml-2 text-[var(--color-deep)]">· {countdown}</span>
+              )}
             </span>
           )}
 
@@ -176,11 +230,15 @@ function DateCard({
                 {SKY_EMOJI[forecast.sky]}
               </span>
               <span
+                // Outline, never filled: hot pink and aqua already mean
+                // "done" and "planned" on the status heart, and a filled
+                // badge in the same colours blurred the two together. The
+                // sky emoji stays the only colour-carrying element here.
                 className={
                   forecast.high >= HOT_C
-                    ? 'border-2 border-[var(--color-ink)] bg-[var(--color-hot)] px-1 py-0.5 text-[var(--color-ink)]'
+                    ? 'border-2 border-[var(--color-ink)] px-1 py-0.5 text-[var(--color-deep)]'
                     : forecast.high <= FREEZING_C
-                      ? 'border-2 border-[var(--color-ink)] bg-[var(--color-aqua)] px-1 py-0.5 text-[var(--color-ink)]'
+                      ? 'border-2 border-[var(--color-ink)] px-1 py-0.5 text-[var(--color-ink)]/70'
                       : 'text-[var(--color-ink)]/60'
                 }
               >
@@ -228,83 +286,96 @@ function DateCard({
       {/* Actions ------------------------------------------------------- */}
 
       {mode === 'idle' && (
-        <div className="mt-3 flex flex-wrap gap-2">
-          <button
-            type="button"
-            className="pixel-btn legend px-2 py-1"
-            onClick={() => onEdit(item)}
-          >
-            edit
-          </button>
-
-          {item.status === 'planned' && (
-            <>
-              {/* Only once the day has passed — see isPast. */}
-              {isPast && (
-                <button
-                  type="button"
-                  className="pixel-btn pixel-btn-primary legend px-2 py-1"
-                  onClick={() => setMode('remembering')}
-                >
-                  we went
-                </button>
-              )}
-              <button
-                type="button"
-                className="pixel-btn legend px-2 py-1"
-                onClick={() => setMode('calling-off')}
-              >
-                {/* Cancelling a future plan and recording that a past one
-                    didn't happen are the same operation, different sentence. */}
-                {isPast ? 'we didn’t' : 'call it off'}
-              </button>
-            </>
-          )}
-
-          {cancelled && (
+        <div className="mt-2 flex items-center gap-2">
+          {primary && (
             <button
               type="button"
-              className="pixel-btn legend px-2 py-1"
-              onClick={() =>
-                onUpdate(item.id, { status: 'planned', cancelReason: null })
-              }
+              className="pixel-btn pixel-btn-primary legend px-2 py-1"
+              onClick={primary.run}
             >
-              back on
+              {primary.label}
             </button>
           )}
-
-          {item.status === 'done' && (
-            <>
-              <button
-                type="button"
-                className={
-                  mine
-                    ? 'pixel-btn legend px-2 py-1'
-                    : 'pixel-btn pixel-btn-primary legend px-2 py-1'
-                }
-                onClick={() => setMode('remembering')}
-              >
-                {mine ? 'change yours' : 'how was it?'}
-              </button>
-              <button
-                type="button"
-                className="pixel-btn legend px-2 py-1"
-                onClick={() => onUpdate(item.id, { status: 'planned' })}
-              >
-                undo
-              </button>
-            </>
-          )}
-
           <button
             type="button"
-            className="pixel-btn legend ml-auto px-2 py-1 text-[var(--color-deep)]"
-            onClick={() => setMode('deleting')}
+            aria-label="more actions"
+            className="pixel-btn legend ml-auto flex h-12 w-12 items-center justify-center text-base leading-none"
+            onClick={() => setSheetReq((n) => n + 1)}
           >
-            delete
+            &#8943;
           </button>
         </div>
       )}
+
+      {/* Everything that isn't the primary action. Deliberately the same sheet
+          the editor uses — a second instance with different rows, not a new
+          pattern to learn. */}
+      <dialog ref={sheetRef} className="sheet" onClose={closeSheet}>
+        <div className="flex flex-col">
+          <header className="flex items-center justify-between border-b-[3px] border-[var(--color-ink)] bg-[var(--color-paper)] px-3 py-2">
+            <h2 className="truncate font-[family-name:var(--font-display)] text-base font-bold">
+              {item.place ? item.place.name : item.title}
+            </h2>
+            <button type="button" className="pixel-btn legend px-2 py-1" onClick={closeSheet}>
+              close
+            </button>
+          </header>
+
+          <div className="flex flex-col p-3">
+            <SheetRow
+              onClick={() => {
+                closeSheet()
+                onEdit(item)
+              }}
+            >
+              edit
+            </SheetRow>
+
+            {item.status === 'planned' && (
+              <SheetRow
+                onClick={() => {
+                  closeSheet()
+                  setMode('calling-off')
+                }}
+              >
+                {isPast ? 'we didn’t go' : 'call it off'}
+              </SheetRow>
+            )}
+
+            {cancelled && (
+              <SheetRow
+                onClick={() => {
+                  closeSheet()
+                  onUpdate(item.id, { status: 'planned', cancelReason: null })
+                }}
+              >
+                back on
+              </SheetRow>
+            )}
+
+            {item.status === 'done' && (
+              <SheetRow
+                onClick={() => {
+                  closeSheet()
+                  onUpdate(item.id, { status: 'planned' })
+                }}
+              >
+                move back to planned
+              </SheetRow>
+            )}
+
+            <SheetRow
+              danger
+              onClick={() => {
+                closeSheet()
+                setMode('deleting')
+              }}
+            >
+              delete
+            </SheetRow>
+          </div>
+        </div>
+      </dialog>
 
       {mode === 'remembering' && (
         <div className="mt-3 space-y-2">
@@ -442,6 +513,33 @@ function DateCard({
         </div>
       )}
     </li>
+  )
+}
+
+/** A full-width tap target in the overflow sheet. Never below 44px. */
+function SheetRow({
+  children,
+  onClick,
+  danger,
+}: {
+  children: React.ReactNode
+  onClick: () => void
+  danger?: boolean
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={[
+        'flex min-h-11 w-full items-center border-b border-[rgba(26,16,51,0.2)] px-1 text-left',
+        'font-[family-name:var(--font-display)] text-base last:border-b-0',
+        danger ? 'text-[var(--color-deep)]' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+    >
+      {children}
+    </button>
   )
 }
 
