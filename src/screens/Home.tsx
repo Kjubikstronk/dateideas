@@ -39,6 +39,20 @@ export default function Home() {
   const me = user?.uid ?? 'preview'
   const weather = useWeather(items)
 
+  /**
+   * A quiet lifetime stat for the desktop strip.
+   *
+   * Both halves come from data already in memory — no extra field, no extra
+   * read. It stays hidden until there's something to say, so a new couple
+   * isn't greeted by "0 dates".
+   */
+  const milestone = useMemo(() => {
+    const been = items.filter((i) => i.status === 'done').length
+    if (!been) return null
+    const first = Math.min(...items.map((i) => i.createdAt))
+    return `${been} ${been === 1 ? 'date' : 'dates'} · since ${format(new Date(first), 'MMM yyyy').toLowerCase()}`
+  }, [items])
+
   // A counter, not a boolean — see the note on EditSheet's `openRequest`.
   const [openReq, setOpenReq] = useState(0)
   const [editing, setEditing] = useState<DateIdea | null>(null)
@@ -250,20 +264,6 @@ export default function Home() {
       onHover={hasHover ? setActiveId : undefined}
     />
   )
-
-  /**
-   * A quiet lifetime stat for the desktop strip.
-   *
-   * Both halves come from data already in memory — no extra field, no extra
-   * read. It stays hidden until there's something to say, so a new couple
-   * isn't greeted by "0 dates".
-   */
-  const milestone = useMemo(() => {
-    const been = items.filter((i) => i.status === 'done').length
-    if (!been) return null
-    const first = Math.min(...items.map((i) => i.createdAt))
-    return `${been} ${been === 1 ? 'date' : 'dates'} · since ${format(new Date(first), 'MMM yyyy').toLowerCase()}`
-  }, [items])
 
   const body = isWide ? (
     // Wide: the shell is a two-screen console, everything visible and linked.
