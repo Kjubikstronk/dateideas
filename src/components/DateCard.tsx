@@ -61,6 +61,8 @@ function DateCard({
   const [memoryNote, setMemoryNote] = useState(mine?.note ?? '')
 
   const cancelled = item.status === 'cancelled'
+  /** Flat in a list, raised while you're working on it. */
+  const asRow = !!flat && mode === 'idle'
 
   /**
    * Has the day been and gone?
@@ -131,12 +133,19 @@ function DateCard({
         'transition-transform duration-75',
         // A flat row lifts into a card the moment it's the thing you're
         // handling, so the raised treatment means "this one" rather than
-        // "all of them".
-        flat && mode === 'idle'
-          ? 'border-b border-[rgba(26,16,51,0.2)] px-3 py-2.5 last:border-b-0'
-          : 'pixel-box-sm p-3',
-        // Cancelled dates recede as a group rather than merely greying out.
-        cancelled ? (flat && mode === 'idle' ? 'px-3 py-2' : 'p-2') : '',
+        // "all of them". Padding is decided once here: emitting two competing
+        // padding classes leaves the winner down to CSS source order, which
+        // is not something the markup gets to control.
+        asRow
+          ? 'border-b border-[rgba(26,16,51,0.2)] last:border-b-0'
+          : 'pixel-box-sm',
+        asRow
+          ? cancelled
+            ? 'px-3 py-2'
+            : 'px-3 py-2.5'
+          : cancelled
+            ? 'p-2'
+            : 'p-3',
         active && 'translate-x-[-1px] translate-y-[-1px]',
         cancelled && 'bg-[var(--color-card)]/60',
       ]
