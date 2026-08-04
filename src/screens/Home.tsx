@@ -27,6 +27,8 @@ export default function Home() {
     add,
     update,
     remove,
+    pendingDelete,
+    undoRemove,
   } = useDates()
 
   const [month, setMonth] = useState(() => startOfMonth(new Date()))
@@ -311,6 +313,28 @@ export default function Home() {
     <MapsProvider>
       <div className="relative flex min-h-0 flex-1 flex-col">
         {body}
+
+        {/* Sits at the top, with the write alert, rather than at the bottom
+            where a toast conventionally goes: the bottom-right corner already
+            holds the tab bar, the floating add button and the map's locate
+            control, and that corner has caused two collisions already. */}
+        {pendingDelete && (
+          <div
+            role="status"
+            className="absolute inset-x-3 top-3 z-40 flex items-center gap-3 border-[3px] border-[var(--color-ink)] bg-[var(--color-lav)] p-3 shadow-[4px_4px_0_var(--color-ink)]"
+          >
+            <p className="min-w-0 flex-1 truncate text-sm">
+              Deleted &ldquo;{pendingDelete.place?.name ?? pendingDelete.title}&rdquo;.
+            </p>
+            <button
+              type="button"
+              className="pixel-btn pixel-btn-primary legend shrink-0 px-3 py-1"
+              onClick={undoRemove}
+            >
+              undo
+            </button>
+          </div>
+        )}
 
         {/* A refused write used to just revert with no explanation. */}
         {writeError && (

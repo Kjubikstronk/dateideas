@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   addDoc,
   collection,
@@ -31,7 +31,28 @@ export function useDates() {
   const { user } = useAuth()
   const membership = useCouple()
   const coupleId = membership.state === 'ready' ? membership.coupleId : null
-  const [items, setItems] = useState<DateIdea[]>(PREVIEW ? SAMPLE_DATES : [])
+  const [all, setItems] = useState<DateIdea[]>(PREVIEW ? SAMPLE_DATES : [])
+
+  /**
+   * Deleting is the only thing here you can't take back, so it doesn't happen
+   * straight away. The date disappears from view immediately, and the actual
+   * write is held for a few seconds behind an undo.
+   *
+   * Deliberately held in memory, not written as a "deleted" flag: if the tab
+   * closes mid-countdown the delete simply never happens. Losing a deletion is
+   * recoverable — you press delete again — while losing the date is not.
+   */
+  const [pendingId, setPendingId] = useState<string | null>(null)
+  const pendingTimer = useRef<number | null>(null)
+
+  const items = useMemo(
+    () => (pendingId ? all.filter((it) => it.id !== pendingId) : all),
+    [all, pendingId],
+  )
+  const pendingDelete = useMemo(
+    () => (pendingId ? (all.find((it) => it.id === pendingId) ?? null) : null),
+    [all, pendingId],
+  )
   const [loading, setLoading] = useState(!PREVIEW)
   const [error, setError] = useState<string | null>(null)
   const [writeError, setWriteError] = useState<string | null>(null)
@@ -126,15 +147,55 @@ export function useDates() {
     await guard(() => updateDoc(doc(store, COLLECTION, id), patch))
   }, [guard])
 
-  const remove = useCallback(async (id: string) => {
-    if (PREVIEW) {
-      setItems((prev) => prev.filter((it) => it.id !== id))
-      return
+  /** How long you get to change your mind. */
+  const UNDO_MS = 6000
+
+  /** The write itself, once the undo window has closed. */
+  const commitDelete = useCallback(
+    async (id: string) => {
+      if (PREVIEW) {
+        setItems((prev) => prev.filter((it) => it.id !== id))
+        return
+      }
+      const store = db
+      if (!store) return
+      await guard(() => deleteDoc(doc(store, COLLECTION, id)))
+    },
+    [guard],
+  )
+
+  const clearTimer = () => {
+    if (pendingTimer.current !== null) {
+      window.clearTimeout(pendingTimer.current)
+      pendingTimer.current = null
     }
-    const store = db
-    if (!store) return
-    await guard(() => deleteDoc(doc(store, COLLECTION, id)))
-  }, [guard])
+  }
+
+  const remove = useCallback(
+    (id: string) => {
+      // A second delete while one is still pending commits the first rather
+      // than dropping it — otherwise the earlier date would silently come back.
+      setPendingId((current) => {
+        if (current && current !== id) void commitDelete(current)
+        return id
+      })
+      clearTimer()
+      pendingTimer.current = window.setTimeout(() => {
+        pendingTimer.current = null
+        setPendingId(null)
+        void commitDelete(id)
+      }, UNDO_MS)
+    },
+    [commitDelete],
+  )
+
+  const undoRemove = useCallback(() => {
+    clearTimer()
+    setPendingId(null)
+  }, [])
+
+  // Unmounting leaves the date intact, matching the tab-close behaviour above.
+  useEffect(() => clearTimer, [])
 
   /** Scheduled dates bucketed by `yyyy-MM-dd`, which is what the grid needs. */
   const byDay = useMemo(() => {
@@ -170,5 +231,7 @@ export function useDates() {
     add,
     update,
     remove,
+    pendingDelete,
+    undoRemove,
   }
 }
