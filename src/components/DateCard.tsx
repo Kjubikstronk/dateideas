@@ -61,6 +61,15 @@ function DateCard({
   const [memoryNote, setMemoryNote] = useState(mine?.note ?? '')
 
   const cancelled = item.status === 'cancelled'
+
+  /**
+   * Whose idea this was.
+   *
+   * Only ever shown for theirs. You already know what you added, so labelling
+   * your own picks would put a line on every card to say nothing — and the
+   * card had one line too many to begin with.
+   */
+  const theirPick = !!item.createdBy && item.createdBy !== me
   /** Flat in a list, raised while you're working on it. */
   const asRow = !!flat && mode === 'idle'
 
@@ -197,6 +206,12 @@ function DateCard({
           ) : (
             <span className="legend mt-1 block text-[var(--color-ink)]/60">
               no place yet
+            </span>
+          )}
+
+          {theirPick && (
+            <span className="legend mt-1 block text-[var(--color-ink)]/60">
+              their pick
             </span>
           )}
 

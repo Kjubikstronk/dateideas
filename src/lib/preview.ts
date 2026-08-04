@@ -86,7 +86,7 @@ export const SAMPLE_DATES: DateIdea[] = [
     cancelReason: null,
     memories: null,
     coupleId: PREVIEW_COUPLE,
-    createdBy: 'preview',
+    createdBy: 'them',
     createdAt: Date.now(),
   },
   {
@@ -109,7 +109,7 @@ export const SAMPLE_DATES: DateIdea[] = [
     cancelReason: null,
     memories: null,
     coupleId: PREVIEW_COUPLE,
-    createdBy: 'preview',
+    createdBy: 'them',
     createdAt: Date.now(),
   },
   {
