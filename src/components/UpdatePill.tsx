@@ -25,6 +25,11 @@ export default function UpdatePill() {
       if (!registration) return
 
       const check = () => {
+        // A worker that is already waiting will never fire `waiting` again, so
+        // dismissing the pill once would otherwise silence it forever — the
+        // exact stranded-on-an-old-build case this component exists to stop.
+        // Re-raise it here so "later" means "next time" rather than "never".
+        if (registration.waiting) setNeedRefresh(true)
         // Pointless while offline, and it throws on some browsers.
         if (navigator.onLine) void registration.update()
       }

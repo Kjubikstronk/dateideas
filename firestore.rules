@@ -31,11 +31,17 @@ service cloud.firestore {
     function onlyMyMemory() {
       let before = resource.data.get('memories', null);
       let after = request.resource.data.get('memories', null);
-      return after == null
+      // `after == null` must NOT mean "untouched" — it is also what a write
+      // that nulls or deletes the field looks like, which would let either
+      // partner erase the other's rating with a single field and make
+      // rate-blind-then-reveal meaningless.
+      return (before == null && after == null)
         ? true
-        : (before is map
-            ? after.diff(before).affectedKeys().hasOnly([request.auth.uid])
-            : after.keys().hasOnly([request.auth.uid]));
+        : (after is map
+            ? (before is map
+                ? after.diff(before).affectedKeys().hasOnly([request.auth.uid])
+                : after.keys().hasOnly([request.auth.uid]))
+            : false);
     }
 
     /**
@@ -55,12 +61,20 @@ service cloud.firestore {
       // must belong to your couple, and must be signed by you.
       allow create: if isMember()
         && request.resource.data.coupleId == myCouple()
-        && request.resource.data.createdBy == request.auth.uid;
+        && request.resource.data.createdBy == request.auth.uid
+        // Nobody starts a date with a rating already in their partner's name.
+        && (request.resource.data.get('memories', null) == null
+            || request.resource.data.memories.keys().hasOnly([request.auth.uid]));
 
       allow update: if isMember()
+        // The record must already be yours. Checking only that coupleId is
+        // UNCHANGED left every date in the deployment writable by any member
+        // who knew its id — the other three verbs check ownership, this one
+        // didn't.
+        && resource.data.coupleId == myCouple()
         && request.resource.data.createdBy == resource.data.createdBy
         && onlyMyMemory()
-        // Nothing may ever move a record from one couple to another.
+        // Nor may anything move a record from one couple to another.
         && request.resource.data.coupleId == resource.data.coupleId;
     }
 

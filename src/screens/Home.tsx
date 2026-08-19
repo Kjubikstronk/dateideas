@@ -129,7 +129,7 @@ export default function Home() {
         continue
       }
 
-      const gone = it.scheduledFor <= today
+      const gone = it.scheduledFor < today
 
       // The app should ask rather than wait to be told. Two things need an
       // answer: a plan whose day has passed with nobody saying whether it

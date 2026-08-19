@@ -3,16 +3,36 @@ import { useMap, useMapsLibrary } from '@vis.gl/react-google-maps'
 import { MAP_INSTANCE_ID, lastViewport } from './maps'
 import type { Place } from '../types'
 
-/** Only the fields we store. Places bills by field tier, so asking for more
-    than this costs real money for data we'd throw away. */
+/**
+ * Only the fields we actually use. Places bills Place Details by the tier of
+ * the highest field requested, so anything unused here costs real money per
+ * lookup for data we throw away.
+ *
+ * `photos` was in this list and its result was never rendered anywhere — the
+ * stored photoUrl had no reader. Removed.
+ *
+ * `rating` is the one remaining Enterprise-tier field, and it buys exactly the
+ * "4.3 ★" line on the map's candidate card. Dropping it too would put every
+ * lookup on the cheapest tier.
+ */
 const FIELDS = [
   'id',
   'displayName',
   'formattedAddress',
   'location',
-  'photos',
   'rating',
 ] as const
+
+/**
+ * Place details, once per place per session.
+ *
+ * Every tap on a map POI fired a fresh billable lookup, with no dedupe — so
+ * tapping the same café three times while deciding cost three of them, as did
+ * every stray tap while panning. Details are stable enough that a
+ * session-lifetime cache is safe, and it turns the one uncapped spend vector
+ * into a bounded one.
+ */
+const detailCache = new globalThis.Map<string, Place>()
 
 type PlacesLib = google.maps.PlacesLibrary
 
@@ -26,7 +46,8 @@ export function toPlace(
     lat: p.location?.lat() ?? null,
     lng: p.location?.lng() ?? null,
     placeId: p.id ?? null,
-    photoUrl: p.photos?.[0]?.getURI({ maxWidth: 640 }) ?? null,
+    // Never requested any more — see FIELDS.
+    photoUrl: null,
     rating: p.rating ?? null,
   }
 }
@@ -40,10 +61,14 @@ export async function fetchPlaceById(
   placeId: string,
 ): Promise<Place | null> {
   if (!places) return null
+  const hit = detailCache.get(placeId)
+  if (hit) return hit
   try {
     const place = new places.Place({ id: placeId })
     await place.fetchFields({ fields: [...FIELDS] })
-    return toPlace(place)
+    const converted = toPlace(place)
+    if (converted) detailCache.set(placeId, converted)
+    return converted
   } catch {
     return null
   }

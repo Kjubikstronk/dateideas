@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { format, parseISO } from 'date-fns'
 // Aliased: the library's `Map` component otherwise shadows the global Map
 // constructor, which broke `new Map()` in this file.
@@ -92,10 +92,17 @@ function LiveMap(props: Props) {
   const [me, setMe] = useState<{ lat: number; lng: number } | null>(null)
 
   const groups = useMemo(() => groupByPlace(props.items), [props.items])
+  const framed = useRef(false)
 
   // Frame every pin on first load, so you open the map to the overview.
   useEffect(() => {
     if (!map || groups.length === 0) return
+    // Once per mount. `groups` derives from a fresh array on every Firestore
+    // emission, so this used to re-run whenever either partner edited
+    // anything — including right after adding a place from the map, which
+    // threw you away from the pin you'd just dropped.
+    if (framed.current) return
+    framed.current = true
     const bounds = new google.maps.LatLngBounds()
     for (const [, items] of groups) {
       bounds.extend({ lat: items[0].place.lat, lng: items[0].place.lng })

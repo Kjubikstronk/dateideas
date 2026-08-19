@@ -60,6 +60,22 @@ function DateCard({
   const [stars, setStars] = useState(mine?.stars ?? 0)
   const [memoryNote, setMemoryNote] = useState(mine?.note ?? '')
 
+  /**
+   * Re-seed the editor from whatever is actually stored, each time it opens.
+   *
+   * These were set once at mount, and this component is memoised and keyed by
+   * id, so it survives every snapshot. Rate a date on your phone and the open
+   * card on your laptop still held the old values — saving there wrote them
+   * back over the newer rating.
+   */
+  useEffect(() => {
+    if (mode !== 'remembering') return
+    setStars(mine?.stars ?? 0)
+    setMemoryNote(mine?.note ?? '')
+    // Keyed on the stored memory, so a partner's write while the editor is
+    // closed is picked up next time it opens.
+  }, [mode, mine?.stars, mine?.note])
+
   const cancelled = item.status === 'cancelled'
 
   /**
@@ -82,7 +98,7 @@ function DateCard({
    * timezone.
    */
   const isPast = item.scheduledFor
-    ? item.scheduledFor <= format(new Date(), 'yyyy-MM-dd')
+    ? item.scheduledFor < format(new Date(), 'yyyy-MM-dd')
     : false
 
   function remember() {
@@ -345,7 +361,7 @@ function DateCard({
             </button>
           </header>
 
-          <div className="flex flex-col p-3">
+          <div className="safe-bottom flex flex-col p-3">
             <SheetRow
               onClick={() => {
                 closeSheet()
@@ -459,8 +475,12 @@ function DateCard({
               type="button"
               className="pixel-btn legend px-2 py-1"
               onClick={() => {
-                setStars(item.memory?.stars ?? 0)
-                setMemoryNote(item.memory?.note ?? '')
+                // From `mine`, not the deprecated `item.memory` — that field
+                // is never written any more, so restoring from it silently
+                // reset the editor to empty and the next save destroyed the
+                // real rating.
+                setStars(mine?.stars ?? 0)
+                setMemoryNote(mine?.note ?? '')
                 setMode('idle')
               }}
             >
@@ -484,7 +504,10 @@ function DateCard({
               autoFocus
               onKeyDown={(e) => {
                 if (e.key === 'Enter') callOff()
-                if (e.key === 'Escape') setMode('idle')
+                if (e.key === 'Escape') {
+                  setReason('')
+                  setMode('idle')
+                }
               }}
             />
           </label>

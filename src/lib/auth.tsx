@@ -57,6 +57,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         // into the entry chunk and undo the login screen's code split.
         const { clearCache } = await import('./db')
         await clearCache()
+        // clearCache() terminates the Firestore client, and that instance is a
+        // module singleton created once at import — signing back in without a
+        // reload would hit a dead client and fail every read and write. The
+        // reload is what makes the wipe survivable.
+        window.location.reload()
       },
     }),
     [user, loading],
