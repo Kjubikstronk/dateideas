@@ -1,5 +1,7 @@
 # ♡ our dates
 
+<img src="assets/banner.svg" alt="" width="720">
+
 A private date planner for two — a shared calendar and map where every pin
 knows which day you're going there.
 
