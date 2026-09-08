@@ -78,6 +78,44 @@ const isLit = (item: DateIdea, p: Props) =>
  */
 const MAP_ID = MAP_INSTANCE_ID
 
+/**
+ * Pins keep a constant screen size at every zoom, which is right when you're
+ * looking at a street and wrong when you're looking at a continent: a 24px
+ * heart then covers a whole city, and a handful of them merge into one blob.
+ * So shrink the glyph as the view widens.
+ *
+ * Full size at z12 (about a city) down to half at z6 (about a country).
+ * Pinch reports fractional zoom, so this is a ramp rather than a step — but
+ * the result is rounded to whole pixels, and the glyph is drawn as literal
+ * pixels, so what you actually see is a handful of discrete sizes.
+ */
+const PIN_MAX = 24
+const PIN_MIN = 12
+const ZOOM_FULL = 12
+const ZOOM_WIDE = 6
+
+function pinSize(zoom: number | null | undefined) {
+  // Before the map reports a zoom, draw the size we always drew.
+  if (zoom == null) return PIN_MAX
+  const t = (zoom - ZOOM_WIDE) / (ZOOM_FULL - ZOOM_WIDE)
+  return Math.round(PIN_MIN + (PIN_MAX - PIN_MIN) * Math.min(1, Math.max(0, t)))
+}
+
+/** The map's current zoom, or null until it reports one. */
+function useZoom() {
+  const map = useMap(MAP_ID)
+  const [zoom, setZoom] = useState<number | null>(null)
+
+  useEffect(() => {
+    if (!map) return
+    setZoom(map.getZoom() ?? null)
+    const l = map.addListener('zoom_changed', () => setZoom(map.getZoom() ?? null))
+    return () => l.remove()
+  }, [map])
+
+  return zoom
+}
+
 export default function DateMap(props: Props) {
   if (!HAS_MAPS) return <MapFallback {...props} />
   return <LiveMap {...props} />
@@ -86,6 +124,7 @@ export default function DateMap(props: Props) {
 function LiveMap(props: Props) {
   const map = useMap(MAP_ID)
   const search = usePlaceSearch()
+  const zoom = useZoom()
 
   /** A place you're looking at but haven't committed to yet. */
   const [candidate, setCandidate] = useState<Place | null>(null)
@@ -187,7 +226,7 @@ function LiveMap(props: Props) {
                 props.onOpen?.(lead.id)
               }}
             >
-              <Pin item={lead} active={lit} count={items.length} />
+              <Pin item={lead} active={lit} count={items.length} size={pinSize(zoom)} />
             </AdvancedMarker>
           )
         })}
@@ -464,23 +503,38 @@ function Pin({
   item,
   active,
   count = 1,
+  size = PIN_MAX,
 }: {
   item: DateIdea
   active: boolean
   count?: number
+  size?: number
 }) {
   return (
     <span
       className="relative block transition-transform duration-75"
       style={{ transform: active ? 'scale(1.5)' : undefined }}
     >
+      {/*
+        A shrunken pin must not become a smaller thing to tap. This pad is
+        absolutely positioned, so it never enters the marker's layout box and
+        therefore never shifts the pin off its coordinates.
+      */}
+      <span
+        aria-hidden="true"
+        className="absolute left-1/2 top-1/2 h-11 w-11 -translate-x-1/2 -translate-y-1/2"
+      />
       <PixelHeart
-        size={active ? 28 : 24}
+        size={active ? size + 4 : size}
         color={pinColor(item.status)}
         outline={item.status === 'idea'}
         bordered
       />
-      {count > 1 && (
+      {/*
+        Below half size the badge would be wider than the heart it sits on, and
+        its digit is unreadable at that zoom anyway.
+      */}
+      {count > 1 && size > (PIN_MIN + PIN_MAX) / 2 && (
         <span className="legend absolute -right-2 -top-2 border-2 border-[var(--color-ink)] bg-[var(--color-card)] px-1 leading-none">
           {count}
         </span>
