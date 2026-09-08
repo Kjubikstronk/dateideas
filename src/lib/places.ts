@@ -139,13 +139,27 @@ export function usePlaceSearch() {
     const prediction = suggestion.placePrediction
     if (!prediction) return null
 
-    const place = prediction.toPlace()
-    await place.fetchFields({ fields: [...FIELDS] })
+    try {
+      const place = prediction.toPlace()
+      await place.fetchFields({ fields: [...FIELDS] })
+      const converted = toPlace(place, prediction.text.text)
 
-    session.current = null
-    setQuery('')
-    setResults([])
-    return toPlace(place, prediction.text.text)
+      // Same cache the map's POI taps read from. A place picked here would
+      // otherwise be looked up — and billed — again the first time it was
+      // tapped on the map.
+      if (converted.placeId) detailCache.set(converted.placeId, converted)
+
+      session.current = null
+      setQuery('')
+      setResults([])
+      return converted
+    } catch {
+      // This rejection used to escape into an onClick handler, where it became
+      // an unhandled rejection and the tap simply did nothing. Say so instead,
+      // and keep the query so it can be tried again.
+      setFailed(true)
+      return null
+    }
   }
 
   function clear() {
