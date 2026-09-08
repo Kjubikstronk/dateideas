@@ -53,9 +53,12 @@ export default function ReportSheet({ openRequest, onClose }: Props) {
       setText('')
       setSent(true)
       setFailed(false)
-    } catch {
-      // Almost always means the `reports` rules haven't been published yet.
-      // Failing visibly beats a form that appears to do nothing.
+    } catch (err) {
+      // Almost always means the `reports` rules haven't been published yet —
+      // which is not something either partner can act on, so the detail goes to
+      // the console for whoever maintains this and the on-screen message stays
+      // in plain language.
+      console.error('report failed to send:', err)
       setFailed(true)
       setSent(false)
     }
@@ -123,8 +126,8 @@ export default function ReportSheet({ openRequest, onClose }: Props) {
               )}
               {failed && (
                 <p className="pixel-box-sm px-3 py-2 text-sm text-[var(--color-deep)]">
-                  Couldn&rsquo;t save that. The database is refusing reports —
-                  the rules for them may not be published yet.
+                  Couldn&rsquo;t send that. Check your connection and try again
+                  — if it keeps failing, tell whoever looks after the app.
                 </p>
               )}
             </div>

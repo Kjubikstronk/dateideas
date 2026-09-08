@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { differenceInCalendarDays, format, parseISO, startOfMonth } from 'date-fns'
 import Calendar from '../components/Calendar'
 import DateCard from '../components/DateCard'
@@ -31,9 +31,23 @@ export default function Home() {
     undoRemove,
   } = useDates()
 
+  const routed = useRef(false)
   const [month, setMonth] = useState(() => startOfMonth(new Date()))
   const [selected, setSelected] = useState<string | null>(null)
   const [view, setView] = useState<View>('calendar')
+  /** Set the moment you pick a tab yourself, so nothing moves you afterwards. */
+  const chosenView = useRef(false)
+  const changeView = useCallback((next: View) => {
+    chosenView.current = true
+    setView(next)
+  }, [])
+  /**
+   * The map is built once you first ask for it, and then kept for the rest of
+   * the session. It used to be unmounted on every tab change, which threw away
+   * your pan and zoom and made Google build a fresh map each time; mounting it
+   * up front instead would build one even in a session that never opens it.
+   */
+  const [mapMounted, setMapMounted] = useState(false)
   const isWide = useIsWide()
   // Touchscreens fake mouseenter while you scroll; see useHasHover.
   const hasHover = useHasHover()
@@ -171,6 +185,25 @@ export default function Home() {
     return { unanswered, upcoming, past, someday, countdown }
   }, [items, me])
 
+  useEffect(() => {
+    if (view === 'map') setMapMounted(true)
+  }, [view])
+
+  /**
+   * Land on the list, not the calendar, when something is actually waiting.
+   *
+   * "how did it go?" is the question this app opens to ask, and on a phone it
+   * sat behind a tab you had to go and find — you got an empty grid saying
+   * "Pick a day" instead. Runs once, only before you've touched a tab
+   * yourself, and only when the list has something on it.
+   */
+  useEffect(() => {
+    if (chosenView.current || routed.current) return
+    if (loading || isWide || !items.length) return
+    routed.current = true
+    if (agenda.unanswered.length || agenda.upcoming.length) setView('ideas')
+  }, [loading, isWide, items.length, agenda])
+
   if (error) {
     return (
       <div className="flex flex-1 items-center justify-center p-8">
@@ -305,14 +338,25 @@ export default function Home() {
     // Narrow: one screen at a time. A split view at 375px is unusable, and the
     // map in particular needs the full width to be worth having.
     <div className="flex min-h-0 flex-1 flex-col">
-      <div className="flex min-h-0 flex-1 flex-col overflow-hidden">
+      <div className="relative flex min-h-0 flex-1 flex-col overflow-hidden">
         {view === 'calendar' && calendarPane}
-        {view === 'map' && mapPane}
         {view === 'ideas' && (
           <div className="min-h-0 flex-1 overflow-y-auto pb-28">{ideasPane}</div>
         )}
+        {/* `visibility`, not `display`: a display:none map loses its box, and
+            Google hands back a grey tile field when it reappears. A hidden
+            element takes no taps either, so the pane underneath stays live. */}
+        {mapMounted && (
+          <div
+            className="absolute inset-0 flex"
+            style={{ visibility: view === 'map' ? 'visible' : 'hidden' }}
+            aria-hidden={view !== 'map'}
+          >
+            {mapPane}
+          </div>
+        )}
       </div>
-      <TabBar view={view} onChange={setView} />
+      <TabBar view={view} onChange={changeView} />
     </div>
   )
 

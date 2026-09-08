@@ -153,10 +153,12 @@ export function usePlaceSearch() {
       setQuery('')
       setResults([])
       return converted
-    } catch {
+    } catch (err) {
       // This rejection used to escape into an onClick handler, where it became
       // an unhandled rejection and the tap simply did nothing. Say so instead,
-      // and keep the query so it can be tried again.
+      // and keep the query so it can be tried again. The cause — usually a key
+      // restriction or a quota — is console-only: neither partner can act on it.
+      console.error('place lookup failed:', err)
       setFailed(true)
       return null
     }

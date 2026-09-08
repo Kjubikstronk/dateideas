@@ -140,7 +140,13 @@ function DateCard({
             label: mine ? 'change yours' : 'how was it?',
             run: () => setMode('remembering'),
           }
-        : null
+        : // Turning a someday into a plan is the loop this app exists for, and
+          // it was the one card state with no button at all — the whole action
+          // hid behind the overflow menu. Opens the normal editor rather than
+          // picking a day inline, which is the version that was rejected.
+          item.status === 'idea'
+          ? { label: 'pick a day', run: () => onEdit(item) }
+          : null
 
   function callOff() {
     onUpdate(item.id, {
@@ -185,7 +191,9 @@ function DateCard({
       <button
         type="button"
         onClick={() => onLocate?.(item)}
-        className="flex w-full items-start gap-3 text-left"
+        // A row with no note and no weather came out at 42px. min-h only ever
+        // raises the short ones, so nothing already taller moves.
+        className="flex min-h-11 w-full items-start gap-3 text-left"
       >
         <span
           aria-hidden="true"
@@ -433,7 +441,10 @@ function DateCard({
                   // Tapping the star you already chose clears the rating,
                   // otherwise there's no way back to "didn't rate it".
                   onClick={() => setStars(stars === n ? 0 : n)}
-                  className="p-1"
+                  // 20px of heart inside 8px of padding made a 28px target for
+                  // the most personal tap in the app, done one-handed at the
+                  // end of an evening. Same 44px floor as everything else.
+                  className="flex h-11 w-11 items-center justify-center"
                 >
                   <PixelHeart
                     size={20}

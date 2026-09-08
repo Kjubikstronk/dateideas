@@ -99,7 +99,8 @@ export default function PlacePicker({ value, onChange }: Props) {
         {busy && <p className="legend text-[var(--color-ink)]/60">looking…</p>}
         {failed && (
           <p className="legend text-[var(--color-deep)]">
-            Place search isn&rsquo;t responding. Check the key&rsquo;s restrictions.
+            Search isn&rsquo;t working right now. Try again in a moment, or type
+            the place name into the title instead.
           </p>
         )}
       </div>

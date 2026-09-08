@@ -224,7 +224,7 @@ export default function Calendar({
       <div className="overflow-hidden">
         <div
           ref={gridRef}
-          className="grid touch-pan-y grid-cols-7 gap-0.5 p-1 sm:gap-1 sm:p-2"
+          className="grid touch-pan-y grid-cols-7 gap-px p-0.5 sm:gap-1 sm:p-2"
           role="grid"
           aria-label={format(month, 'MMMM yyyy')}
           onTouchStart={onTouchStart}
@@ -261,7 +261,7 @@ export default function Calendar({
                 entries.length ? `, ${entries.length} planned` : ''
               }`}
               className={[
-                'relative flex aspect-square min-h-0 min-w-0 flex-col items-center justify-start gap-0.5 border-2 p-1 transition-transform duration-75',
+                'relative flex aspect-square min-h-11 min-w-0 flex-col items-center justify-start gap-0.5 border-2 p-1 transition-transform duration-75',
                 outside
                   ? 'border-transparent text-[var(--color-ink)]/60'
                   : 'border-[var(--color-ink)]',
