@@ -110,7 +110,17 @@ function Gate() {
       <Suspense fallback={<Booting />}>
         <Home />
       </Suspense>
-      <ReportSheet openRequest={reportReq} onClose={() => setReportReq(0)} />
+      {/* Mounted only once asked for, exactly as the preview branch does it.
+          Rendered unconditionally, it held an onSnapshot on the whole reports
+          collection for the entire session and pulled its own lazy chunk down
+          on every sign-in — for a dialog most sessions never open. */}
+      {reportReq > 0 && (
+        <Boundary>
+          <Suspense fallback={null}>
+            <ReportSheet openRequest={reportReq} onClose={() => setReportReq(0)} />
+          </Suspense>
+        </Boundary>
+      )}
     </Device>
   )
 }

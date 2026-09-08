@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import { differenceInCalendarDays, format, parseISO, startOfMonth } from 'date-fns'
 import Calendar from '../components/Calendar'
 import DateCard from '../components/DateCard'
@@ -60,16 +60,20 @@ export default function Home() {
   const [editing, setEditing] = useState<DateIdea | null>(null)
   const [seedPlace, setSeedPlace] = useState<Place | null>(null)
 
-  const openNew = () => {
+  // These reach every DateCard as props, and DateCard is memoised precisely so
+  // a Firestore snapshot doesn't rebuild the whole agenda. A fresh function
+  // identity on each render defeated that memo entirely, so every card
+  // re-rendered on every keystroke, hover and snapshot.
+  const openNew = useCallback(() => {
     setEditing(null)
     setSeedPlace(null)
     setOpenReq((n) => n + 1)
-  }
-  const openEdit = (item: DateIdea) => {
+  }, [])
+  const openEdit = useCallback((item: DateIdea) => {
     setEditing(item)
     setSeedPlace(null)
     setOpenReq((n) => n + 1)
-  }
+  }, [])
   const [flyTo, setFlyTo] = useState<{ lat: number; lng: number; nonce: number } | null>(null)
 
   /**
@@ -77,24 +81,27 @@ export default function Home() {
    * its pin lights up, and the map flies to it. On a phone the map is a
    * separate tab, so going there is the only way the flight is visible.
    */
-  const locate = (item: DateIdea) => {
-    setActiveId(item.id)
-    if (item.scheduledFor) {
-      setSelected(item.scheduledFor)
-      setMonth(startOfMonth(parseISO(item.scheduledFor)))
-    }
-    if (item.place?.lat != null && item.place.lng != null) {
-      setFlyTo({ lat: item.place.lat, lng: item.place.lng, nonce: Date.now() })
-      if (!isWide) setView('map')
-    }
-  }
+  const locate = useCallback(
+    (item: DateIdea) => {
+      setActiveId(item.id)
+      if (item.scheduledFor) {
+        setSelected(item.scheduledFor)
+        setMonth(startOfMonth(parseISO(item.scheduledFor)))
+      }
+      if (item.place?.lat != null && item.place.lng != null) {
+        setFlyTo({ lat: item.place.lat, lng: item.place.lng, nonce: Date.now() })
+        if (!isWide) setView('map')
+      }
+    },
+    [isWide],
+  )
 
   /** Map-first flow: found somewhere, start a date from it. */
-  const openFromPlace = (place: Place) => {
+  const openFromPlace = useCallback((place: Place) => {
     setEditing(null)
     setSeedPlace(place)
     setOpenReq((n) => n + 1)
-  }
+  }, [])
 
   /** The one record under the pointer, wherever the pointer is. */
   const [activeId, setActiveId] = useState<string | null>(null)
