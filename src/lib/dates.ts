@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { format } from 'date-fns'
 import {
   addDoc,
   collection,
@@ -146,6 +147,53 @@ export function useDates() {
     // reject an update that changes authorship anyway.
     await guard(() => updateDoc(doc(store, COLLECTION, id), patch))
   }, [guard])
+
+  /**
+   * A plan whose day has been and gone marks itself "we went".
+   *
+   * Chosen over deleting it, which would take both your ratings with it — the
+   * memories are the point. And chosen over leaving it, which is what used to
+   * happen: a plan from three months ago kept its hot-pink "planned" pin on
+   * the map forever, indistinguishable from something actually coming up.
+   *
+   * The honest caveat: this asserts you went. If you skipped it, call it off
+   * from the card — the status is a default, not a claim you can't correct.
+   *
+   * Deliberately `<` and not `<=`: a date happening today has not passed yet.
+   */
+  const settled = useRef(new Set<string>())
+
+  const settlePast = useCallback(
+    (list: DateIdea[]) => {
+      const today = format(new Date(), 'yyyy-MM-dd')
+      for (const it of list) {
+        if (it.status !== 'planned') continue
+        if (!it.scheduledFor || it.scheduledFor >= today) continue
+        // The snapshot echoes the new status back, but not before this can run
+        // again — so remember what's already been sent rather than resending.
+        // Both partners' apps will flip the same date once each; the write is
+        // idempotent, so the only cost is one redundant write per date.
+        if (settled.current.has(it.id)) continue
+        settled.current.add(it.id)
+        void update(it.id, { status: 'done' })
+      }
+    },
+    [update],
+  )
+
+  useEffect(() => {
+    settlePast(items)
+  }, [items, settlePast])
+
+  // A phone that sat in a pocket overnight wakes up with a stale `today`, and
+  // nothing in the data changed to trigger the effect above.
+  useEffect(() => {
+    const recheck = () => {
+      if (document.visibilityState === 'visible') settlePast(items)
+    }
+    document.addEventListener('visibilitychange', recheck)
+    return () => document.removeEventListener('visibilitychange', recheck)
+  }, [items, settlePast])
 
   /** How long you get to change your mind. */
   const UNDO_MS = 6000
