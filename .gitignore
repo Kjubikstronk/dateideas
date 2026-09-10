@@ -32,3 +32,4 @@ dev-dist
 
 # Filled-in rules with real UIDs — the committed firestore.rules is a template
 firestore.rules.local
+icon-preview.png
