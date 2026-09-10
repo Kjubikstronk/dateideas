@@ -251,7 +251,20 @@ function LiveMap(props: Props) {
 
       {/* Overlays live outside <Map> — see the note on MAP_ID. */}
       <SearchBar search={search} onPick={goTo} />
-      <LocateButton onFound={setMe} />
+      {/* Key and locate control share the one corner the cards never take.
+          The legend used to sit bottom-left and disappear the moment a pin
+          went active — which is exactly when someone new wants to know what
+          the colours mean. */}
+      <div className="absolute bottom-2 right-2 z-20 flex flex-col items-end gap-2">
+        {/* On a phone the detail card spans the full width just above this, so
+            the key steps aside while one is open. On desktop that card is
+            bottom-left and narrow and never reaches here — which is the case
+            that used to hide the key for no reason at all. */}
+        <div className={candidate || props.activeId ? 'hidden sm:block' : undefined}>
+          <Legend />
+        </div>
+        <LocateButton onFound={setMe} />
+      </div>
 
       {candidate ? (
         <CandidateCard
@@ -266,7 +279,6 @@ function LiveMap(props: Props) {
         <ActiveCard {...props} />
       )}
 
-      <Legend hidden={!!candidate || !!props.activeId} />
     </>
   )
 }
@@ -360,7 +372,8 @@ function LocateButton({ onFound }: { onFound: (c: { lat: number; lng: number }) 
   }
 
   return (
-    <div className="absolute bottom-2 right-2 z-20 flex flex-col items-end gap-1">
+    // Positioned by the stack it sits in, not by itself.
+    <div className="flex flex-col items-end gap-1">
       {state === 'denied' && (
         <p className="legend max-w-[12rem] border-2 border-[var(--color-ink)] bg-[var(--color-card)] px-2 py-1 text-[var(--color-deep)]">
           location is blocked — allow it in your browser settings
@@ -544,9 +557,7 @@ function Pin({
 }
 
 /** The overview needs a key, or the pin colours mean nothing. */
-function Legend({ hidden }: { hidden?: boolean }) {
-  if (hidden) return null
-
+function Legend() {
   const rows: [string, DateIdea['status']][] = [
     ['planned', 'planned'],
     ['someday', 'idea'],
@@ -555,7 +566,7 @@ function Legend({ hidden }: { hidden?: boolean }) {
   ]
 
   return (
-    <div className="pixel-box-sm absolute bottom-2 left-2 z-10 space-y-1 p-2">
+    <div className="pixel-box-sm space-y-1 p-2">
       {rows.map(([label, status]) => (
         <p key={label} className="flex items-center gap-1.5">
           <PixelHeart size={14} color={pinColor(status)} outline={status === 'idea'} bordered />
@@ -659,7 +670,9 @@ function MapFallback(props: Props) {
         })}
 
       <ActiveCard {...props} />
-      <Legend />
+      <div className="absolute bottom-2 right-2 z-10">
+        <Legend />
+      </div>
     </div>
   )
 }

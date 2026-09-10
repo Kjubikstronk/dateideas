@@ -295,6 +295,8 @@ export default function Home() {
   const ideasPane = (
     <AgendaPane
       agenda={agenda}
+      // Phone only: the wide layout already carries this in its top strip.
+      milestone={isWide ? null : milestone}
       onUpdate={update}
       onDelete={remove}
       onEdit={openEdit}
@@ -369,10 +371,13 @@ export default function Home() {
             where a toast conventionally goes: the bottom-right corner already
             holds the tab bar, the floating add button and the map's locate
             control, and that corner has caused two collisions already. */}
+        {/* One stack, so a write failing during an undo countdown can't land
+            on top of the undo and hide it. Empty, it must not eat taps. */}
+        <div className="pointer-events-none absolute inset-x-3 top-3 z-40 flex flex-col gap-2">
         {pendingDelete && (
           <div
             role="status"
-            className="absolute inset-x-3 top-3 z-40 flex items-center gap-3 border-[3px] border-[var(--color-ink)] bg-[var(--color-lav)] p-3 shadow-[4px_4px_0_var(--color-ink)]"
+            className="pointer-events-auto flex items-center gap-3 border-[3px] border-[var(--color-ink)] bg-[var(--color-lav)] p-3 shadow-[4px_4px_0_var(--color-ink)]"
           >
             <p className="min-w-0 flex-1 truncate text-sm">
               Deleted &ldquo;{pendingDelete.place?.name ?? pendingDelete.title}&rdquo;.
@@ -391,7 +396,7 @@ export default function Home() {
         {writeError && (
           <div
             role="alert"
-            className="absolute inset-x-3 top-3 z-40 flex items-start gap-2 border-[3px] border-[var(--color-ink)] bg-[var(--color-card)] p-3 shadow-[4px_4px_0_var(--color-ink)]"
+            className="pointer-events-auto flex items-start gap-2 border-[3px] border-[var(--color-ink)] bg-[var(--color-card)] p-3 shadow-[4px_4px_0_var(--color-ink)]"
           >
             <p className="flex-1 text-sm text-[var(--color-deep)]">{writeError}</p>
             <button
@@ -403,6 +408,7 @@ export default function Home() {
             </button>
           </div>
         )}
+        </div>
 
         {/* Adding a date is the one thing you do most, so it gets a permanent
             thumb-reachable button rather than living behind a menu.
@@ -535,6 +541,7 @@ function DayPanel({
 
 function AgendaPane({
   agenda,
+  milestone,
   ...rest
 }: ListProps & {
   agenda: {
@@ -544,6 +551,8 @@ function AgendaPane({
     someday: DateIdea[]
     countdown: string | null
   }
+  /** "7 dates · since jul 2026". Desktop shows it in the top strip instead. */
+  milestone?: string | null
 }) {
   const { unanswered, upcoming, past, someday } = agenda
   const empty = !unanswered.length && !upcoming.length && !past.length && !someday.length
@@ -584,6 +593,13 @@ function AgendaPane({
           />
           <Section title="been there" glyph="done" items={past} {...rest} />
         </>
+      )}
+
+      {/* The quiet payoff for using this for a while. It sat in the desktop
+          strip only, so it never reached the phone both couples actually use.
+          Bottom of the list: it's a reward you scroll into, not a headline. */}
+      {milestone && !empty && (
+        <p className="legend pt-1 text-center text-[var(--color-ink)]/60">{milestone}</p>
       )}
 
       {/* Always last, always present — including on an empty account. */}
