@@ -16,6 +16,14 @@
      Contrast: hot (#FF5CA8) on paper (#FFE5F1) is ~2.2:1 and fails WCAG,
      which is exactly why `deep` exists. Pink text always uses `deep`. */
   --color-ink: #1a1033;
+  /* `ink` did three jobs that only coincide in light mode: every border,
+     every hard shadow, and all body text. On a dark ground those diverge —
+     text must go light while shadows stay dark — so they are three tokens.
+     Here all three are the same value, which is what makes the split a
+     no-op on this palette. */
+  --color-line: #1a1033;
+  --color-text: #1a1033;
+  --color-shadow: #1a1033;
   --color-paper: #ffe5f1;
   --color-card: #fffdfe;
   --color-hot: #ff5ca8;
@@ -49,7 +57,7 @@
 
   body {
     background-color: var(--color-paper);
-    color: var(--color-ink);
+    color: var(--color-text);
     font-family: var(--font-body);
     /* Pixel faces must never be smoothed — antialiasing turns crisp
        bitmap edges into grey mush. */
@@ -69,13 +77,13 @@
 
   /* Keyboard focus has to survive a design this loud. */
   :focus-visible {
-    outline: 3px solid var(--color-ink);
+    outline: 3px solid var(--color-line);
     outline-offset: 3px;
   }
 
   ::selection {
     background: var(--color-hot);
-    color: var(--color-ink);
+    color: var(--color-text);
   }
 }
 
@@ -83,15 +91,15 @@
   /* The core primitive: 3px ink border, hard offset shadow, zero blur.
      Every surface in the app is one of these. */
   .pixel-box {
-    border: 3px solid var(--color-ink);
+    border: 3px solid var(--color-line);
     background: var(--color-card);
-    box-shadow: 4px 4px 0 var(--color-ink);
+    box-shadow: 4px 4px 0 var(--color-shadow);
   }
 
   .pixel-box-sm {
-    border: 2px solid var(--color-ink);
+    border: 2px solid var(--color-line);
     background: var(--color-card);
-    box-shadow: 2px 2px 0 var(--color-ink);
+    box-shadow: 2px 2px 0 var(--color-shadow);
   }
 
   /* Buttons physically depress. The shadow collapses as the button
@@ -99,9 +107,9 @@
   .pixel-btn {
     font-family: var(--font-display);
     font-weight: 700;
-    border: 3px solid var(--color-ink);
+    border: 3px solid var(--color-line);
     background: var(--color-card);
-    box-shadow: 4px 4px 0 var(--color-ink);
+    box-shadow: 4px 4px 0 var(--color-shadow);
     transition:
       transform 90ms var(--ease-snap),
       box-shadow 90ms var(--ease-snap);
@@ -113,26 +121,26 @@
 
   .pixel-btn:hover {
     transform: translate(1px, 1px);
-    box-shadow: 3px 3px 0 var(--color-ink);
+    box-shadow: 3px 3px 0 var(--color-shadow);
   }
 
   .pixel-btn:active {
     transform: translate(4px, 4px);
-    box-shadow: 0 0 0 var(--color-ink);
+    box-shadow: 0 0 0 var(--color-shadow);
   }
 
   .pixel-btn:disabled {
     opacity: 0.45;
     cursor: not-allowed;
     transform: none;
-    box-shadow: 4px 4px 0 var(--color-ink);
+    box-shadow: 4px 4px 0 var(--color-shadow);
   }
 
   .pixel-btn-primary {
     background: var(--color-hot);
     /* NOT --color-card: white on hot is 2.82:1 and fails AA. Ink clears it
        comfortably and suits the LCD look better. */
-    color: var(--color-ink);
+    color: var(--color-text);
   }
 
   /* THE SIGNATURE — the app is a handheld gadget, not a document.
@@ -140,15 +148,15 @@
      behind it, lit slightly and inset with a reverse shadow so the
      bezel reads as physically raised above it. */
   .device {
-    border: 3px solid var(--color-ink);
+    border: 3px solid var(--color-line);
     background: var(--color-hot);
-    box-shadow: 6px 6px 0 var(--color-ink);
+    box-shadow: 6px 6px 0 var(--color-shadow);
   }
 
   .screen {
-    border: 3px solid var(--color-ink);
+    border: 3px solid var(--color-line);
     background: var(--color-card);
-    box-shadow: inset 3px 3px 0 rgb(26 16 51 / 0.14);
+    box-shadow: inset 3px 3px 0 color-mix(in srgb, var(--color-shadow) 14%, transparent);
   }
 
   /* Inputs read as recessed slots cut into the case — the inverse of the
@@ -158,17 +166,17 @@
     /* Never below 16px. iOS Safari zooms the whole page when you focus a
        smaller field, and it doesn't zoom back out afterwards. */
     font-size: 1rem;
-    border: 3px solid var(--color-ink);
+    border: 3px solid var(--color-line);
     background: var(--color-card);
-    box-shadow: inset 3px 3px 0 rgb(26 16 51 / 0.12);
+    box-shadow: inset 3px 3px 0 color-mix(in srgb, var(--color-shadow) 12%, transparent);
     min-height: 44px;
     width: 100%;
     padding: 0.5rem 0.75rem;
-    color: var(--color-ink);
+    color: var(--color-text);
   }
 
   .pixel-input::placeholder {
-    color: rgb(26 16 51 / 0.6);
+    color: color-mix(in srgb, var(--color-text) 60%, transparent);
   }
 
   .pixel-input:focus {
@@ -195,18 +203,18 @@
      Built on <dialog> so focus trapping, Escape-to-close and inertness of the
      page behind it are the browser's job rather than ours. */
   .sheet {
-    border: 3px solid var(--color-ink);
+    border: 3px solid var(--color-line);
     background: var(--color-card);
     padding: 0;
     width: 100%;
     max-width: 100%;
     max-height: 88svh;
     margin: auto auto 0 auto; /* pinned to the bottom edge = thumb reach */
-    box-shadow: 0 -4px 0 var(--color-ink);
+    box-shadow: 0 -4px 0 var(--color-shadow);
   }
 
   .sheet::backdrop {
-    background: rgb(26 16 51 / 0.55);
+    background: color-mix(in srgb, var(--color-shadow) 55%, transparent);
   }
 
   .sheet[open] {
@@ -223,7 +231,7 @@
     .sheet {
       max-width: 28rem;
       margin: auto;
-      box-shadow: 6px 6px 0 var(--color-ink);
+      box-shadow: 6px 6px 0 var(--color-shadow);
     }
   }
 
@@ -241,7 +249,7 @@
   .marquee-today {
     background-image: repeating-linear-gradient(
       90deg,
-      var(--color-ink) 0 6px,
+      var(--color-line) 0 6px,
       transparent 6px 12px
     );
     background-size: 24px 3px;
