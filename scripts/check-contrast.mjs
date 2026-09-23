@@ -6,16 +6,39 @@
  *   node scripts/check-contrast.mjs
  */
 
-const T = {
-  ink: '#1A1033',
-  paper: '#FFE5F1',
-  card: '#FFFDFE',
-  hot: '#FF5CA8',
-  deep: '#B31E67',
-  lav: '#B8A6FF',
-  aqua: '#5BE0E6',
-  mute: '#6B6480',
+import { readFileSync } from 'node:fs'
+import { fileURLToPath } from 'node:url'
+import { dirname, join } from 'node:path'
+
+const CSS = join(dirname(fileURLToPath(import.meta.url)), '..', 'src', 'theme.css')
+
+/**
+ * The stylesheet is the single source of truth for colour. Parsing it here
+ * rather than keeping a second copy means this gate can never pass against
+ * values that no longer ship, and any theme added later is checked the moment
+ * it exists.
+ *
+ * Returns { pink: {...}, <theme>: {...} } — `pink` is the @theme block, each
+ * other key a [data-theme="..."] block layered over it.
+ */
+export function readThemes(cssPath = CSS) {
+  const css = readFileSync(cssPath, 'utf8')
+  const tokens = (block) =>
+    Object.fromEntries(
+      [...block.matchAll(/--color-([a-z-]+)\s*:\s*(#[0-9a-fA-F]{6})/g)].map((m) => [m[1], m[2]]),
+    )
+
+  const base = css.match(/@theme\s*\{([\s\S]*?)\n\}/)
+  if (!base) throw new Error(`no @theme block found in ${cssPath}`)
+  const themes = { pink: tokens(base[1]) }
+
+  for (const m of css.matchAll(/\[data-theme=["']([a-z-]+)["']\]\s*\{([\s\S]*?)\n\s*\}/g)) {
+    themes[m[1]] = { ...themes.pink, ...tokens(m[2]) }
+  }
+  return themes
 }
+
+const T = readThemes().pink
 
 const hex = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16))
 
