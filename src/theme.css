@@ -256,10 +256,19 @@
     }
   }
 
-  /* The boot sequence: the single orchestrated motion moment. Content
-     pops in stepped and staggered, like a device waking up. */
+  /* The boot sequence: the single orchestrated motion moment.
+     `.boot` is the case arriving; `.boot-late` is what sits on the screen,
+     one beat behind it. The gap is the whole point — without it the shell
+     and its contents arrive as one flat object, and a handheld that wakes
+     all at once doesn't read as a device powering on. Used once per load,
+     which is the only place a stagger earns its cost. */
   .boot {
     animation: boot-in 240ms var(--ease-chunk) both;
+  }
+
+  .boot-late {
+    animation: boot-in 240ms var(--ease-chunk) both;
+    animation-delay: 100ms;
   }
 
   @keyframes boot-in {

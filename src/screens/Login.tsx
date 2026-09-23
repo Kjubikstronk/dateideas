@@ -50,7 +50,7 @@ export default function Login() {
     <div className="flex flex-1 items-center justify-center p-6">
       <form
         onSubmit={onSubmit}
-        className="boot w-full max-w-xs space-y-5"
+        className="boot-late w-full max-w-xs space-y-5"
         noValidate
       >
         {/* Just the heart. Anything else here would tell a stranger what

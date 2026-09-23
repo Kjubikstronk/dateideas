@@ -256,11 +256,17 @@ function LiveMap(props: Props) {
           went active — which is exactly when someone new wants to know what
           the colours mean. */}
       <div className="absolute bottom-2 right-2 z-20 flex flex-col items-end gap-2">
-        {/* On a phone the detail card spans the full width just above this, so
-            the key steps aside while one is open. On desktop that card is
-            bottom-left and narrow and never reaches here — which is the case
-            that used to hide the key for no reason at all. */}
-        <div className={candidate || props.activeId ? 'hidden sm:block' : undefined}>
+        {/* The card spans the full width just above this, so the key steps
+            aside while one is open — it's reference material, not a response
+            to the tap, so it fades rather than popping out. */}
+        <div
+          className={[
+            'transition-opacity duration-75 ease-snap',
+            candidate || props.activeId ? 'pointer-events-none opacity-0' : '',
+          ]
+            .filter(Boolean)
+            .join(' ')}
+        >
           <Legend />
         </div>
         <LocateButton onFound={setMe} />
