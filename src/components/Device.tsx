@@ -25,7 +25,7 @@ export default function Device({ children, status }: Props) {
         <header className="flex items-center justify-between gap-3 px-3 py-2 sm:px-4 sm:py-3">
           <div className="flex items-center gap-2">
             <PixelHeart size={18} color="var(--color-line)" className="beat" />
-            <h1 className="font-[family-name:var(--font-display)] text-lg font-bold tracking-wide text-[var(--color-text)] sm:text-xl">
+            <h1 className="font-[family-name:var(--font-display)] text-lg font-bold tracking-wide text-[var(--color-on-fill)] sm:text-xl">
               our dates
             </h1>
           </div>

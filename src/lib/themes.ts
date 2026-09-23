@@ -10,7 +10,7 @@
  * Firestore: one partner picking a look should not repaint the other's phone.
  */
 
-export type ThemeId = 'pink'
+export type ThemeId = 'pink' | 'halloween'
 
 export type Theme = {
   id: ThemeId
@@ -31,7 +31,10 @@ export const HEART = [
   '....X....',
 ]
 
-export const THEMES: Theme[] = [{ id: 'pink', name: 'pink', glyph: HEART }]
+export const THEMES: Theme[] = [
+  { id: 'pink', name: 'pink', glyph: HEART },
+  { id: 'halloween', name: 'halloween', glyph: HEART },
+]
 
 export const DEFAULT_THEME: ThemeId = 'pink'
 export const STORAGE_KEY = 'dateideas:theme'

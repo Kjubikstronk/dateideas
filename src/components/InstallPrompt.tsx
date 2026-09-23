@@ -101,7 +101,7 @@ export default function InstallPrompt() {
   return (
     <div
       role="status"
-      className="pointer-events-auto flex w-full max-w-sm items-start gap-3 border-[3px] border-[var(--color-line)] bg-[var(--color-lav)] p-3 shadow-[4px_4px_0_var(--color-shadow)]"
+      className="pointer-events-auto flex w-full max-w-sm items-start gap-3 border-[3px] border-[var(--color-line)] bg-[var(--color-lav)] text-[var(--color-on-fill)] p-3 shadow-[4px_4px_0_var(--color-shadow)]"
     >
       <p className="flex-1 text-sm">{message}</p>
       <div className="flex shrink-0 flex-col gap-2">

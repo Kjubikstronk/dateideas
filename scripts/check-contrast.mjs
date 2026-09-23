@@ -60,43 +60,43 @@ const over = (fg, bg, alpha) => fg.map((c, i) => c * alpha + bg[i] * (1 - alpha)
 
 // [label, foreground, background, alpha, size]
 // "large" = >=18.66px bold or >=24px, which has a lower AA bar (3.0 vs 4.5).
-const CASES = [
+// A function of the palette, so every theme is measured, not just the default.
+const casesFor = (T) => [
   ['body text (text on card)', T.text, T.card, 1, 'normal'],
   ['body text (text on paper)', T.text, T.paper, 1, 'normal'],
-  ['error text (deep on card)', T.deep, T.card, 1, 'normal'],
+  ['accent text (deep on card)', T.deep, T.card, 1, 'normal'],
   ['cancel note (mute on card)', T.mute, T.card, 1, 'normal'],
   ['delete button (card on deep)', T.card, T.deep, 1, 'normal'],
-  ['device title (text on hot)', T.text, T.hot, 1, 'large'],
-  ['primary button (text on hot)', T.text, T.hot, 1, 'normal'],
-  ['selected day (text on hot)', T.text, T.hot, 1, 'normal'],
+  ['device title (on-fill on hot)', T['on-fill'], T.hot, 1, 'large'],
+  ['primary button (on-fill on hot)', T['on-fill'], T.hot, 1, 'normal'],
+  ['selected day (on-fill on hot)', T['on-fill'], T.hot, 1, 'normal'],
   ['note 75% on card', T.text, T.card, 0.75, 'normal'],
   ['legend 70% on card', T.text, T.card, 0.7, 'normal'],
   ['secondary 60% on card', T.text, T.card, 0.6, 'normal'],
   ['placeholder 60% on card', T.text, T.card, 0.6, 'normal'],
   ['outside-month day 60%', T.text, T.card, 0.6, 'normal'],
-  ['linked day (text on lav)', T.text, T.lav, 1, 'normal'],
-  ['done marker (text on aqua)', T.text, T.aqua, 1, 'normal'],
-  // Kept as a guard: this is why `deep` exists and `hot` is never text.
-  ['NEVER USED: hot as text on paper', T.hot, T.paper, 1, 'normal'],
+  ['linked day (on-fill on lav)', T['on-fill'], T.lav, 1, 'normal'],
+  ['done marker (on-fill on aqua)', T['on-fill'], T.aqua, 1, 'normal'],
 ]
 
 let failures = 0
-console.log('\n  ratio   AA    case')
-console.log('  ' + '─'.repeat(56))
-
-for (const [label, fg, bg, alpha, size] of CASES) {
-  const bgRgb = hex(bg)
-  const fgRgb = alpha === 1 ? hex(fg) : over(hex(fg), bgRgb, alpha)
-  const r = ratio(fgRgb, bgRgb)
-  const need = size === 'large' ? 3.0 : 4.5
-  const pass = r >= need
-  const informational = label.startsWith('NEVER USED')
-  if (!pass && !informational) failures++
-  console.log(
-    `  ${r.toFixed(2).padStart(5)}  ${(pass ? 'pass' : 'FAIL').padEnd(5)} ${label}` +
-      (size === 'large' ? '  (large text, needs 3.0)' : ''),
-  )
+for (const [name, T] of Object.entries(readThemes())) {
+  console.log(`\n  ${name}`)
+  console.log('  ratio   AA    case')
+  console.log('  ' + '-'.repeat(56))
+  for (const [label, fg, bg, alpha, size] of casesFor(T)) {
+    const bgRgb = hex(bg)
+    const fgRgb = alpha === 1 ? hex(fg) : over(hex(fg), bgRgb, alpha)
+    const r = ratio(fgRgb, bgRgb)
+    const need = size === 'large' ? 3.0 : 4.5
+    const pass = r >= need
+    if (!pass) failures++
+    console.log(
+      `  ${r.toFixed(2).padStart(5)}  ${(pass ? 'pass' : 'FAIL').padEnd(5)} ${label}` +
+        (size === 'large' ? '  (large text, needs 3.0)' : ''),
+    )
+  }
 }
 
-console.log('\n  ' + (failures ? `${failures} real failure(s)` : 'all real cases pass') + '\n')
+console.log('\n  ' + (failures ? `${failures} failure(s)` : 'all themes pass') + '\n')
 process.exit(failures ? 1 : 0)

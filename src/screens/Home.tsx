@@ -378,7 +378,7 @@ export default function Home() {
         {pendingDelete && (
           <div
             role="status"
-            className="pointer-events-auto flex items-center gap-3 border-[3px] border-[var(--color-line)] bg-[var(--color-lav)] p-3 shadow-[4px_4px_0_var(--color-shadow)]"
+            className="pointer-events-auto flex items-center gap-3 border-[3px] border-[var(--color-line)] bg-[var(--color-lav)] text-[var(--color-on-fill)] p-3 shadow-[4px_4px_0_var(--color-shadow)]"
           >
             <p className="min-w-0 flex-1 truncate text-sm">
               Deleted &ldquo;{pendingDelete.place?.name ?? pendingDelete.title}&rdquo;.
@@ -672,7 +672,7 @@ function Section({
           {title}
         </span>
         {badge ? (
-          <span className="legend border-2 border-[var(--color-line)] bg-[var(--color-hot)] px-1.5 py-1 text-[var(--color-text)]">
+          <span className="legend border-2 border-[var(--color-line)] bg-[var(--color-hot)] px-1.5 py-1 text-[var(--color-on-fill)]">
             {badge}
           </span>
         ) : (

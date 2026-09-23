@@ -23,6 +23,10 @@
   --color-line: #1a1033;
   --color-text: #1a1033;
   --color-shadow: #1a1033;
+  /* Text drawn ON a saturated fill. In this palette it coincides with
+     `text`; on a dark theme it must not, because body text goes light
+     while the fills stay bright. */
+  --color-on-fill: #1a1033;
   --color-paper: #ffe5f1;
   --color-card: #fffdfe;
   --color-hot: #ff5ca8;
@@ -137,9 +141,9 @@
 
   .pixel-btn-primary {
     background: var(--color-hot);
-    /* NOT --color-card: white on hot is 2.82:1 and fails AA. Ink clears it
-       comfortably and suits the LCD look better. */
-    color: var(--color-text);
+    /* NOT --color-card: white on hot is 2.82:1 and fails AA. The dark
+       on-fill token clears it comfortably and suits the LCD look better. */
+    color: var(--color-on-fill);
   }
 
   /* THE SIGNATURE — the app is a handheld gadget, not a document.
@@ -302,6 +306,40 @@
       transform: scale(1.14);
     }
   }
+}
+
+/* ── Halloween ──────────────────────────────────────────────────────────
+   Dark. `line` and `text` go bone so they read on a dark ground, and the hard
+   offset shadow becomes pumpkin — on near-black a darker shadow does nothing,
+   so it glows instead of receding.
+
+   `deep` is LIGHTER than `hot` here, which is not a mistake. "Hot is fills
+   only because it fails as text" is a light-mode fact: on a dark ground the
+   vivid accent passes comfortably and a dark sibling is what fails. The token
+   keeps its ROLE — the sibling that is safe as text — and inverts its
+   lightness to do so. */
+[data-theme='halloween'] {
+  --color-paper: #120a20;
+  --color-card: #241539;
+  --color-line: #f2e9dc;
+  --color-text: #f2e9dc;
+  --color-shadow: #ff7518;
+  --color-hot: #ff7518;
+  --color-deep: #ffa05c;
+  --color-lav: #b388ff;
+  --color-aqua: #7cfc5a;
+  --color-mute: #8a7fa3;
+  --color-on-fill: #120a20;
+}
+
+/* The insets fake a recess by DARKENING the top-left. On a dark surface that
+   reads as a bulge — the metaphor inverts — so they lighten here instead. */
+[data-theme='halloween'] .screen {
+  box-shadow: inset 3px 3px 0 color-mix(in srgb, var(--color-line) 14%, transparent);
+}
+
+[data-theme='halloween'] .pixel-input {
+  box-shadow: inset 3px 3px 0 color-mix(in srgb, var(--color-line) 12%, transparent);
 }
 
 /* A loud design owes people an exit. */

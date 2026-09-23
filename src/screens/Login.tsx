@@ -97,7 +97,7 @@ export default function Login() {
             </p>
           ) : null}
           {sentReset ? (
-            <p className="pixel-box-sm bg-[var(--color-aqua)] px-3 py-2 text-sm">
+            <p className="pixel-box-sm bg-[var(--color-aqua)] text-[var(--color-on-fill)] px-3 py-2 text-sm">
               Reset link sent. Check your email.
             </p>
           ) : null}

@@ -635,7 +635,7 @@ function Agreement({ item }: { item: DateIdea }) {
 
   return (
     <span className="legend mt-1.5 flex items-center gap-2">
-      <span className="border-2 border-[var(--color-line)] bg-[var(--color-hot)] px-1.5 py-1 text-[var(--color-text)]">
+      <span className="border-2 border-[var(--color-line)] bg-[var(--color-hot)] px-1.5 py-1 text-[var(--color-on-fill)]">
         {avg?.toFixed(1)}
       </span>
       <span className="text-[var(--color-text)]/60">{verdict}</span>

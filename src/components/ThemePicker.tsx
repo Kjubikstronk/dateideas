@@ -34,7 +34,7 @@ export default function ThemePicker() {
           >
             <span
               aria-hidden="true"
-              className="block h-5 w-5 border-2 border-[var(--color-line)] bg-[var(--color-hot)]"
+              className="block h-5 w-5 border-2 border-[var(--color-line)] bg-[var(--color-hot)] text-[var(--color-on-fill)]"
             />
           </button>
         ))}

@@ -243,7 +243,7 @@ function LiveMap(props: Props) {
           <AdvancedMarker position={me} title="You are here">
             <span
               aria-hidden="true"
-              className="block h-3.5 w-3.5 border-2 border-[var(--color-line)] bg-[var(--color-aqua)]"
+              className="block h-3.5 w-3.5 border-2 border-[var(--color-line)] bg-[var(--color-aqua)] text-[var(--color-on-fill)]"
             />
           </AdvancedMarker>
         )}

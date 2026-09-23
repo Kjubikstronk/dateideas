@@ -120,7 +120,7 @@ export default function ReportSheet({ openRequest, onClose }: Props) {
 
             <div aria-live="polite">
               {sent && (
-                <p className="pixel-box-sm bg-[var(--color-aqua)] px-3 py-2 text-sm">
+                <p className="pixel-box-sm bg-[var(--color-aqua)] text-[var(--color-on-fill)] px-3 py-2 text-sm">
                   Sent. It shows up for both of you below.
                 </p>
               )}

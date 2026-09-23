@@ -266,9 +266,9 @@ export default function Calendar({
                   ? 'border-transparent text-[var(--color-text)]/60'
                   : 'border-[var(--color-line)]',
                 isSelected
-                  ? 'bg-[var(--color-hot)] text-[var(--color-text)]'
+                  ? 'bg-[var(--color-hot)] text-[var(--color-on-fill)]'
                   : isLinked
-                    ? 'bg-[var(--color-lav)]'
+                    ? 'bg-[var(--color-lav)] text-[var(--color-on-fill)]'
                     : outside
                       ? ''
                       : 'bg-[var(--color-card)]',
