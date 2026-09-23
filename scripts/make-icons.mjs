@@ -19,18 +19,7 @@ import { writeFileSync, mkdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-/**
- * The lobes are two rows tall, not one.
- *
- * With a single row they were bumps on a flat slab, and at the sizes this
- * actually renders the notch between them closed up entirely: rasterised at
- * 8px — the calendar markers — the old glyph came out `+##++##+`, with the
- * gap filled by partial coverage. Two rows survive the downscale as
- * `+##..##+`, so the one feature that makes it read as a heart holds at every
- * size in the app.
- */
 const HEART = [
-  '.XX...XX.',
   '.XX...XX.',
   'XXXXXXXXX',
   'XXXXXXXXX',
@@ -50,8 +39,7 @@ const AQUA = '#5BE0E6'
 
 /** Everything is composed on this grid, then scaled up by whole pixels. */
 const N = 16
-/** Top-left of the 9x9 heart within the grid. Taller lobes pushed the halo up
-    into the aqua sparkle at HY=3, so the glyph sits one row lower. */
+/** Top-left of the 9x8 heart within the grid. */
 const HX = 3
 const HY = 4
 

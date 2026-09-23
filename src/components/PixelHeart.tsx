@@ -4,18 +4,7 @@
  * any size: scaling it up gives you bigger squares, not a vector curve.
  */
 
-/**
- * The lobes are two rows tall, not one.
- *
- * With a single row they were bumps on a flat slab, and at the sizes this
- * actually renders the notch between them closed up entirely: rasterised at
- * 8px — the calendar markers — the old glyph came out `+##++##+`, with the
- * gap filled by partial coverage. Two rows survive the downscale as
- * `+##..##+`, so the one feature that makes it read as a heart holds at every
- * size in the app.
- */
 const HEART = [
-  '.XX...XX.',
   '.XX...XX.',
   'XXXXXXXXX',
   'XXXXXXXXX',
