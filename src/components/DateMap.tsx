@@ -525,7 +525,7 @@ function Pin({
 }) {
   return (
     <span
-      className="relative block transition-transform duration-75"
+      className="relative block transition-transform duration-75 ease-snap"
       style={{ transform: active ? 'scale(1.5)' : undefined }}
     >
       {/*
@@ -628,7 +628,7 @@ function MapFallback(props: Props) {
             <button
               key={key}
               type="button"
-              className="absolute p-2 transition-transform duration-75"
+              className="absolute p-2 transition-transform duration-75 ease-snap"
               style={{
                 left: `${left}%`,
                 top: `${top}%`,

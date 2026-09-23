@@ -161,7 +161,7 @@ function DateCard({
     <li
       data-date-id={item.id}
       className={[
-        'transition-transform duration-75',
+        'transition-transform duration-75 ease-snap',
         // A flat row lifts into a card the moment it's the thing you're
         // handling, so the raised treatment means "this one" rather than
         // "all of them". Padding is decided once here: emitting two competing

@@ -261,7 +261,7 @@ export default function Calendar({
                 entries.length ? `, ${entries.length} planned` : ''
               }`}
               className={[
-                'relative flex aspect-square min-h-11 min-w-0 flex-col items-center justify-start gap-0.5 border-2 p-1 transition-transform duration-75',
+                'relative flex aspect-square min-h-11 min-w-0 flex-col items-center justify-start gap-0.5 border-2 p-1 transition-transform duration-75 ease-snap',
                 outside
                   ? 'border-transparent text-[var(--color-ink)]/60'
                   : 'border-[var(--color-ink)]',
