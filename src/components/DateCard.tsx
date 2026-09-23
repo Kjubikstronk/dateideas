@@ -168,7 +168,7 @@ function DateCard({
         // padding classes leaves the winner down to CSS source order, which
         // is not something the markup gets to control.
         asRow
-          ? 'border-b border-[rgba(26,16,51,0.2)] last:border-b-0'
+          ? 'border-b border-[var(--color-rule)] last:border-b-0'
           : 'pixel-box-sm',
         asRow
           ? cancelled
@@ -589,7 +589,7 @@ function SheetRow({
       type="button"
       onClick={onClick}
       className={[
-        'flex min-h-11 w-full items-center border-b border-[rgba(26,16,51,0.2)] px-1 text-left',
+        'flex min-h-11 w-full items-center border-b border-[var(--color-rule)] px-1 text-left',
         'font-[family-name:var(--font-display)] text-base last:border-b-0',
         danger ? 'text-[var(--color-deep)]' : '',
       ]

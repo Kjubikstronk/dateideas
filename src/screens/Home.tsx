@@ -7,7 +7,6 @@ import EditSheet from '../components/EditSheet'
 import MapsProvider from '../components/MapsProvider'
 import PixelHeart from '../components/PixelHeart'
 import SeasonGreeting from '../components/SeasonGreeting'
-import ThemePicker from '../components/ThemePicker'
 import { pinColor } from '../components/DateMap'
 import { useAuth } from '../lib/auth'
 import { useDates } from '../lib/dates'
@@ -605,8 +604,6 @@ function AgendaPane({
       {milestone && !empty && (
         <p className="legend pt-1 text-center text-[var(--color-text)]/60">{milestone}</p>
       )}
-
-      <ThemePicker />
 
       {/* Always last, always present — including on an empty account. */}
       <SignOut />

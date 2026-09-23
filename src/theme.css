@@ -32,6 +32,12 @@
      and so the contrast gate can actually check the pairing. */
   --color-bezel: #ff5ca8;
   --color-on-bezel: #1a1033;
+  /* The hairline between flat agenda rows and between overflow-menu items.
+     Not a border in the structural sense — it separates repeated items rather
+     than enclosing a surface, which is why it is a fifth of the ink rather
+     than the full `line`. Its own token because a dark theme needs it to go
+     light, and it was hardcoded in DateCard where no theme could reach it. */
+  --color-rule: rgb(26 16 51 / 0.2);
   --color-paper: #ffe5f1;
   --color-card: #fffdfe;
   --color-hot: #ff5ca8;
@@ -57,10 +63,41 @@
   --ease-snap: steps(3, end);
 }
 
+/* The default palette needs an explicit selector as well as :root, so a
+   swatch can scope itself with data-theme="pink" and preview that palette
+   while a different one is applied. Custom properties inherit, so a block
+   that declares nothing would simply inherit the active theme instead.
+
+   These repeat the @theme values, which is a drift risk — themes.test.ts
+   asserts the two stay identical. */
+[data-theme='pink'] {
+  --color-line: #1a1033;
+  --color-text: #1a1033;
+  --color-shadow: #1a1033;
+  --color-on-fill: #1a1033;
+  --color-bezel: #ff5ca8;
+  --color-on-bezel: #1a1033;
+  --color-rule: rgb(26 16 51 / 0.2);
+  --color-paper: #ffe5f1;
+  --color-card: #fffdfe;
+  --color-hot: #ff5ca8;
+  --color-deep: #b31e67;
+  --color-lav: #b8a6ff;
+  --color-aqua: #5be0e6;
+  --color-mute: #6b6480;
+}
+
 @layer base {
   html {
     /* Stop iOS from silently inflating our carefully sized pixel type. */
     -webkit-text-size-adjust: 100%;
+    /* Scrollbars, form controls and the overscroll gutter are drawn by the
+       browser, not by us, and they follow this rather than our tokens. Left at
+       the default, a dark theme gets a white scrollbar down its side. Themes
+       override it. */
+    color-scheme: light;
+    /* Thumb, then track. Token-driven, so it follows whatever theme is on. */
+    scrollbar-color: var(--color-line) var(--color-card);
   }
 
   body {
@@ -330,8 +367,9 @@
    keeps its ROLE — the sibling that is safe as text — and inverts its
    lightness to do so. */
 [data-theme='halloween'] {
+  color-scheme: dark;
   --color-paper: #0b0616;
-  --color-card: #1c1030;
+  --color-card: #2a1a47;
   /* Borders are a mid purple, NOT the text colour. `line` is every 3px border
      in the app, so setting it to bone outlined the whole device in near-white
      and the thing read as a diagram. Splitting line from text is pointless if
@@ -345,12 +383,22 @@
   --color-aqua: #7cfc5a;
   --color-mute: #9a8fb5;
   --color-on-fill: #180d2a;
-  --color-bezel: #2a1a47;
+  --color-bezel: #3a2560;
   --color-on-bezel: #f2e9dc;
+  --color-rule: rgb(242 233 220 / 0.22);
 }
 
 /* The insets fake a recess by DARKENING the top-left. On a dark surface that
    reads as a bulge — the metaphor inverts — so they lighten here instead. */
+/* Three surfaces, not one. The default palette gets away with the screen and
+   its content sharing a colour because near-black borders draw every edge;
+   with mid-purple borders that collapses into mush, and a calendar cell
+   becomes indistinguishable from the grid behind it. So the screen drops to
+   the darkest value and the surfaces sitting on it keep `card`. */
+[data-theme='halloween'] .screen {
+  background: var(--color-paper);
+}
+
 [data-theme='halloween'] .screen {
   box-shadow: inset 3px 3px 0 color-mix(in srgb, var(--color-line) 14%, transparent);
 }

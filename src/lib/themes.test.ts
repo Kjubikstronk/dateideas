@@ -71,3 +71,20 @@ test('glyphFor returns the default theme glyph for an unknown id', () => {
   // @ts-expect-error deliberately passing an id that is not registered
   assert.deepEqual(glyphFor('nope'), THEMES[0].glyph)
 })
+
+test('the [data-theme=pink] block matches the @theme defaults exactly', async () => {
+  const { readFileSync } = await import('node:fs')
+  const css = readFileSync('src/theme.css', 'utf8')
+  const decls = (block: string) =>
+    Object.fromEntries(
+      [...block.matchAll(/(--color-[a-z-]+)\s*:\s*([^;]+);/g)].map((m) => [m[1], m[2].trim()]),
+    )
+
+  const base = css.match(/@theme\s*\{([\s\S]*?)\n\}/)
+  const pink = css.match(/\[data-theme='pink'\]\s*\{([\s\S]*?)\n\}/)
+  assert.ok(base, 'no @theme block')
+  assert.ok(pink, 'no [data-theme=pink] block — swatches cannot preview the default palette')
+  // The duplication exists so a swatch can scope to the default palette. It
+  // only stays safe while the two agree.
+  assert.deepEqual(decls(pink![1]), decls(base![1]))
+})

@@ -3,6 +3,7 @@ import Boundary from './components/Boundary'
 import Device from './components/Device'
 import InstallPrompt from './components/InstallPrompt'
 import PixelHeart from './components/PixelHeart'
+import ThemeMenu from './components/ThemeMenu'
 import UpdatePill from './components/UpdatePill'
 import Login from './screens/Login'
 import { AuthProvider, useAuth } from './lib/auth'
@@ -60,11 +61,18 @@ function Gate() {
     </button>
   )
 
+  const status = (
+    <>
+      <ThemeMenu />
+      {reportButton}
+    </>
+  )
+
   // Dev-only UI preview. `PREVIEW` is hard-wired to false in any production
   // build, so this branch cannot exist on the deployed site.
   if (PREVIEW) {
     return (
-      <Device status={reportButton}>
+      <Device status={status}>
         <Boundary>
           <Suspense fallback={<Booting />}>
             <Home />
@@ -106,7 +114,7 @@ function Gate() {
   }
 
   return (
-    <Device status={reportButton}>
+    <Device status={status}>
       <Suspense fallback={<Booting />}>
         <Home />
       </Suspense>
