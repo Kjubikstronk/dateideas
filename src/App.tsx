@@ -132,7 +132,7 @@ function Gate() {
 function Booting() {
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8">
-      <PixelHeart size={40} color="var(--color-lav)" className="beat" />
+      <PixelHeart size={40} color="var(--color-lav)" className="beat" bordered />
       <p className="legend text-[var(--color-ink)]/60">waking up</p>
     </div>
   )
@@ -145,7 +145,7 @@ function Booting() {
 function Setup() {
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
-      <PixelHeart size={48} color="var(--color-lav)" outline />
+      <PixelHeart size={48} color="var(--color-lav)" outline bordered />
       <p className="font-[family-name:var(--font-display)] text-xl font-bold">
         no keys yet
       </p>

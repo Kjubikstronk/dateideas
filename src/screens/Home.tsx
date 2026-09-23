@@ -219,7 +219,7 @@ export default function Home() {
   if (membership.state === 'unassigned') {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
-        <PixelHeart size={40} color="var(--color-lav)" outline />
+        <PixelHeart size={40} color="var(--color-lav)" outline bordered />
         <p className="font-[family-name:var(--font-display)] text-lg font-bold">
           not paired up yet
         </p>
@@ -234,7 +234,7 @@ export default function Home() {
   if (loading || membership.state === 'loading') {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8">
-        <PixelHeart size={32} color="var(--color-lav)" className="beat" />
+        <PixelHeart size={32} color="var(--color-lav)" className="beat" bordered />
         <p className="legend text-[var(--color-ink)]/60">loading your dates</p>
       </div>
     )
@@ -496,7 +496,7 @@ function DayPanel({
   if (!day) {
     return (
       <div className="flex flex-col items-center justify-center gap-3 p-8 text-center">
-        <PixelHeart size={28} color="var(--color-lav)" outline />
+        <PixelHeart size={28} color="var(--color-lav)" outline bordered />
         <p className="prose max-w-[18rem] text-sm text-[var(--color-ink)]/60">
           Pick a day to see what&rsquo;s on it.
         </p>
@@ -512,7 +512,7 @@ function DayPanel({
 
       {entries.length === 0 ? (
         <div className="flex flex-col items-center gap-3 py-6 text-center">
-          <PixelHeart size={24} color="var(--color-lav)" outline />
+          <PixelHeart size={24} color="var(--color-lav)" outline bordered />
           <p className="prose max-w-[18rem] text-sm text-[var(--color-ink)]/60">
             Nothing here yet — pick a day with something on it, or add one.
           </p>
@@ -565,7 +565,7 @@ function AgendaPane({
           out at all. */}
       {empty ? (
         <div className="flex flex-col items-center gap-3 py-6 text-center">
-          <PixelHeart size={28} color="var(--color-lav)" outline />
+          <PixelHeart size={28} color="var(--color-lav)" outline bordered />
           <p className="prose text-sm text-[var(--color-ink)]/60">
             Nothing yet. Add somewhere you both want to go.
           </p>

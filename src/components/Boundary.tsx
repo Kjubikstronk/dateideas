@@ -62,7 +62,7 @@ export default class Boundary extends Component<Props, State> {
 
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-4 p-8 text-center">
-        <PixelHeart size={40} color="var(--color-lav)" outline />
+        <PixelHeart size={40} color="var(--color-lav)" outline bordered />
         <p className="font-[family-name:var(--font-display)] text-lg font-bold">
           that didn&rsquo;t load
         </p>
