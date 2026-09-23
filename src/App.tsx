@@ -133,7 +133,7 @@ function Booting() {
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8">
       <PixelHeart size={40} color="var(--color-lav)" className="beat" bordered />
-      <p className="legend text-[var(--color-ink)]/60">waking up</p>
+      <p className="legend text-[var(--color-text)]/60">waking up</p>
     </div>
   )
 }
@@ -149,13 +149,13 @@ function Setup() {
       <p className="font-[family-name:var(--font-display)] text-xl font-bold">
         no keys yet
       </p>
-      <p className="prose max-w-sm text-sm text-[var(--color-ink)]/70">
+      <p className="prose max-w-sm text-sm text-[var(--color-text)]/70">
         Copy <code className="pixel-box-sm px-1.5 py-0.5">.env.example</code> to{' '}
         <code className="pixel-box-sm px-1.5 py-0.5">.env.local</code>, fill in
         your Firebase values, then restart the dev server. The README has the
         click-by-click.
       </p>
-      <p className="prose max-w-sm text-sm text-[var(--color-ink)]/60">
+      <p className="prose max-w-sm text-sm text-[var(--color-text)]/60">
         To work on the look without any of that:{' '}
         <code className="pixel-box-sm px-1.5 py-0.5">npm run ui</code>
       </p>

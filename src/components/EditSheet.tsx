@@ -118,7 +118,7 @@ export default function EditSheet({
   return (
     <dialog ref={ref} className="sheet" onClose={onClose}>
       <form onSubmit={submit} className="flex max-h-[88svh] flex-col">
-        <header className="flex items-center justify-between border-b-[3px] border-[var(--color-ink)] bg-[var(--color-paper)] px-3 py-2">
+        <header className="flex items-center justify-between border-b-[3px] border-[var(--color-line)] bg-[var(--color-paper)] px-3 py-2">
           <h2 className="font-[family-name:var(--font-display)] text-lg font-bold">
             {editing ? 'edit' : 'new date'}
           </h2>
@@ -193,7 +193,7 @@ export default function EditSheet({
           </div>
 
           {!day && (
-            <p className="legend text-[var(--color-ink)]/60">
+            <p className="legend text-[var(--color-text)]/60">
               leave the day empty to keep it on the someday list
             </p>
           )}
@@ -212,7 +212,7 @@ export default function EditSheet({
 
         {/* Actions pinned to the bottom edge: on a phone this is where your
             thumb already is, and it survives the keyboard opening. */}
-        <footer className="safe-bottom flex gap-2 border-t-[3px] border-[var(--color-ink)] bg-[var(--color-paper)] p-3">
+        <footer className="safe-bottom flex gap-2 border-t-[3px] border-[var(--color-line)] bg-[var(--color-paper)] p-3">
           <button
             type="submit"
             className="pixel-btn pixel-btn-primary flex-1 px-4 py-2"

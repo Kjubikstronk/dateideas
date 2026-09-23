@@ -215,7 +215,7 @@ export default function Calendar({
 
       <div className="grid grid-cols-7 gap-px px-1 sm:px-2">
         {WEEKDAYS.map((d) => (
-          <div key={d} className="legend py-1 text-center text-[var(--color-ink)]/60">
+          <div key={d} className="legend py-1 text-center text-[var(--color-text)]/60">
             {d}
           </div>
         ))}
@@ -263,10 +263,10 @@ export default function Calendar({
               className={[
                 'relative flex aspect-square min-h-11 min-w-0 flex-col items-center justify-start gap-0.5 border-2 p-1 transition-transform duration-75 ease-snap',
                 outside
-                  ? 'border-transparent text-[var(--color-ink)]/60'
-                  : 'border-[var(--color-ink)]',
+                  ? 'border-transparent text-[var(--color-text)]/60'
+                  : 'border-[var(--color-line)]',
                 isSelected
-                  ? 'bg-[var(--color-hot)] text-[var(--color-ink)]'
+                  ? 'bg-[var(--color-hot)] text-[var(--color-text)]'
                   : isLinked
                     ? 'bg-[var(--color-lav)]'
                     : outside
@@ -293,7 +293,7 @@ export default function Calendar({
                         entry.status === 'done'
                           ? 'var(--color-aqua)'
                           : isSelected
-                            ? 'var(--color-ink)'
+                            ? 'var(--color-line)'
                             : 'var(--color-hot)'
                       }
                     />

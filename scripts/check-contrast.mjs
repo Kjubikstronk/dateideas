@@ -61,21 +61,21 @@ const over = (fg, bg, alpha) => fg.map((c, i) => c * alpha + bg[i] * (1 - alpha)
 // [label, foreground, background, alpha, size]
 // "large" = >=18.66px bold or >=24px, which has a lower AA bar (3.0 vs 4.5).
 const CASES = [
-  ['body text (ink on card)', T.ink, T.card, 1, 'normal'],
-  ['body text (ink on paper)', T.ink, T.paper, 1, 'normal'],
+  ['body text (text on card)', T.text, T.card, 1, 'normal'],
+  ['body text (text on paper)', T.text, T.paper, 1, 'normal'],
   ['error text (deep on card)', T.deep, T.card, 1, 'normal'],
   ['cancel note (mute on card)', T.mute, T.card, 1, 'normal'],
   ['delete button (card on deep)', T.card, T.deep, 1, 'normal'],
-  ['device title (ink on hot)', T.ink, T.hot, 1, 'large'],
-  ['primary button (ink on hot)', T.ink, T.hot, 1, 'normal'],
-  ['selected day (ink on hot)', T.ink, T.hot, 1, 'normal'],
-  ['note 75% on card', T.ink, T.card, 0.75, 'normal'],
-  ['legend 70% on card', T.ink, T.card, 0.7, 'normal'],
-  ['secondary 60% on card', T.ink, T.card, 0.6, 'normal'],
-  ['placeholder 60% on card', T.ink, T.card, 0.6, 'normal'],
-  ['outside-month day 60%', T.ink, T.card, 0.6, 'normal'],
-  ['linked day (ink on lav)', T.ink, T.lav, 1, 'normal'],
-  ['done marker (ink on aqua)', T.ink, T.aqua, 1, 'normal'],
+  ['device title (text on hot)', T.text, T.hot, 1, 'large'],
+  ['primary button (text on hot)', T.text, T.hot, 1, 'normal'],
+  ['selected day (text on hot)', T.text, T.hot, 1, 'normal'],
+  ['note 75% on card', T.text, T.card, 0.75, 'normal'],
+  ['legend 70% on card', T.text, T.card, 0.7, 'normal'],
+  ['secondary 60% on card', T.text, T.card, 0.6, 'normal'],
+  ['placeholder 60% on card', T.text, T.card, 0.6, 'normal'],
+  ['outside-month day 60%', T.text, T.card, 0.6, 'normal'],
+  ['linked day (text on lav)', T.text, T.lav, 1, 'normal'],
+  ['done marker (text on aqua)', T.text, T.aqua, 1, 'normal'],
   // Kept as a guard: this is why `deep` exists and `hot` is never text.
   ['NEVER USED: hot as text on paper', T.hot, T.paper, 1, 'normal'],
 ]

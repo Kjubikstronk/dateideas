@@ -222,19 +222,19 @@ function DateCard({
             <span
               className={[
                 'mt-0.5 block truncate text-sm',
-                cancelled ? 'text-[var(--color-mute)]' : 'text-[var(--color-ink)]/70',
+                cancelled ? 'text-[var(--color-mute)]' : 'text-[var(--color-text)]/70',
               ].join(' ')}
             >
               {item.title}
             </span>
           ) : (
-            <span className="legend mt-1 block text-[var(--color-ink)]/60">
+            <span className="legend mt-1 block text-[var(--color-text)]/60">
               no place yet
             </span>
           )}
 
           {theirPick && (
-            <span className="legend mt-1 block text-[var(--color-ink)]/60">
+            <span className="legend mt-1 block text-[var(--color-text)]/60">
               their pick
             </span>
           )}
@@ -259,7 +259,7 @@ function DateCard({
           )}
 
           {item.note && !cancelled && (
-            <span className="prose mt-1.5 block text-xs text-[var(--color-ink)]/70">
+            <span className="prose mt-1.5 block text-xs text-[var(--color-text)]/70">
               {item.note}
             </span>
           )}
@@ -284,10 +284,10 @@ function DateCard({
                 // sky emoji stays the only colour-carrying element here.
                 className={
                   forecast.high >= HOT_C
-                    ? 'border-2 border-[var(--color-ink)] px-1 py-0.5 text-[var(--color-deep)]'
+                    ? 'border-2 border-[var(--color-line)] px-1 py-0.5 text-[var(--color-deep)]'
                     : forecast.high <= FREEZING_C
-                      ? 'border-2 border-[var(--color-ink)] px-1 py-0.5 text-[var(--color-ink)]/70'
-                      : 'text-[var(--color-ink)]/60'
+                      ? 'border-2 border-[var(--color-line)] px-1 py-0.5 text-[var(--color-text)]/70'
+                      : 'text-[var(--color-text)]/60'
                 }
               >
                 {forecast.high}°
@@ -313,7 +313,7 @@ function DateCard({
                   <Agreement item={item} />
                 </>
               ) : (
-                <span className="legend block text-[var(--color-ink)]/60">
+                <span className="legend block text-[var(--color-text)]/60">
                   they&rsquo;ve said theirs · rate it to see
                 </span>
               )}
@@ -360,7 +360,7 @@ function DateCard({
           pattern to learn. */}
       <dialog ref={sheetRef} className="sheet" onClose={closeSheet}>
         <div className="flex flex-col">
-          <header className="flex items-center justify-between border-b-[3px] border-[var(--color-ink)] bg-[var(--color-paper)] px-3 py-2">
+          <header className="flex items-center justify-between border-b-[3px] border-[var(--color-line)] bg-[var(--color-paper)] px-3 py-2">
             <h2 className="truncate font-[family-name:var(--font-display)] text-base font-bold">
               {item.place ? item.place.name : item.title}
             </h2>
@@ -428,7 +428,7 @@ function DateCard({
       {mode === 'remembering' && (
         <div className="mt-3 space-y-2">
           <fieldset>
-            <legend className="legend mb-1.5 text-[var(--color-ink)]/60">
+            <legend className="legend mb-1.5 text-[var(--color-text)]/60">
               how was it? {theirs.length > 0 && !mine ? '(they’ve already voted)' : ''}
             </legend>
             <div className="flex gap-1">
@@ -458,7 +458,7 @@ function DateCard({
           </fieldset>
 
           <label className="block space-y-1">
-            <span className="legend text-[var(--color-ink)]/60">
+            <span className="legend text-[var(--color-text)]/60">
               anything worth remembering?
             </span>
             <input
@@ -504,7 +504,7 @@ function DateCard({
       {mode === 'calling-off' && (
         <div className="mt-3 space-y-2">
           <label className="block space-y-1">
-            <span className="legend text-[var(--color-ink)]/60">
+            <span className="legend text-[var(--color-text)]/60">
               {isPast ? 'what happened? (optional)' : 'why? (you can leave this empty)'}
             </span>
             <input
@@ -605,15 +605,15 @@ function Verdict({ label, memory }: { label: string; memory: { note: string; sta
   return (
     <span className="mt-1 block first:mt-0">
       <span className="flex items-center gap-2">
-        <span className="legend w-9 shrink-0 text-[var(--color-ink)]/60">{label}</span>
+        <span className="legend w-9 shrink-0 text-[var(--color-text)]/60">{label}</span>
         {memory.stars > 0 ? (
           <Stars value={memory.stars} />
         ) : (
-          <span className="legend text-[var(--color-ink)]/45">no score</span>
+          <span className="legend text-[var(--color-text)]/45">no score</span>
         )}
       </span>
       {memory.note && (
-        <span className="prose mt-0.5 block pl-11 text-xs text-[var(--color-ink)]/75">
+        <span className="prose mt-0.5 block pl-11 text-xs text-[var(--color-text)]/75">
           {memory.note}
         </span>
       )}
@@ -635,10 +635,10 @@ function Agreement({ item }: { item: DateIdea }) {
 
   return (
     <span className="legend mt-1.5 flex items-center gap-2">
-      <span className="border-2 border-[var(--color-ink)] bg-[var(--color-hot)] px-1.5 py-1 text-[var(--color-ink)]">
+      <span className="border-2 border-[var(--color-line)] bg-[var(--color-hot)] px-1.5 py-1 text-[var(--color-text)]">
         {avg?.toFixed(1)}
       </span>
-      <span className="text-[var(--color-ink)]/60">{verdict}</span>
+      <span className="text-[var(--color-text)]/60">{verdict}</span>
     </span>
   )
 }

@@ -66,7 +66,7 @@ export default class Boundary extends Component<Props, State> {
         <p className="font-[family-name:var(--font-display)] text-lg font-bold">
           that didn&rsquo;t load
         </p>
-        <p className="prose max-w-xs text-sm text-[var(--color-ink)]/70">
+        <p className="prose max-w-xs text-sm text-[var(--color-text)]/70">
           {this.state.stale
             ? 'A newer version is out and this tab is on the old one.'
             : 'Something went wrong drawing this screen.'}

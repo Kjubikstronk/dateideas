@@ -223,7 +223,7 @@ export default function Home() {
         <p className="font-[family-name:var(--font-display)] text-lg font-bold">
           not paired up yet
         </p>
-        <p className="prose max-w-xs text-sm text-[var(--color-ink)]/70">
+        <p className="prose max-w-xs text-sm text-[var(--color-text)]/70">
           This account isn&rsquo;t in a couple, so there are no dates to show.
           Whoever set this up needs to add you.
         </p>
@@ -235,7 +235,7 @@ export default function Home() {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-3 p-8">
         <PixelHeart size={32} color="var(--color-lav)" className="beat" bordered />
-        <p className="legend text-[var(--color-ink)]/60">loading your dates</p>
+        <p className="legend text-[var(--color-text)]/60">loading your dates</p>
       </div>
     )
   }
@@ -253,7 +253,7 @@ export default function Home() {
         linkedDay={linkedDay}
         onHoverDay={hasHover ? setActiveDay : undefined}
       />
-      <div className="border-t-[3px] border-[var(--color-ink)]">
+      <div className="border-t-[3px] border-[var(--color-line)]">
         <DayPanel
           day={selected}
           entries={dayEntries}
@@ -314,24 +314,24 @@ export default function Home() {
     <div className="flex min-h-0 flex-1 flex-col">
       {/* One strip across the top ties the three panes together — without it
           they read as three unrelated boxes that happen to be adjacent. */}
-      <div className="flex shrink-0 items-center justify-between border-b-[3px] border-[var(--color-ink)] bg-[var(--color-card)] px-4 py-2">
+      <div className="flex shrink-0 items-center justify-between border-b-[3px] border-[var(--color-line)] bg-[var(--color-card)] px-4 py-2">
         <span className="font-[family-name:var(--font-display)] text-base font-bold">
           our dates
         </span>
         {milestone && (
-          <span className="legend text-[var(--color-ink)]/60">{milestone}</span>
+          <span className="legend text-[var(--color-text)]/60">{milestone}</span>
         )}
       </div>
 
       <div className="flex min-h-0 flex-1">
-        <div className="flex w-[24rem] shrink-0 flex-col border-r-[3px] border-[var(--color-ink)]">
+        <div className="flex w-[24rem] shrink-0 flex-col border-r-[3px] border-[var(--color-line)]">
           {calendarPane}
         </div>
         {mapPane}
         {/* Wider than it was: cards were coming out narrower here than on a
             375px phone, which made the widest screen the worst place to read
             them. */}
-        <div className="w-80 shrink-0 overflow-y-auto border-l-[3px] border-[var(--color-ink)] pb-28">
+        <div className="w-80 shrink-0 overflow-y-auto border-l-[3px] border-[var(--color-line)] pb-28">
           {ideasPane}
         </div>
       </div>
@@ -377,7 +377,7 @@ export default function Home() {
         {pendingDelete && (
           <div
             role="status"
-            className="pointer-events-auto flex items-center gap-3 border-[3px] border-[var(--color-ink)] bg-[var(--color-lav)] p-3 shadow-[4px_4px_0_var(--color-ink)]"
+            className="pointer-events-auto flex items-center gap-3 border-[3px] border-[var(--color-line)] bg-[var(--color-lav)] p-3 shadow-[4px_4px_0_var(--color-shadow)]"
           >
             <p className="min-w-0 flex-1 truncate text-sm">
               Deleted &ldquo;{pendingDelete.place?.name ?? pendingDelete.title}&rdquo;.
@@ -396,7 +396,7 @@ export default function Home() {
         {writeError && (
           <div
             role="alert"
-            className="pointer-events-auto flex items-start gap-2 border-[3px] border-[var(--color-ink)] bg-[var(--color-card)] p-3 shadow-[4px_4px_0_var(--color-ink)]"
+            className="pointer-events-auto flex items-start gap-2 border-[3px] border-[var(--color-line)] bg-[var(--color-card)] p-3 shadow-[4px_4px_0_var(--color-shadow)]"
           >
             <p className="flex-1 text-sm text-[var(--color-deep)]">{writeError}</p>
             <button
@@ -455,7 +455,7 @@ function TabBar({ view, onChange }: { view: View; onChange: (v: View) => void })
   ]
 
   return (
-    <nav className="safe-bottom grid shrink-0 grid-cols-3 gap-1 border-t-[3px] border-[var(--color-ink)] bg-[var(--color-paper)] p-1">
+    <nav className="safe-bottom grid shrink-0 grid-cols-3 gap-1 border-t-[3px] border-[var(--color-line)] bg-[var(--color-paper)] p-1">
       {tabs.map(([id, label]) => (
         <button
           key={id}
@@ -497,7 +497,7 @@ function DayPanel({
     return (
       <div className="flex flex-col items-center justify-center gap-3 p-8 text-center">
         <PixelHeart size={28} color="var(--color-lav)" outline bordered />
-        <p className="prose max-w-[18rem] text-sm text-[var(--color-ink)]/60">
+        <p className="prose max-w-[18rem] text-sm text-[var(--color-text)]/60">
           Pick a day to see what&rsquo;s on it.
         </p>
       </div>
@@ -513,7 +513,7 @@ function DayPanel({
       {entries.length === 0 ? (
         <div className="flex flex-col items-center gap-3 py-6 text-center">
           <PixelHeart size={24} color="var(--color-lav)" outline bordered />
-          <p className="prose max-w-[18rem] text-sm text-[var(--color-ink)]/60">
+          <p className="prose max-w-[18rem] text-sm text-[var(--color-text)]/60">
             Nothing here yet — pick a day with something on it, or add one.
           </p>
         </div>
@@ -566,7 +566,7 @@ function AgendaPane({
       {empty ? (
         <div className="flex flex-col items-center gap-3 py-6 text-center">
           <PixelHeart size={28} color="var(--color-lav)" outline bordered />
-          <p className="prose text-sm text-[var(--color-ink)]/60">
+          <p className="prose text-sm text-[var(--color-text)]/60">
             Nothing yet. Add somewhere you both want to go.
           </p>
         </div>
@@ -599,7 +599,7 @@ function AgendaPane({
           strip only, so it never reached the phone both couples actually use.
           Bottom of the list: it's a reward you scroll into, not a headline. */}
       {milestone && !empty && (
-        <p className="legend pt-1 text-center text-[var(--color-ink)]/60">{milestone}</p>
+        <p className="legend pt-1 text-center text-[var(--color-text)]/60">{milestone}</p>
       )}
 
       {/* Always last, always present — including on an empty account. */}
@@ -619,8 +619,8 @@ function SignOut() {
   if (!user) return null
 
   return (
-    <div className="border-t-[3px] border-[var(--color-ink)] pt-4">
-      <p className="legend mb-2 text-[var(--color-ink)]/60">
+    <div className="border-t-[3px] border-[var(--color-line)] pt-4">
+      <p className="legend mb-2 text-[var(--color-text)]/60">
         signed in as {user.email}
       </p>
       <button
@@ -669,23 +669,23 @@ function Section({
           {title}
         </span>
         {badge ? (
-          <span className="legend border-2 border-[var(--color-ink)] bg-[var(--color-hot)] px-1.5 py-1 text-[var(--color-ink)]">
+          <span className="legend border-2 border-[var(--color-line)] bg-[var(--color-hot)] px-1.5 py-1 text-[var(--color-text)]">
             {badge}
           </span>
         ) : (
           !glyph &&
           items.length > 0 && (
-            <span className="legend text-[var(--color-ink)]/60">{items.length}</span>
+            <span className="legend text-[var(--color-text)]/60">{items.length}</span>
           )
         )}
       </h3>
 
       {hint && items.length > 0 && (
-        <p className="legend text-[var(--color-ink)]/60">{hint}</p>
+        <p className="legend text-[var(--color-text)]/60">{hint}</p>
       )}
 
       {items.length === 0 ? (
-        <p className="prose text-sm text-[var(--color-ink)]/60">{empty}</p>
+        <p className="prose text-sm text-[var(--color-text)]/60">{empty}</p>
       ) : (
         <ul>
           {items.map((item) => (

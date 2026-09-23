@@ -74,7 +74,7 @@ export default function PixelHeart({
             if (filled(x + dx, y + dy)) touches = true
           }
         }
-        if (touches) px(x, y, 'var(--color-ink)')
+        if (touches) px(x, y, 'var(--color-line)')
       }
     }
   }

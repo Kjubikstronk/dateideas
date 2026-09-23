@@ -15,7 +15,6 @@
      aqua     dates already lived — memories
      Contrast: hot (#FF5CA8) on paper (#FFE5F1) is ~2.2:1 and fails WCAG,
      which is exactly why `deep` exists. Pink text always uses `deep`. */
-  --color-ink: #1a1033;
   /* `ink` did three jobs that only coincide in light mode: every border,
      every hard shadow, and all body text. On a dark ground those diverge —
      text must go light while shadows stay dark — so they are three tokens.

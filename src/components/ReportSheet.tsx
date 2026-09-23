@@ -67,7 +67,7 @@ export default function ReportSheet({ openRequest, onClose }: Props) {
   return (
     <dialog ref={ref} className="sheet" onClose={onClose}>
       <div className="flex max-h-[88svh] flex-col">
-        <header className="flex items-center justify-between border-b-[3px] border-[var(--color-ink)] bg-[var(--color-paper)] px-3 py-2">
+        <header className="flex items-center justify-between border-b-[3px] border-[var(--color-line)] bg-[var(--color-paper)] px-3 py-2">
           <h2 className="font-[family-name:var(--font-display)] text-lg font-bold">
             broken? or an idea?
           </h2>
@@ -77,7 +77,7 @@ export default function ReportSheet({ openRequest, onClose }: Props) {
         </header>
 
         <div className="min-h-0 flex-1 overflow-y-auto">
-          <form onSubmit={submit} className="space-y-3 border-b-[3px] border-[var(--color-ink)] p-3">
+          <form onSubmit={submit} className="space-y-3 border-b-[3px] border-[var(--color-line)] p-3">
             <fieldset>
               <legend className="legend mb-1.5">what kind</legend>
               <div className="grid grid-cols-2 gap-2">
@@ -182,18 +182,18 @@ function ReportList({
       <h3 className="flex items-baseline gap-2">
         <span className="font-[family-name:var(--font-display)] font-bold">{title}</span>
         {reports.length > 0 && (
-          <span className="legend text-[var(--color-ink)]/60">{reports.length}</span>
+          <span className="legend text-[var(--color-text)]/60">{reports.length}</span>
         )}
       </h3>
 
       {reports.length === 0 ? (
-        <p className="prose text-sm text-[var(--color-ink)]/60">{empty}</p>
+        <p className="prose text-sm text-[var(--color-text)]/60">{empty}</p>
       ) : (
         <ul className="space-y-2">
           {reports.map((r) => (
             <li key={r.id} className="pixel-box-sm space-y-2 p-2">
               <p className="flex items-start gap-2">
-                <span className="legend shrink-0 border-2 border-[var(--color-ink)] px-1.5 py-1">
+                <span className="legend shrink-0 border-2 border-[var(--color-line)] px-1.5 py-1">
                   {r.kind === 'bug' ? 'broke' : 'idea'}
                 </span>
                 <span className={r.done ? 'text-sm text-[var(--color-mute)] line-through' : 'text-sm'}>
@@ -201,7 +201,7 @@ function ReportList({
                 </span>
               </p>
 
-              <p className="legend text-[var(--color-ink)]/60">
+              <p className="legend text-[var(--color-text)]/60">
                 {r.context.view} · {r.context.screen} ·{' '}
                 {new Date(r.createdAt).toLocaleDateString()}
               </p>

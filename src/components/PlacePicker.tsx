@@ -25,7 +25,7 @@ export default function PlacePicker({ value, onChange }: Props) {
               {value.name}
             </p>
             {value.address && (
-              <p className="prose truncate text-xs text-[var(--color-ink)]/60">
+              <p className="prose truncate text-xs text-[var(--color-text)]/60">
                 {value.address}
               </p>
             )}
@@ -96,7 +96,7 @@ export default function PlacePicker({ value, onChange }: Props) {
       </label>
 
       <div aria-live="polite">
-        {busy && <p className="legend text-[var(--color-ink)]/60">looking…</p>}
+        {busy && <p className="legend text-[var(--color-text)]/60">looking…</p>}
         {failed && (
           <p className="legend text-[var(--color-deep)]">
             Search isn&rsquo;t working right now. Try again in a moment, or type
@@ -121,7 +121,7 @@ export default function PlacePicker({ value, onChange }: Props) {
                   {s.placePrediction?.mainText?.text ?? s.placePrediction?.text.text}
                 </span>
                 {s.placePrediction?.secondaryText && (
-                  <span className="prose block truncate text-xs font-normal text-[var(--color-ink)]/60">
+                  <span className="prose block truncate text-xs font-normal text-[var(--color-text)]/60">
                     {s.placePrediction.secondaryText.text}
                   </span>
                 )}

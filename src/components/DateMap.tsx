@@ -243,7 +243,7 @@ function LiveMap(props: Props) {
           <AdvancedMarker position={me} title="You are here">
             <span
               aria-hidden="true"
-              className="block h-3.5 w-3.5 border-2 border-[var(--color-ink)] bg-[var(--color-aqua)]"
+              className="block h-3.5 w-3.5 border-2 border-[var(--color-line)] bg-[var(--color-aqua)]"
             />
           </AdvancedMarker>
         )}
@@ -312,12 +312,12 @@ function SearchBar({
 
       <div aria-live="polite">
         {busy && (
-          <p className="legend mt-1 border-2 border-[var(--color-ink)] bg-[var(--color-card)] px-2 py-1">
+          <p className="legend mt-1 border-2 border-[var(--color-line)] bg-[var(--color-card)] px-2 py-1">
             looking…
           </p>
         )}
         {failed && (
-          <p className="legend mt-1 border-2 border-[var(--color-ink)] bg-[var(--color-card)] px-2 py-1 text-[var(--color-deep)]">
+          <p className="legend mt-1 border-2 border-[var(--color-line)] bg-[var(--color-card)] px-2 py-1 text-[var(--color-deep)]">
             search isn&rsquo;t responding
           </p>
         )}
@@ -339,7 +339,7 @@ function SearchBar({
                   {s.placePrediction?.mainText?.text ?? s.placePrediction?.text.text}
                 </span>
                 {s.placePrediction?.secondaryText && (
-                  <span className="prose block truncate text-xs font-normal text-[var(--color-ink)]/60">
+                  <span className="prose block truncate text-xs font-normal text-[var(--color-text)]/60">
                     {s.placePrediction.secondaryText.text}
                   </span>
                 )}
@@ -381,12 +381,12 @@ function LocateButton({ onFound }: { onFound: (c: { lat: number; lng: number }) 
     // Positioned by the stack it sits in, not by itself.
     <div className="flex flex-col items-end gap-1">
       {state === 'denied' && (
-        <p className="legend max-w-[12rem] border-2 border-[var(--color-ink)] bg-[var(--color-card)] px-2 py-1 text-[var(--color-deep)]">
+        <p className="legend max-w-[12rem] border-2 border-[var(--color-line)] bg-[var(--color-card)] px-2 py-1 text-[var(--color-deep)]">
           location is blocked — allow it in your browser settings
         </p>
       )}
       {state === 'unavailable' && (
-        <p className="legend max-w-[12rem] border-2 border-[var(--color-ink)] bg-[var(--color-card)] px-2 py-1 text-[var(--color-deep)]">
+        <p className="legend max-w-[12rem] border-2 border-[var(--color-line)] bg-[var(--color-card)] px-2 py-1 text-[var(--color-deep)]">
           couldn&rsquo;t get your location
         </p>
       )}
@@ -423,7 +423,7 @@ function CandidateCard({
           {place.name}
         </p>
         {place.address && (
-          <p className="prose mt-1 text-xs text-[var(--color-ink)]/60">{place.address}</p>
+          <p className="prose mt-1 text-xs text-[var(--color-text)]/60">{place.address}</p>
         )}
         {place.rating != null && (
           <p className="legend mt-1 text-[var(--color-deep)]">{place.rating.toFixed(1)} ★</p>
@@ -509,7 +509,7 @@ function ActiveCard({ items, activeId }: Props) {
         </ul>
 
         {shown.length > 1 && (
-          <p className="legend mt-2 text-[var(--color-ink)]/60">
+          <p className="legend mt-2 text-[var(--color-text)]/60">
             {shown.length} dates here
           </p>
         )}
@@ -554,7 +554,7 @@ function Pin({
         its digit is unreadable at that zoom anyway.
       */}
       {count > 1 && size > (PIN_MIN + PIN_MAX) / 2 && (
-        <span className="legend absolute -right-2 -top-2 border-2 border-[var(--color-ink)] bg-[var(--color-card)] px-1 leading-none">
+        <span className="legend absolute -right-2 -top-2 border-2 border-[var(--color-line)] bg-[var(--color-card)] px-1 leading-none">
           {count}
         </span>
       )}
@@ -576,7 +576,7 @@ function Legend() {
       {rows.map(([label, status]) => (
         <p key={label} className="flex items-center gap-1.5">
           <PixelHeart size={14} color={pinColor(status)} outline={status === 'idea'} bordered />
-          <span className="legend text-[var(--color-ink)]/70">{label}</span>
+          <span className="legend text-[var(--color-text)]/70">{label}</span>
         </p>
       ))}
     </div>
@@ -619,7 +619,7 @@ function MapFallback(props: Props) {
         }}
       />
 
-      <p className="legend absolute left-2 top-2 z-10 border-2 border-[var(--color-ink)] bg-[var(--color-card)] px-2 py-1">
+      <p className="legend absolute left-2 top-2 z-10 border-2 border-[var(--color-line)] bg-[var(--color-card)] px-2 py-1">
         no map key · positions only
       </p>
 
@@ -666,7 +666,7 @@ function MapFallback(props: Props) {
                   bordered
                 />
                 {group.length > 1 && (
-                  <span className="legend absolute -right-2 -top-2 border-2 border-[var(--color-ink)] bg-[var(--color-card)] px-1 leading-none">
+                  <span className="legend absolute -right-2 -top-2 border-2 border-[var(--color-line)] bg-[var(--color-card)] px-1 leading-none">
                     {group.length}
                   </span>
                 )}
