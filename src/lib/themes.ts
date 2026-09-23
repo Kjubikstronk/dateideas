@@ -32,19 +32,30 @@ export const HEART = [
 ]
 
 /**
- * Same 9x8 footprint as the heart, so every existing size keeps its aspect
- * ratio and nothing in the layout shifts. The stalk is the top row and the
- * shoulders step in below it — that step is what stops it reading as a plain
- * blob once it is small.
+ * Carved, and squatter than the heart.
+ *
+ * A plain pumpkin is a circle with a bump, and it read as a pot: the earlier
+ * two-row stalk was a chimney on a nearly square body. Shrinking the stalk to
+ * one row and widening the body fixed the proportion; the carved face is what
+ * actually gives it an identity, and it survives down to about 24px.
+ *
+ * Note the face holes are not lost in `bordered` mode — the halo fills any
+ * empty cell touching a filled one, interior ones included, so the eyes and
+ * mouth come out in ink. That is the right result here by luck rather than
+ * design, and worth knowing before anyone "fixes" the halo.
+ *
+ * Below roughly 14px no pumpkin reads, including this one. That is a property
+ * of the shape rather than the drawing: its identifying features are either
+ * tiny or interior, where a heart's notch and a ghost's wavy hem are part of
+ * the silhouette and survive the downscale.
  */
 export const PUMPKIN = [
   '....XX...',
-  '....XX...',
   '.XXXXXXX.',
   'XXXXXXXXX',
+  'X.XXXXX.X',
   'XXXXXXXXX',
-  'XXXXXXXXX',
-  '.XXXXXXX.',
+  '.X.XXX.X.',
   '..XXXXX..',
 ]
 
