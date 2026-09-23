@@ -24,6 +24,7 @@ const BONE = '#F2E9DC'
 const BONE_SHADE = '#C9BFB2'
 const PURPLE = '#B388FF'
 const PURPLE_DARK = '#6B4BB8'
+const GLOW = '#7CFC5A'
 const DARK = '#241539'
 
 export type Sprite = {
@@ -79,13 +80,16 @@ export const BAT: Sprite = {
     '..LL.....LL..',
     'LLLLL...LLLLL',
     'LLLLLLLLLLLLL',
-    'LLLLKLLLKLLLL',
-    'DLLLLLLLLLLLD',
+    'LLLAKLLLKALLL',
+    'LLLAALLLAALLL',
+    'DLLLLWWWLLLLD',
     '.DLLLLLLLLLD.',
     '..DLL.L.LLD..',
     '...D..L..D...',
   ],
-  colors: { L: PURPLE, D: PURPLE_DARK, K: DARK },
+  // Glowing eyes rather than dark ones: a dark pupil on a dark-ish body
+  // disappears by 20px, which is most of where this renders.
+  colors: { L: PURPLE, D: PURPLE_DARK, K: DARK, A: GLOW, W: BONE },
   label: 'bat',
 }
 
