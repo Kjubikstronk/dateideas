@@ -67,7 +67,7 @@ const casesFor = (T) => [
   ['accent text (deep on card)', T.deep, T.card, 1, 'normal'],
   ['cancel note (mute on card)', T.mute, T.card, 1, 'normal'],
   ['delete button (card on deep)', T.card, T.deep, 1, 'normal'],
-  ['device title (on-fill on hot)', T['on-fill'], T.hot, 1, 'large'],
+  ['device title (on-bezel on bezel)', T['on-bezel'], T.bezel, 1, 'large'],
   ['primary button (on-fill on hot)', T['on-fill'], T.hot, 1, 'normal'],
   ['selected day (on-fill on hot)', T['on-fill'], T.hot, 1, 'normal'],
   ['note 75% on card', T.text, T.card, 0.75, 'normal'],

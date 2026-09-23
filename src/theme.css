@@ -27,6 +27,11 @@
      `text`; on a dark theme it must not, because body text goes light
      while the fills stay bright. */
   --color-on-fill: #1a1033;
+  /* The moulded case, and what is printed on it. A token rather than reusing
+     `hot`, so a theme can change the shell without the title going with it —
+     and so the contrast gate can actually check the pairing. */
+  --color-bezel: #ff5ca8;
+  --color-on-bezel: #1a1033;
   --color-paper: #ffe5f1;
   --color-card: #fffdfe;
   --color-hot: #ff5ca8;
@@ -152,7 +157,7 @@
      bezel reads as physically raised above it. */
   .device {
     border: 3px solid var(--color-line);
-    background: var(--color-hot);
+    background: var(--color-bezel);
     box-shadow: 6px 6px 0 var(--color-shadow);
   }
 
@@ -325,17 +330,23 @@
    keeps its ROLE — the sibling that is safe as text — and inverts its
    lightness to do so. */
 [data-theme='halloween'] {
-  --color-paper: #120a20;
-  --color-card: #241539;
-  --color-line: #f2e9dc;
+  --color-paper: #0b0616;
+  --color-card: #1c1030;
+  /* Borders are a mid purple, NOT the text colour. `line` is every 3px border
+     in the app, so setting it to bone outlined the whole device in near-white
+     and the thing read as a diagram. Splitting line from text is pointless if
+     both end up the same value. */
+  --color-line: #5b3e8f;
   --color-text: #f2e9dc;
-  --color-shadow: #ff7518;
+  --color-shadow: #05020c;
   --color-hot: #ff7518;
   --color-deep: #ffa05c;
   --color-lav: #b388ff;
   --color-aqua: #7cfc5a;
-  --color-mute: #8a7fa3;
-  --color-on-fill: #120a20;
+  --color-mute: #9a8fb5;
+  --color-on-fill: #180d2a;
+  --color-bezel: #2a1a47;
+  --color-on-bezel: #f2e9dc;
 }
 
 /* The insets fake a recess by DARKENING the top-left. On a dark surface that
