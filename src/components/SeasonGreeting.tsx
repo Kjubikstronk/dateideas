@@ -82,23 +82,23 @@ export default function SeasonGreeting() {
           </h2>
 
           <p className="prose mx-auto mt-3 max-w-[20rem] text-sm text-[var(--color-text)]/75">
-            the whole place has gone dark for the season. nothing moved, nothing
-            broke — it just got spookier.
+            the pumpkins have moved in, the bats got into the calendar, and
+            there&rsquo;s something on the map that wasn&rsquo;t there yesterday.
           </p>
 
           <ul className="mx-auto mt-4 max-w-[18rem] space-y-2 text-left">
             <li className="pixel-box-sm flex items-center gap-3 p-2">
               <PixelSprite sprite={JACK} size={26} />
-              <span className="text-sm">every heart is a pumpkin now</span>
+              <span className="text-sm">your hearts turned into pumpkins overnight</span>
             </li>
             <li className="pixel-box-sm flex items-center gap-3 p-2">
               <PixelSprite sprite={BAT} size={26} />
-              <span className="text-sm">pins, markers and stars came with it</span>
+              <span className="text-sm">the map pins and calendar caught it too</span>
             </li>
             <li className="pixel-box-sm flex items-center gap-3 p-2">
               <PixelSprite sprite={GHOST} size={26} />
               <span className="text-sm">
-                want the pink back? it&rsquo;s at the bottom of all dates
+                had enough? the pink is hiding at the bottom of all dates
               </span>
             </li>
           </ul>

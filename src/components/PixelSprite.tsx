@@ -75,16 +75,15 @@ export const GHOST: Sprite = {
 
 export const BAT: Sprite = {
   grid: [
-    'L...........L',
-    'LL...LLL...LL',
-    'LLL.LLLLL.LLL',
+    '..L.......L..',
+    '..LL.....LL..',
+    'LLLLL...LLLLL',
     'LLLLLLLLLLLLL',
     'LLLLKLLLKLLLL',
     'DLLLLLLLLLLLD',
-    '.DLLLKKKLLLD.',
-    '..DLLLLLLLD..',
-    '...D.LLL.D...',
-    '......L......',
+    '.DLLLLLLLLLD.',
+    '..DLL.L.LLD..',
+    '...D..L..D...',
   ],
   colors: { L: PURPLE, D: PURPLE_DARK, K: DARK },
   label: 'bat',
