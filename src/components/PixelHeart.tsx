@@ -1,29 +1,15 @@
+import { glyphFor } from '../lib/themes'
+import { useTheme } from '../lib/useTheme'
+
 /**
  * The app's one recurring glyph — page mark, map pin, empty-state icon.
  * Drawn as literal pixels rather than a smooth path so it stays honest at
  * any size: scaling it up gives you bigger squares, not a vector curve.
+ *
+ * The grid comes from the active theme, so swapping the theme swaps the mark
+ * everywhere at once — map pins, calendar markers, rating stars, empty states.
+ * That is the whole reason a theme carries a glyph and not just a palette.
  */
-
-const HEART = [
-  '.XX...XX.',
-  'XXXXXXXXX',
-  'XXXXXXXXX',
-  'XXXXXXXXX',
-  '.XXXXXXX.',
-  '..XXXXX..',
-  '...XXX...',
-  '....X....',
-]
-
-const W = HEART[0].length
-const H = HEART.length
-
-const filled = (x: number, y: number) =>
-  y >= 0 && y < H && x >= 0 && x < W && HEART[y][x] === 'X'
-
-/** True for a filled pixel touching empty space — the glyph's own edge. */
-const isEdge = (x: number, y: number) =>
-  !(filled(x - 1, y) && filled(x + 1, y) && filled(x, y - 1) && filled(x, y + 1))
 
 type Props = {
   /** Rendered size in px (width; height follows the glyph's ratio). */
@@ -51,6 +37,18 @@ export default function PixelHeart({
   bordered = false,
   className,
 }: Props) {
+  const { theme } = useTheme()
+  const HEART = glyphFor(theme)
+  const W = HEART[0].length
+  const H = HEART.length
+
+  const filled = (x: number, y: number) =>
+    y >= 0 && y < H && x >= 0 && x < W && HEART[y][x] === 'X'
+
+  /** True for a filled pixel touching empty space — the glyph's own edge. */
+  const isEdge = (x: number, y: number) =>
+    !(filled(x - 1, y) && filled(x + 1, y) && filled(x, y - 1) && filled(x, y + 1))
+
   // A halo needs a one-pixel margin all round, so the viewBox grows with it.
   const pad = bordered ? 1 : 0
   const vw = W + pad * 2

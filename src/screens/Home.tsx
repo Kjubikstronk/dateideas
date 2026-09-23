@@ -6,6 +6,7 @@ import DateMap from '../components/DateMap'
 import EditSheet from '../components/EditSheet'
 import MapsProvider from '../components/MapsProvider'
 import PixelHeart from '../components/PixelHeart'
+import SeasonGreeting from '../components/SeasonGreeting'
 import ThemePicker from '../components/ThemePicker'
 import { pinColor } from '../components/DateMap'
 import { useAuth } from '../lib/auth'
@@ -430,6 +431,8 @@ export default function Home() {
             + new date
           </button>
         )}
+
+        <SeasonGreeting />
 
         <EditSheet
           openRequest={openReq}

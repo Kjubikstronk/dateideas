@@ -31,9 +31,26 @@ export const HEART = [
   '....X....',
 ]
 
+/**
+ * Same 9x8 footprint as the heart, so every existing size keeps its aspect
+ * ratio and nothing in the layout shifts. The stalk is the top row and the
+ * shoulders step in below it — that step is what stops it reading as a plain
+ * blob once it is small.
+ */
+export const PUMPKIN = [
+  '....XX...',
+  '....XX...',
+  '.XXXXXXX.',
+  'XXXXXXXXX',
+  'XXXXXXXXX',
+  'XXXXXXXXX',
+  '.XXXXXXX.',
+  '..XXXXX..',
+]
+
 export const THEMES: Theme[] = [
   { id: 'pink', name: 'pink', glyph: HEART },
-  { id: 'halloween', name: 'halloween', glyph: HEART },
+  { id: 'halloween', name: 'halloween', glyph: PUMPKIN },
 ]
 
 export const DEFAULT_THEME: ThemeId = 'pink'

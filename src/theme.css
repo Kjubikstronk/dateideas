@@ -208,6 +208,12 @@
   .sheet {
     border: 3px solid var(--color-line);
     background: var(--color-card);
+    /* The UA stylesheet gives <dialog> `color: CanvasText`, which resets the
+       inherited colour rather than letting body's through. On the light
+       palette CanvasText is black and passes for ink, so this went unnoticed;
+       on a dark theme every sheet rendered black text on a dark card at
+       1.24:1. Set it explicitly. */
+    color: var(--color-text);
     padding: 0;
     width: 100%;
     max-width: 100%;
