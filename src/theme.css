@@ -122,13 +122,22 @@
 
   /* Keyboard focus has to survive a design this loud. */
   :focus-visible {
-    outline: 3px solid var(--color-line);
+    /* `text`, not `line`. On a dark theme `line` is deliberately a muted
+       mid-tone so borders do not glow, which is exactly wrong for a focus
+       ring. `text` is the highest-contrast foreground in every palette, and
+       it is the same #1A1033 as `line` on the default one, so nothing moves
+       there. */
+    outline: 3px solid var(--color-text);
     outline-offset: 3px;
   }
 
   ::selection {
     background: var(--color-hot);
-    color: var(--color-text);
+    /* On a saturated fill, so it takes the on-fill role. Migrating this to
+       `text` was wrong: on a dark theme body text is bone and the fill is
+       still bright, which is the same light-on-light failure the gate caught
+       on the buttons and badges. */
+    color: var(--color-on-fill);
   }
 }
 
@@ -300,7 +309,7 @@
   .marquee-today {
     background-image: repeating-linear-gradient(
       90deg,
-      var(--color-line) 0 6px,
+      var(--color-text) 0 6px,
       transparent 6px 12px
     );
     background-size: 24px 3px;

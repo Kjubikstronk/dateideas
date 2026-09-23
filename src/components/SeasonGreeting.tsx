@@ -98,7 +98,7 @@ export default function SeasonGreeting() {
             <li className="pixel-box-sm flex items-center gap-3 p-2">
               <PixelSprite sprite={GHOST} size={26} />
               <span className="text-sm">
-                had enough? the pink is hiding at the bottom of all dates
+                had enough? the swatch up in the corner puts it back
               </span>
             </li>
           </ul>
