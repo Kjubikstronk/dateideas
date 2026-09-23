@@ -9,7 +9,10 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "rules": "firebase deploy --only firestore:rules"
+    "rules": "firebase deploy --only firestore:rules",
+    "test": "node --test \"src/**/*.test.ts\"",
+    "contrast": "node scripts/check-contrast.mjs",
+    "check": "npm run lint && npm run contrast && npm test && npm run build"
   },
   "dependencies": {
     "@vis.gl/react-google-maps": "^1.9.0",
