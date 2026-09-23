@@ -26,6 +26,17 @@
       rel="stylesheet"
     />
 
+    <!-- Before first paint, or a phone that chose another theme shows the
+         default palette for a frame. Deliberately inline and dependency-free:
+         it has to run ahead of the stylesheet. Not validated here — an
+         unknown value matches no CSS block, and useTheme corrects it. -->
+    <script>
+      try {
+        var t = localStorage.getItem('dateideas:theme')
+        if (t) document.documentElement.setAttribute('data-theme', t)
+      } catch (e) {}
+    </script>
+
     <title>our dates</title>
   </head>
   <body>
