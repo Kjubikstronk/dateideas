@@ -159,6 +159,16 @@ device testing.
 3. The Maps budget is €2. It would be exhausted fast at scale, and the map then
    silently dies for everyone.
 
+Decided since: reports stay readable by everyone for now; later they go to
+a developer-only inbox. Worth doing at release:
+- **Maps:** move to MapLibre + OpenFreeMap tiles + Photon search (no key, no
+  bill; POI taps come free with the tiles). Check their current terms first.
+- **Consent:** Google Maps loads on every open, not only on the map tab.
+  Load it lazily, or behind a "tap to load the map" notice; a privacy page
+  must list Google (Firebase, Maps) and Open-Meteo. Account deletion, imprint.
+- **Old iPhones:** Tailwind v4 needs Safari 16.4+ (iOS 16.4, spring 2023).
+  Older devices render broken; consider an "update your iPhone" notice.
+
 Also note: this is a **web app**. "Release on mobile" means Add to Home Screen.
 A store listing would need Capacitor-style wrapping, review, and Apple's
 $99/year.
