@@ -177,9 +177,15 @@
     cursor: pointer;
   }
 
-  .pixel-btn:hover {
-    transform: translate(1px, 1px);
-    box-shadow: 3px 3px 0 var(--color-shadow);
+  /* Only where a pointer can actually hover. On a phone a tap leaves :hover
+     stuck on until you touch something else, so every button you had just
+     pressed stayed sunk a pixel with a thinner shadow. Tailwind's `hover:`
+     variant guards this already; a hand-written rule has to do it itself. */
+  @media (hover: hover) {
+    .pixel-btn:hover {
+      transform: translate(1px, 1px);
+      box-shadow: 3px 3px 0 var(--color-shadow);
+    }
   }
 
   .pixel-btn:active {
@@ -329,6 +335,28 @@
 
   .season-card {
     animation: sheet-up 180ms var(--ease-chunk);
+  }
+
+  /* The greeting arrives in beats rather than as one slab: ornament, the
+     headline, the story, what changed, then the way out. It shows once a
+     year, which is the only kind of moment a stagger is worth its wait. */
+  /* `backwards`, not `both`: hold the start state through the delay, then let
+     go. A forwards fill pins `transform: none` over everything, and the
+     "let's go" button stopped sinking when pressed. */
+  .rise {
+    animation: boot-in 240ms var(--ease-chunk) backwards;
+  }
+  .rise-1 {
+    animation-delay: 100ms;
+  }
+  .rise-2 {
+    animation-delay: 200ms;
+  }
+  .rise-3 {
+    animation-delay: 300ms;
+  }
+  .rise-4 {
+    animation-delay: 400ms;
   }
 
   .bat-sky {
@@ -549,5 +577,11 @@
 
   .bat {
     transform: translateX(var(--bat-rest));
+  }
+
+  /* The durations collapse above, but delays don't — without this the
+     greeting would sit blank for up to 400ms and then appear all at once. */
+  .rise {
+    animation-delay: 0s !important;
   }
 }

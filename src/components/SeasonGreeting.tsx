@@ -76,25 +76,25 @@ export default function SeasonGreeting() {
     <dialog ref={ref} className="season" onClose={dismiss} aria-labelledby="season-title">
       {open && <BatSky />}
       <div className="sheet season-card relative max-h-[80svh] overflow-y-auto">
-        <Garland className="pt-3" />
+        <Garland className="rise pt-3" />
 
         <div className="px-4 pb-4 pt-3 text-center">
-          <p className="legend text-[var(--color-deep)]">october update</p>
+          <p className="rise rise-1 legend text-[var(--color-deep)]">october update</p>
           <h2
             id="season-title"
-            className="mt-1 font-[family-name:var(--font-display)] text-2xl font-bold leading-tight"
+            className="rise rise-1 mt-1 font-[family-name:var(--font-display)] text-2xl font-bold leading-tight"
           >
             spooky season
             <br />
             is upon us
           </h2>
 
-          <p className="prose mx-auto mt-3 max-w-[20rem] text-sm text-[var(--color-text)]/75">
+          <p className="rise rise-2 prose mx-auto mt-3 max-w-[20rem] text-sm text-[var(--color-text)]/75">
             the pumpkins have moved in, the bats got into the calendar, and
             there&rsquo;s something on the map that wasn&rsquo;t there yesterday.
           </p>
 
-          <ul className="mx-auto mt-4 max-w-[18rem] space-y-2 text-left">
+          <ul className="rise rise-3 mx-auto mt-4 max-w-[18rem] space-y-2 text-left">
             <li className="pixel-box-sm flex items-center gap-3 p-2">
               <PixelSprite sprite={JACK} size={26} />
               <span className="text-sm">your hearts turned into pumpkins overnight</span>
@@ -114,13 +114,13 @@ export default function SeasonGreeting() {
           <button
             type="button"
             onClick={dismiss}
-            className="pixel-btn pixel-btn-primary mt-5 w-full px-4 py-3 text-base"
+            className="rise rise-4 pixel-btn pixel-btn-primary mt-5 w-full px-4 py-3 text-base"
           >
             let&rsquo;s go
           </button>
         </div>
 
-        <Garland className="pb-3" />
+        <Garland className="rise rise-4 pb-3" />
       </div>
     </dialog>
   )
