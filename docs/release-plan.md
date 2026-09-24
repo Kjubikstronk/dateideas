@@ -171,3 +171,30 @@ must be disclosed as AI; prefer real people.
 (`SKStoreReviewController` on iOS, Play In-App Review on Android) at a
 happy moment — right after both partners rate a date highly. With
 permission, quote the couples already using it on the store page.
+
+---
+
+## 7. YouTube creators
+
+Small and medium channels often beat paid ads: viewers trust them, and a
+video keeps sending people for months.
+
+**Who:** couples/relationship vloggers (can use it together on camera),
+local city channels ("date ideas in Amsterdam"), date-idea channels, cozy /
+aesthetic app-review channels.
+
+**Formats:** 60–90s mid-roll integration (standard), a Short (cheaper,
+reusable on TikTok), a dedicated video (only for a perfect fit).
+
+**Rough prices** (vary a lot): ~10k–50k subs often €100–500 per
+integration; ~50k–200k often €500–2,000+. Price on their recent *views*,
+not subscribers. Small creators may take a lifetime supporter perk plus a
+small fee, or a revenue share.
+
+**Deal checklist:** a unique campaign link per creator; rights to reuse the
+clip as a TikTok/Instagram ad; talking points, not a script; disclosed as
+paid (YouTube's paid-promotion checkbox plus saying it). Timing: after the
+store launch and proven retention, aimed at Valentine's Day.
+
+**Finding them:** YouTube search, Social Blade for channel stats, business
+email in the channel's About section.
