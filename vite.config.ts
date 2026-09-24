@@ -29,7 +29,9 @@ export default defineConfig({
         'manifest.webmanifest',
       ],
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,webmanifest}'],
+        // woff2: the fonts are bundled now, and precaching them is what lets
+        // the pixel type render offline.
+        globPatterns: ['**/*.{js,css,html,svg,png,webmanifest,woff2}'],
         navigateFallback: 'index.html',
         cleanupOutdatedCaches: true,
         // Deliberately no runtimeCaching. Firestore keeps its own offline

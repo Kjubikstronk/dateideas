@@ -52,8 +52,8 @@
   /* Type -----------------------------------------------------
      Pixel faces are unreadable in paragraphs, so the bitmap face is
      rationed: headings, day numbers, buttons. Prose gets a real face. */
-  --font-display: 'Pixelify Sans', ui-monospace, monospace;
-  --font-body: 'Space Grotesk', ui-sans-serif, system-ui, sans-serif;
+  --font-display: 'Pixelify Sans Variable', ui-monospace, monospace;
+  --font-body: 'Space Grotesk Variable', ui-sans-serif, system-ui, sans-serif;
   --font-util: 'Silkscreen', ui-monospace, monospace;
 
   /* Motion ---------------------------------------------------

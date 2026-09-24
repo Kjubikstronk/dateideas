@@ -19,12 +19,10 @@
          anyone find it in the first place. -->
     <meta name="robots" content="noindex, nofollow" />
 
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Pixelify+Sans:wght@400..700&family=Silkscreen:wght@400;700&family=Space+Grotesk:wght@400;500;700&display=swap"
-      rel="stylesheet"
-    />
+    <!-- No Google Fonts. The faces ship inside the bundle (see src/main.tsx):
+         loading them from Google hands every visitor's IP address to Google
+         before they've agreed to anything, which EU courts have ruled a GDPR
+         breach. It also means the pixel type works offline. -->
 
     <!-- Before first paint, or a phone that chose another theme shows the
          default palette for a frame. Deliberately inline and dependency-free:

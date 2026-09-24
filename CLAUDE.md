@@ -63,6 +63,11 @@ Seed on open, not on mount.
 and compare correctly and can't drift by timezone. A date happening *today* is
 not past — use `<`, not `<=`.
 
+**Fonts are self-hosted (`@fontsource`, imported in `main.tsx`).** Never
+re-add the Google Fonts `<link>`: it sends every visitor's IP to Google
+before any consent, which German courts have ruled a GDPR breach. Bundled,
+they are also precached, so the pixel type works offline.
+
 **One service worker only.** `vite-plugin-pwa` owns it. Adding Firebase
 messaging later needs `injectManifest` and a single combined worker, not a
 second file at the same scope.
