@@ -424,8 +424,10 @@ export default function Home() {
             className={[
               'pixel-btn pixel-btn-primary absolute right-3 z-20 px-4 py-3',
               'font-[family-name:var(--font-display)] text-base',
-              isWide ? 'bottom-3' : 'bottom-20',
+              isWide ? 'bottom-3' : '',
             ].join(' ')}
+            // Clear of the tab bar, and of a nudge sitting above it.
+            style={isWide ? undefined : { bottom: 'calc(5rem + var(--nudge-h, 0px))' }}
           >
             + new date
           </button>
@@ -457,23 +459,55 @@ function TabBar({ view, onChange }: { view: View; onChange: (v: View) => void })
     ['ideas', 'all dates'],
   ]
 
+  // Tell the update / install nudges where the tab bar is, so they sit above
+  // it instead of on top of it. In a Safari tab the install nudge used to
+  // cover all three tabs and "+ new date" until you dismissed it.
+  const navRef = useRef<HTMLElement>(null)
+  useEffect(() => {
+    const el = navRef.current
+    if (!el) return
+    const root = document.documentElement
+    // From the bottom of the viewport to the top of the bar — not the bar's
+    // own height, which leaves out the device bezel underneath it.
+    const measure = () =>
+      root.style.setProperty('--dock-h', `${window.innerHeight - el.getBoundingClientRect().top}px`)
+    const ro = new ResizeObserver(measure)
+    ro.observe(el)
+    window.addEventListener('resize', measure)
+    root.setAttribute('data-dock', '')
+    return () => {
+      ro.disconnect()
+      window.removeEventListener('resize', measure)
+      root.removeAttribute('data-dock')
+      root.style.removeProperty('--dock-h')
+    }
+  }, [])
+
   return (
-    <nav className="safe-bottom grid shrink-0 grid-cols-3 gap-1 border-t-[3px] border-[var(--color-line)] bg-[var(--color-paper)] p-1">
-      {tabs.map(([id, label]) => (
-        <button
-          key={id}
-          type="button"
-          onClick={() => onChange(id)}
-          aria-current={view === id ? 'page' : undefined}
-          className={[
-            'pixel-btn legend min-h-12 py-2',
-            view === id ? 'pixel-btn-primary' : '',
-          ].join(' ')}
-        >
-          {label}
-        </button>
-      ))}
-    </nav>
+    <>
+      {/* Room for the nudges, so they push the screen up rather than cover
+          it. Zero tall when there are none. */}
+      <div aria-hidden="true" className="shrink-0" style={{ height: 'var(--nudge-h, 0px)' }} />
+      <nav
+        ref={navRef}
+        className="safe-bottom grid shrink-0 grid-cols-3 gap-1 border-t-[3px] border-[var(--color-line)] bg-[var(--color-paper)] p-1"
+      >
+        {tabs.map(([id, label]) => (
+          <button
+            key={id}
+            type="button"
+            onClick={() => onChange(id)}
+            aria-current={view === id ? 'page' : undefined}
+            className={[
+              'pixel-btn legend min-h-12 py-2',
+              view === id ? 'pixel-btn-primary' : '',
+            ].join(' ')}
+          >
+            {label}
+          </button>
+        ))}
+      </nav>
+    </>
   )
 }
 

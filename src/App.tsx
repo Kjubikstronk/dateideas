@@ -1,4 +1,4 @@
-import { Suspense, lazy, useState } from 'react'
+import { Suspense, lazy, useEffect, useRef, useState, type ReactNode } from 'react'
 import Boundary from './components/Boundary'
 import Device from './components/Device'
 import InstallPrompt from './components/InstallPrompt'
@@ -33,11 +33,43 @@ export default function App() {
           offerable even on the login screen, and neither carries any data
           dependencies. Stacked in one fixed container so they never overlap
           if both happen to be relevant at once. */}
-      <div className="safe-bottom pointer-events-none fixed inset-x-3 bottom-3 z-50 mx-auto flex max-w-sm flex-col items-stretch gap-2">
+      <Nudges>
         <UpdatePill />
         <InstallPrompt />
-      </div>
+      </Nudges>
     </AuthProvider>
+  )
+}
+
+/**
+ * The update and install nudges, stacked so they never overlap each other.
+ *
+ * Fixed to the bottom, but not ON the tab bar: Home marks the page
+ * `data-dock` with the bar's height, and this publishes its own height as
+ * `--nudge-h` so Home can leave exactly that much room above the bar. On the
+ * login screen there is no bar and it simply sits at the bottom.
+ */
+function Nudges({ children }: { children: ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const root = document.documentElement
+    const ro = new ResizeObserver(() => {
+      // Plus a 0.5rem gap on each side; nothing at all when there's no nudge.
+      const h = el.childElementCount ? el.offsetHeight + 16 : 0
+      root.style.setProperty('--nudge-h', `${h}px`)
+    })
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
+  return (
+    <div
+      ref={ref}
+      className="nudges pointer-events-none fixed inset-x-3 z-50 mx-auto flex max-w-sm flex-col items-stretch gap-2"
+    >
+      {children}
+    </div>
   )
 }
 

@@ -258,6 +258,19 @@
     padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
   }
 
+  /* The update / install nudges. At the screen's bottom edge they respect the
+     home indicator; above the tab bar (`data-dock`, set by Home) the bar has
+     already done that, so they sit just over it with no extra padding. */
+  .nudges {
+    bottom: 0.75rem;
+    padding-bottom: max(0.25rem, env(safe-area-inset-bottom));
+  }
+
+  :root[data-dock] .nudges {
+    bottom: calc(var(--dock-h) + 0.5rem);
+    padding-bottom: 0;
+  }
+
   /* For a bar already pinned to the bottom edge: only the inset, no extra. */
   .safe-bottom {
     padding-bottom: max(0.25rem, env(safe-area-inset-bottom));

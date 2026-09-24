@@ -68,10 +68,29 @@ check(!hosts.some((h) => h.includes('fonts.g')), 'nothing fetched from Google Fo
 
 await page.screenshot({ path: join(OUT, '1-agenda-pink.png') })
 
-// In a Safari tab (not the home-screen app) the install nudge shows, and it
-// sits over the tab bar. Dismiss it the way a person would.
+// In a Safari tab (not the home-screen app) the install nudge shows. It used
+// to sit on top of the tab bar; nothing it covers should be what a tap hits.
 const later = page.getByRole('status').getByRole('button', { name: 'later' })
-if (await later.count()) await later.first().tap()
+if (await later.count()) {
+  const covered = await page.evaluate(() =>
+    [...document.querySelectorAll('nav button, button')]
+      .filter((b) => /^(calendar|map|all dates|\+ new date)$/i.test(b.textContent.trim()))
+      .filter((b) => {
+        const r = b.getBoundingClientRect()
+        const hit = document.elementFromPoint(r.x + r.width / 2, r.y + r.height / 2)
+        return !b.contains(hit)
+      })
+      .map((b) => b.textContent.trim()),
+  )
+  check(covered.length === 0, 'install nudge covers no tab or "+ new date"', covered.join(', '))
+  await page.screenshot({ path: join(OUT, '1b-install-nudge.png') })
+  await later.first().tap()
+  await page.waitForTimeout(300)
+  const room = await page.evaluate(() =>
+    getComputedStyle(document.documentElement).getPropertyValue('--nudge-h').trim(),
+  )
+  check(room === '0px', 'dismissing it gives the room back', room)
+}
 
 // A tapped button must not stay sunk (sticky :hover on touch screens).
 const tab = page.getByRole('button', { name: /^calendar$/i })
