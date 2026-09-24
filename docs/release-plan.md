@@ -151,3 +151,23 @@ iOS than Android.
 
 Launching the store apps just before Valentine's Day gives a natural hook:
 "plan your Valentine's date together".
+
+---
+
+## 6. Bought content and reviews
+
+**UGC creators — yes.** Fiverr, Upwork and UGC platforms (e.g. Billo) sell
+short videos of real people using the app, roughly €30–150 each. Brief them
+with a content pillar from section 4, ask for raw footage plus the right to
+run it as an ad. A real couple is the ideal creator. These make the best
+Spark / boosted ads because they don't look like ads.
+
+**Never buy or generate reviews, installs or downloads.** Fake reviews are
+banned outright under EU consumer law (since 2022), and Apple and Google
+remove apps and developer accounts for them. AI-generated "UGC" presenters
+must be disclosed as AI; prefer real people.
+
+**Real reviews instead:** trigger the stores' native review prompt
+(`SKStoreReviewController` on iOS, Play In-App Review on Android) at a
+happy moment — right after both partners rate a date highly. With
+permission, quote the couples already using it on the store page.
