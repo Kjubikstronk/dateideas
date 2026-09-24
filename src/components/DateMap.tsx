@@ -5,7 +5,7 @@ import { format, parseISO } from 'date-fns'
 import { AdvancedMarker, ColorScheme, Map as GoogleMap, useMap } from '@vis.gl/react-google-maps'
 import { placedOnly, type DateIdea, type Place, type PlacedDate } from '../types'
 import PixelHeart from './PixelHeart'
-import { HAS_MAPS, MAPS_MAP_ID, MAP_INSTANCE_ID, rememberViewport } from '../lib/maps'
+import { HAS_MAPS, MAPS_MAP_ID, MAP_INSTANCE_ID, lastViewport, rememberViewport } from '../lib/maps'
 import { fetchPlaceById, usePlaceSearch } from '../lib/places'
 import { isDark } from '../lib/themes'
 import { useTheme } from '../lib/useTheme'
@@ -118,6 +118,24 @@ function useZoom() {
   return zoom
 }
 
+/**
+ * The box around every pin, never smaller than a neighbourhood. A single pin
+ * is a zero-area box, and Google zooms that to street-furniture level.
+ */
+const MIN_SPAN = 0.01 // degrees, roughly a kilometre
+
+function pinBounds(groups: [string, PlacedDate[]][]): google.maps.LatLngBoundsLiteral {
+  const lats = groups.map(([, items]) => items[0].place.lat)
+  const lngs = groups.map(([, items]) => items[0].place.lng)
+  const pad = (lo: number, hi: number) => Math.max(0, (MIN_SPAN - (hi - lo)) / 2)
+  const [s, n] = [Math.min(...lats), Math.max(...lats)]
+  const [w, e] = [Math.min(...lngs), Math.max(...lngs)]
+  return { south: s - pad(s, n), north: n + pad(s, n), west: w - pad(w, e), east: e + pad(w, e) }
+}
+
+/** Nobody's city: a wide view for someone with no pins and no history yet. */
+const FIRST_RUN = { center: { lat: 48.5, lng: 10 }, zoom: 4 }
+
 export default function DateMap(props: Props) {
   if (!HAS_MAPS) return <MapFallback {...props} />
   return <LiveMap {...props} />
@@ -134,9 +152,20 @@ function LiveMap(props: Props) {
   const [me, setMe] = useState<{ lat: number; lng: number } | null>(null)
 
   const groups = useMemo(() => groupByPlace(props.items), [props.items])
-  const framed = useRef(false)
 
-  // Frame every pin on first load, so you open the map to the overview.
+  // Where the map opens. Your pins if they're already loaded — the usual case,
+  // since the dates arrive before you reach the map tab — so it opens on the
+  // overview with no jump. Otherwise wherever you last looked, and only on a
+  // first run with neither, a wide view. It used to be a fixed point in
+  // Amsterdam, which is only right for the people who happen to live there.
+  const [opening] = useState(() => {
+    if (groups.length > 0) return { bounds: pinBounds(groups) }
+    const last = lastViewport()
+    return last ? { bounds: last } : FIRST_RUN
+  })
+  const framed = useRef(groups.length > 0)
+
+  // Pins that arrive after the map opened still get framed, once.
   useEffect(() => {
     if (!map || groups.length === 0) return
     // Once per mount. `groups` derives from a fresh array on every Firestore
@@ -145,11 +174,7 @@ function LiveMap(props: Props) {
     // threw you away from the pin you'd just dropped.
     if (framed.current) return
     framed.current = true
-    const bounds = new google.maps.LatLngBounds()
-    for (const [, items] of groups) {
-      bounds.extend({ lat: items[0].place.lat, lng: items[0].place.lng })
-    }
-    map.fitBounds(bounds, 64)
+    map.fitBounds(pinBounds(groups), 64)
   }, [map, groups])
 
   // Tapping a point of interest, exactly like Google Maps. The map hands us a
@@ -225,8 +250,9 @@ function LiveMap(props: Props) {
         // it recreates the map, so a theme switch costs one map load; the
         // `camera` ref above puts the new one back where you were.
         colorScheme={isDark(theme) ? ColorScheme.DARK : ColorScheme.LIGHT}
-        defaultCenter={{ lat: 52.372, lng: 4.895 }}
-        defaultZoom={12}
+        {...('bounds' in opening
+          ? { defaultBounds: { ...opening.bounds, padding: 64 } }
+          : { defaultCenter: opening.center, defaultZoom: opening.zoom })}
         gestureHandling="greedy"
         // No zoomControl: Google's buttons are unstyleable, clash with the
         // pixel design, and landed on top of our locate button. Scroll and
