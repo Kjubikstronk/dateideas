@@ -89,12 +89,12 @@ export default function SeasonGreeting() {
             is upon us
           </h2>
 
-          <p className="rise rise-2 prose mx-auto mt-3 max-w-[20rem] text-sm text-[var(--color-text)]/75">
+          <p className="rise rise-2 prose mx-auto mt-3 [@media(max-height:760px)]:mt-2 max-w-[20rem] text-sm text-[var(--color-text)]/75">
             the pumpkins have moved in, the bats got into the calendar, and
             there&rsquo;s something on the map that wasn&rsquo;t there yesterday.
           </p>
 
-          <ul className="rise rise-3 mx-auto mt-4 max-w-[18rem] space-y-2 text-left">
+          <ul className="rise rise-3 mx-auto mt-4 [@media(max-height:760px)]:mt-3 max-w-[18rem] space-y-2 text-left">
             <li className="pixel-box-sm flex items-center gap-3 p-2">
               <PixelSprite sprite={JACK} size={26} />
               <span className="text-sm">your hearts turned into pumpkins overnight</span>
@@ -114,13 +114,15 @@ export default function SeasonGreeting() {
           <button
             type="button"
             onClick={dismiss}
-            className="rise rise-4 pixel-btn pixel-btn-primary mt-5 w-full px-4 py-3 text-base"
+            className="rise rise-4 pixel-btn pixel-btn-primary mt-5 [@media(max-height:760px)]:mt-4 w-full px-4 py-3 text-base"
           >
             let&rsquo;s go
           </button>
         </div>
 
-        <Garland className="rise rise-4 pb-3" />
+        {/* Dropped on short screens: iPhone Safari keeps its toolbar at the
+            bottom, and the repeat of the top row was costing the bat sky. */}
+        <Garland className="rise rise-4 pb-3 [@media(max-height:760px)]:hidden" />
       </div>
     </dialog>
   )
