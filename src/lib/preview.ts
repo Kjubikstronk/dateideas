@@ -116,7 +116,7 @@ export const SAMPLE_DATES: DateIdea[] = [
     id: 's4',
     title: 'Botanical garden',
     note: '',
-    emoji: '🌿',
+    emoji: '🌳',
     place: {
       name: 'Hortus Botanicus',
       address: 'Plantage Middenlaan 2a, Amsterdam',
@@ -205,7 +205,7 @@ export const SAMPLE_DATES: DateIdea[] = [
     id: 's7',
     title: 'Ice skating',
     note: '',
-    emoji: '⛸️',
+    emoji: '🎯',
     place: {
       name: 'Jaap Eden IJsbaan',
       address: 'Radioweg 64, Amsterdam',

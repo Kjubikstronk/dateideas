@@ -2,11 +2,19 @@ import { useEffect, useRef, useState } from 'react'
 import PlacePicker from './PlacePicker'
 import type { DateDraft, DateIdea, Place } from '../types'
 
-/** Enough to label a date at a glance without opening an emoji keyboard. */
-const EMOJI = [
-  '🍜', '🍕', '☕', '🍦', '🍷', '🎬',
-  '🎡', '🎨', '🎮', '🎳', '🛼', '⛸️',
-  '🌿', '🏖️', '🌇', '🧺',
+/**
+ * One sticker per KIND of date, so every slot earns its place: two rows of
+ * eight, eating and culture on top, out-and-about and the rest below.
+ *
+ * Specific activities (skates, rollerblades, bowling) were cut — each fit one
+ * date ever. 🎯 now stands for all of them. Dates saved with a retired sticker
+ * keep it; it just isn't offered for new ones.
+ */
+const EMOJI: [emoji: string, name: string][] = [
+  ['🍜', 'dinner'], ['☕', 'coffee'], ['🥐', 'brunch'], ['🍷', 'drinks'],
+  ['🎬', 'cinema'], ['🎭', 'show'], ['🎵', 'live music'], ['🎨', 'museum'],
+  ['🌳', 'park or walk'], ['🚲', 'bike ride'], ['🧺', 'picnic'], ['🏖️', 'beach'],
+  ['🎯', 'activity'], ['🛍️', 'market'], ['🏠', 'night in'], ['🧳', 'trip'],
 ]
 
 type Props = {
@@ -147,12 +155,13 @@ export default function EditSheet({
           <fieldset className="space-y-1.5">
             <legend className="legend mb-1.5">sticker</legend>
             <div className="grid grid-cols-8 gap-1">
-              {EMOJI.map((e) => (
+              {EMOJI.map(([e, name]) => (
                 <button
                   key={e}
                   type="button"
                   onClick={() => setEmoji(e)}
-                  aria-label={e}
+                  aria-label={name}
+                  title={name}
                   aria-pressed={emoji === e}
                   className={[
                     'pixel-btn flex items-center justify-center p-0 text-lg',
