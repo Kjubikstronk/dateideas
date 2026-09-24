@@ -134,6 +134,10 @@ Per-person, in `localStorage`, never Firestore. Picked from the bezel menu.
 - The in-app browser **cannot composite** — CSS transitions freeze mid-flight,
   `requestAnimationFrame` never fires, and Google Maps tiles never paint. Verify
   logic and inline styles, not appearance. Never schedule anything on rAF alone.
+- **Safari engine check:** with `npm run ui` running, `npm run safari` drives
+  WebKit on an emulated iPhone 13 and saves screenshots. It is not iOS (no
+  home-screen or push behaviour), but it catches Safari rendering and CSS
+  differences. The in-app browser can't show animation; this can.
 - Deployed and local bundle hashes differ legitimately (CI uses `npm install`,
   not `npm ci`). Use the Actions status to confirm a deploy, not a hash.
 
