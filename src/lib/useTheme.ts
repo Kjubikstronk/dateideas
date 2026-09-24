@@ -1,5 +1,7 @@
 import { useSyncExternalStore } from 'react'
+import { format } from 'date-fns'
 import { readTheme, writeTheme, DEFAULT_THEME, type ThemeId } from './themes'
+import { settleSeason } from './season'
 
 /**
  * The active theme, as one shared value.
@@ -13,7 +15,9 @@ import { readTheme, writeTheme, DEFAULT_THEME, type ThemeId } from './themes'
  * theme it had read at mount.
  */
 
-let current: ThemeId = readTheme()
+// Settled before the first render, so the season's switch never flashes the
+// old palette for a frame.
+let current: ThemeId = settleSeason(readTheme(), format(new Date(), 'yyyy-MM-dd'))
 const listeners = new Set<() => void>()
 
 /**

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { THEMES } from '../lib/themes'
 import { useTheme } from '../lib/useTheme'
+import { keepChoice } from '../lib/season'
 
 /**
  * The look menu: a bezel button that opens a list of every registered theme.
@@ -77,6 +78,7 @@ export default function ThemeMenu() {
                   <button
                     type="button"
                     onClick={() => {
+                      keepChoice()
                       setTheme(t.id)
                       setOpen(false)
                     }}

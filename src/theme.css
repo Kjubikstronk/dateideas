@@ -295,6 +295,111 @@
     }
   }
 
+  /* The season greeting: a full-screen stage with a `.sheet` card inside it,
+     rather than a sheet itself. Anything inside a dialog paints above the
+     dialog's own background, so the only way to put the bat sky BEHIND the
+     card is to make the dialog transparent and give the card its own box. */
+  .season {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--color-text);
+    overflow: hidden;
+  }
+
+  .season[open] {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .season::backdrop {
+    background: color-mix(in srgb, var(--color-shadow) 88%, transparent);
+  }
+
+  .season-card {
+    animation: sheet-up 180ms var(--ease-chunk);
+  }
+
+  .bat-sky {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+  }
+
+  .bat-moon {
+    position: absolute;
+    top: max(1.5rem, env(safe-area-inset-top));
+    right: 1.5rem;
+  }
+
+  /* Duration and delay come inline, per bat. The path hops in steps like a
+     handheld sprite and dips between waypoints so the flight isn't a ruler. */
+  .bat {
+    position: absolute;
+    left: 0;
+    animation-name: bat-fly;
+    animation-timing-function: steps(5);
+    animation-iteration-count: infinite;
+  }
+
+  .bat-reverse {
+    animation-direction: reverse;
+  }
+
+  /* Further away: smaller (set inline) and dimmer. */
+  .bat-far {
+    opacity: 0.55;
+  }
+
+  @keyframes bat-fly {
+    0% {
+      transform: translate(-48px, 0);
+    }
+    25% {
+      transform: translate(25vw, -14px);
+    }
+    50% {
+      transform: translate(50vw, 8px);
+    }
+    75% {
+      transform: translate(75vw, -10px);
+    }
+    100% {
+      transform: translate(calc(100vw + 48px), 0);
+    }
+  }
+
+  /* Two frames, one visible at a time. The rate varies per bat (`--flap`)
+     so the flock doesn't flap in lockstep. */
+  .bat-frame-a {
+    animation: flap-a var(--flap, 320ms) steps(1) infinite;
+  }
+
+  .bat-frame-b {
+    opacity: 0;
+    animation: flap-b var(--flap, 320ms) steps(1) infinite;
+  }
+
+  @keyframes flap-a {
+    50% {
+      opacity: 0;
+    }
+  }
+
+  @keyframes flap-b {
+    50% {
+      opacity: 1;
+    }
+  }
+
   /* Tiny all-caps bitmap labels — the device's printed legends. */
   .legend {
     font-family: var(--font-util);
@@ -428,5 +533,17 @@
 
   .marquee-today {
     animation: none;
+  }
+
+  /* Shortened to one iteration, a bat would finish off-screen and snap back
+     to the left edge. Hold them still, scattered across the sky instead. */
+  .bat,
+  .bat-frame-a,
+  .bat-frame-b {
+    animation: none !important;
+  }
+
+  .bat {
+    transform: translateX(var(--bat-rest));
   }
 }

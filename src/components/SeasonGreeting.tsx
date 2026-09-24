@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useTheme } from '../lib/useTheme'
 import PixelSprite, { BAT, GHOST, JACK } from './PixelSprite'
+import BatSky from './BatSky'
 
 /**
  * The one-time "spooky season is upon us" notice, shown the first time this
@@ -8,7 +9,11 @@ import PixelSprite, { BAT, GHOST, JACK } from './PixelSprite'
  *
  * Deliberately a release moment rather than a help screen — the app announcing
  * something about itself, the way a game announces a seasonal update. It fires
- * once and then never again; a flag that can nag is a flag that gets resented.
+ * once a year; a flag that can nag is a flag that gets resented. `season.ts`
+ * switches the theme on the first October open, which is what brings it up.
+ *
+ * The dialog is a full-screen stage rather than a `.sheet` itself, so the bat
+ * sky can sit behind the card instead of flying across its text.
  *
  * The ornament is drawn pixel art rather than emoji. `CLAUDE.md` reserves
  * emoji for categories and weather — a job where a hand-drawn set was tried
@@ -17,6 +22,8 @@ import PixelSprite, { BAT, GHOST, JACK } from './PixelSprite'
  */
 
 const SEEN_KEY = 'dateideas:seen-halloween'
+/** Seen per year, so next October greets them again. */
+const YEAR = String(new Date().getFullYear())
 
 /** Decorative only — never announced, never a target. */
 const GARLAND = [JACK, GHOST, BAT, JACK, GHOST, BAT, JACK]
@@ -40,7 +47,7 @@ export default function SeasonGreeting() {
     if (theme !== 'halloween') return
     let seen = false
     try {
-      seen = localStorage.getItem(SEEN_KEY) === '1'
+      seen = localStorage.getItem(SEEN_KEY) === YEAR
     } catch {
       // Private mode. Showing it again is a far smaller sin than crashing.
     }
@@ -58,7 +65,7 @@ export default function SeasonGreeting() {
 
   function dismiss() {
     try {
-      localStorage.setItem(SEEN_KEY, '1')
+      localStorage.setItem(SEEN_KEY, YEAR)
     } catch {
       // It will greet them once more next time. Survivable.
     }
@@ -66,8 +73,9 @@ export default function SeasonGreeting() {
   }
 
   return (
-    <dialog ref={ref} className="sheet" onClose={dismiss} aria-labelledby="season-title">
-      <div className="max-h-[80svh] overflow-y-auto">
+    <dialog ref={ref} className="season" onClose={dismiss} aria-labelledby="season-title">
+      {open && <BatSky />}
+      <div className="sheet season-card relative max-h-[80svh] overflow-y-auto">
         <Garland className="pt-3" />
 
         <div className="px-4 pb-4 pt-3 text-center">
@@ -98,7 +106,7 @@ export default function SeasonGreeting() {
             <li className="pixel-box-sm flex items-center gap-3 p-2">
               <PixelSprite sprite={GHOST} size={26} />
               <span className="text-sm">
-                had enough? the swatch up in the corner puts it back
+                want pink back? tap the orange square at the top
               </span>
             </li>
           </ul>

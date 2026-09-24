@@ -117,6 +117,10 @@ Per-person, in `localStorage`, never Firestore. Picked from the bezel menu.
   (calendar markers): check with `node scripts/check-glyph.mjs <THEME>`.
 - `<dialog>` resets inherited colour to `CanvasText`, so `.sheet` sets
   `color` explicitly. Don't remove it.
+- **Spooky season** (`src/lib/season.ts`): the first open in October flips
+  the theme to Halloween and the greeting (bats, moon) announces it, once a
+  year. A theme the season applied goes back to pink in November; one picked
+  from the menu stays. Test it by faking the date (Playwright `page.clock`).
 
 ## Verification habits that have paid off
 

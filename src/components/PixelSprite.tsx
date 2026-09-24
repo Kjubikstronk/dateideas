@@ -93,6 +93,75 @@ export const BAT: Sprite = {
   label: 'bat',
 }
 
+/**
+ * The night-sky bats: two frames of one flap, swapped by CSS. Smaller and
+ * plainer than `BAT` on purpose — they are scenery behind the greeting, and a
+ * silhouette with two glowing eyes is what reads at 20px while moving.
+ */
+export const BAT_UP: Sprite = {
+  grid: [
+    'L...........L',
+    'LL...L.L...LL',
+    'LLL..LLL..LLL',
+    '.LLLLALALLLL.',
+    '..LLLLLLLLL..',
+    '....LLLLL....',
+    '.....LLL.....',
+    '......L......',
+  ],
+  colors: { L: PURPLE_DARK, A: GLOW },
+  label: 'bat',
+}
+
+export const BAT_DOWN: Sprite = {
+  grid: [
+    '.............',
+    '.....L.L.....',
+    '.....LLL.....',
+    '..LLLALALLL..',
+    '.LLLLLLLLLLL.',
+    'LLL.LLLLL.LLL',
+    'LL...LLL...LL',
+    'L.....L.....L',
+  ],
+  colors: { L: PURPLE_DARK, A: GLOW },
+  label: 'bat',
+}
+
+export const MOON: Sprite = {
+  grid: [
+    '...BBBBB...',
+    '..BBBBBBB..',
+    '.BBBSSBBBB.',
+    'BBBBSSBBBBB',
+    'BBBBBBBBSBB',
+    'BBBBBBBBBBB',
+    'BSBBBBBBBBB',
+    'BBBBBBSSBBB',
+    '.BBBBBSSBB.',
+    '..BBBBBBB..',
+    '...BBBBB...',
+  ],
+  colors: { B: BONE, S: BONE_SHADE },
+  label: 'moon',
+}
+
+/** One sprite as SVG cells, for callers that compose several in one <svg>. */
+export function pixelCells(sprite: Sprite, keyPrefix = '') {
+  const { grid, colors } = sprite
+  const cells = []
+  for (let y = 0; y < grid.length; y++) {
+    for (let x = 0; x < grid[0].length; x++) {
+      const fill = colors[grid[y][x]]
+      if (!fill) continue
+      cells.push(
+        <rect key={`${keyPrefix}${x}-${y}`} x={x} y={y} width={1} height={1} fill={fill} />,
+      )
+    }
+  }
+  return cells
+}
+
 type Props = {
   sprite: Sprite
   /** Rendered width in px. Height follows the grid's ratio. */
@@ -101,18 +170,9 @@ type Props = {
 }
 
 export default function PixelSprite({ sprite, size = 20, className }: Props) {
-  const { grid, colors } = sprite
+  const { grid } = sprite
   const w = grid[0].length
   const h = grid.length
-
-  const cells = []
-  for (let y = 0; y < h; y++) {
-    for (let x = 0; x < w; x++) {
-      const fill = colors[grid[y][x]]
-      if (!fill) continue
-      cells.push(<rect key={`${x}-${y}`} x={x} y={y} width={1} height={1} fill={fill} />)
-    }
-  }
 
   return (
     <svg
@@ -124,7 +184,7 @@ export default function PixelSprite({ sprite, size = 20, className }: Props) {
       focusable="false"
       className={className}
     >
-      {cells}
+      {pixelCells(sprite)}
     </svg>
   )
 }
