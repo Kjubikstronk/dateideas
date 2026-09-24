@@ -2,11 +2,13 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { format, parseISO } from 'date-fns'
 // Aliased: the library's `Map` component otherwise shadows the global Map
 // constructor, which broke `new Map()` in this file.
-import { AdvancedMarker, Map as GoogleMap, useMap } from '@vis.gl/react-google-maps'
+import { AdvancedMarker, ColorScheme, Map as GoogleMap, useMap } from '@vis.gl/react-google-maps'
 import { placedOnly, type DateIdea, type Place, type PlacedDate } from '../types'
 import PixelHeart from './PixelHeart'
 import { HAS_MAPS, MAPS_MAP_ID, MAP_INSTANCE_ID, rememberViewport } from '../lib/maps'
 import { fetchPlaceById, usePlaceSearch } from '../lib/places'
+import { isDark } from '../lib/themes'
+import { useTheme } from '../lib/useTheme'
 
 /**
  * The map is deliberately NOT recoloured bubblegum.
@@ -125,6 +127,7 @@ function LiveMap(props: Props) {
   const map = useMap(MAP_ID)
   const search = usePlaceSearch()
   const zoom = useZoom()
+  const { theme } = useTheme()
 
   /** A place you're looking at but haven't committed to yet. */
   const [candidate, setCandidate] = useState<Place | null>(null)
@@ -201,6 +204,12 @@ function LiveMap(props: Props) {
       <GoogleMap
         id={MAP_ID}
         mapId={MAPS_MAP_ID || 'DEMO_MAP_ID'}
+        // Google's own dark tiles rather than a restyle: legible by design,
+        // which is the thing the original "don't recolour the map" note was
+        // protecting. Needs a real map ID — DEMO_MAP_ID ignores it. Changing
+        // it recreates the map, so a theme switch costs one map load and
+        // resets the view; nothing else does.
+        colorScheme={isDark(theme) ? ColorScheme.DARK : ColorScheme.LIGHT}
         defaultCenter={{ lat: 52.372, lng: 4.895 }}
         defaultZoom={12}
         gestureHandling="greedy"

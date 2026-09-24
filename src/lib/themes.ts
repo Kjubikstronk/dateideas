@@ -17,6 +17,11 @@ export type Theme = {
   name: string
   /** Rows of a pixel grid; 'X' is filled. Must be rectangular. */
   glyph: string[]
+  /**
+   * Whether the palette is dark. Drives what CSS cannot reach — Google's own
+   * map tiles, which otherwise stay a glaring white rectangle on a dark theme.
+   */
+  dark: boolean
 }
 
 /** The mark the whole app is built on. */
@@ -60,8 +65,8 @@ export const PUMPKIN = [
 ]
 
 export const THEMES: Theme[] = [
-  { id: 'pink', name: 'pink', glyph: HEART },
-  { id: 'halloween', name: 'halloween', glyph: PUMPKIN },
+  { id: 'pink', name: 'pink', glyph: HEART, dark: false },
+  { id: 'halloween', name: 'halloween', glyph: PUMPKIN, dark: true },
 ]
 
 export const DEFAULT_THEME: ThemeId = 'pink'
@@ -98,6 +103,9 @@ export function writeTheme(id: ThemeId, store?: Storageish): void {
     // Same. The choice simply will not survive a reload.
   }
 }
+
+export const isDark = (id: ThemeId): boolean =>
+  (THEMES.find((t) => t.id === id) ?? THEMES[0]).dark
 
 export const glyphFor = (id: ThemeId): string[] =>
   (THEMES.find((t) => t.id === id) ?? THEMES[0]).glyph
