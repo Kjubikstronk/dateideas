@@ -182,11 +182,26 @@ function LiveMap(props: Props) {
     map.setZoom(16)
   }, [map, fly?.nonce])  // eslint-disable-line react-hooks/exhaustive-deps
 
+  // Where the camera is, so a replacement map instance can pick up there.
+  // Switching between a light and a dark theme makes Google build a new map;
+  // `framed` has already fired, so without this it sat on `defaultCenter` and
+  // a theme switch dropped you in Amsterdam wherever you had been looking.
+  const camera = useRef<{ center: google.maps.LatLngLiteral; zoom: number } | null>(null)
+
   // Remember where we're looking so place search stays local, even after a
   // reload or when the map tab isn't mounted.
   useEffect(() => {
     if (!map) return
-    const l = map.addListener('idle', () => rememberViewport(map.getBounds()))
+    if (camera.current) {
+      map.setCenter(camera.current.center)
+      map.setZoom(camera.current.zoom)
+    }
+    const l = map.addListener('idle', () => {
+      rememberViewport(map.getBounds())
+      const center = map.getCenter()
+      const z = map.getZoom()
+      if (center && z != null) camera.current = { center: center.toJSON(), zoom: z }
+    })
     return () => l.remove()
   }, [map])
 
@@ -207,8 +222,8 @@ function LiveMap(props: Props) {
         // Google's own dark tiles rather than a restyle: legible by design,
         // which is the thing the original "don't recolour the map" note was
         // protecting. Needs a real map ID — DEMO_MAP_ID ignores it. Changing
-        // it recreates the map, so a theme switch costs one map load and
-        // resets the view; nothing else does.
+        // it recreates the map, so a theme switch costs one map load; the
+        // `camera` ref above puts the new one back where you were.
         colorScheme={isDark(theme) ? ColorScheme.DARK : ColorScheme.LIGHT}
         defaultCenter={{ lat: 52.372, lng: 4.895 }}
         defaultZoom={12}
