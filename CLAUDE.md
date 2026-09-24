@@ -87,11 +87,36 @@ Y2K handheld device: 3px ink borders, hard offset shadows with no blur,
   zooms the page and won't zoom back.
 - **Emoji, not custom pixel art**, for categories and weather. Decided; my
   hand-drawn set was rejected and rightly so.
-- Google's map colours stay untouched.
+- Never restyle Google's map tiles to the app palette — pink roads are
+  illegible. Dark themes use Google's own dark scheme (`colorScheme`), which
+  needs the real map ID in `VITE_GOOGLE_MAPS_MAP_ID`; `DEMO_MAP_ID` ignores it.
 - Agenda entries are flat rows; a card lifts only while being worked on. The
   device bezel keeps the only 6px shadow.
 
 ---
+
+## Themes
+
+Per-person, in `localStorage`, never Firestore. Picked from the bezel menu.
+
+- **Every colour lives in `src/theme.css`.** `@theme` is the default (pink);
+  each other theme is a `[data-theme="…"]` block. TypeScript holds only ids,
+  names, glyph grids and a `dark` flag — never a hex.
+- **Tokens are roles, not colours.** `line` borders, `text` body copy,
+  `shadow` hard shadows, `on-fill` text on a saturated fill, `bezel` /
+  `on-bezel` the case, `rule` hairline dividers. On pink several share
+  `#1A1033`; on a dark theme they must not. Choose by what the colour is
+  *doing* — a blind rename to `text` has broken contrast three times.
+- **`deep` is "the sibling of `hot` safe as text", not "the darker one."**
+  On a dark ground it is lighter than `hot`.
+- **Contrast is a gate:** `npm run contrast` parses `theme.css` and checks
+  every theme. `npm run check` runs lint, contrast, tests and build.
+- **`useTheme` is a shared store** (`useSyncExternalStore`). A per-component
+  `useState` let the palette change while every glyph kept the old theme.
+- **The glyph swaps with the theme** via `PixelHeart`. It must survive 8px
+  (calendar markers): check with `node scripts/check-glyph.mjs <THEME>`.
+- `<dialog>` resets inherited colour to `CanvasText`, so `.sheet` sets
+  `color` explicitly. Don't remove it.
 
 ## Verification habits that have paid off
 
