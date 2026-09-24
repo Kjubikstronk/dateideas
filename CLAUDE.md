@@ -159,6 +159,9 @@ device testing.
 3. The Maps budget is €2. It would be exhausted fast at scale, and the map then
    silently dies for everyone.
 
+**Full release plan** (store packaging, costs, organic social, TikTok and
+Instagram ads): `docs/release-plan.md`.
+
 Decided since: reports stay readable by everyone for now; later they go to
 a developer-only inbox. Worth doing at release:
 - **Maps (decided):** Google while private (free allowance covers it). At
