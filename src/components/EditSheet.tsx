@@ -12,7 +12,7 @@ import type { DateDraft, DateIdea, Place } from '../types'
  */
 const EMOJI: [emoji: string, name: string][] = [
   ['🍜', 'dinner'], ['☕', 'coffee'], ['🥐', 'brunch'], ['🍷', 'drinks'],
-  ['🎬', 'cinema'], ['🎭', 'show'], ['🎵', 'live music'], ['🎨', 'museum'],
+  ['🎬', 'cinema'], ['🎭', 'show'], ['🎵', 'live music'], ['🏛️', 'museum'],
   ['🌳', 'park or walk'], ['🚲', 'bike ride'], ['🧺', 'picnic'], ['🏖️', 'beach'],
   ['🎯', 'activity'], ['🛍️', 'market'], ['🏠', 'night in'], ['🧳', 'trip'],
 ]
