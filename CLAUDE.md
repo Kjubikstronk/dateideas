@@ -161,8 +161,14 @@ device testing.
 
 Decided since: reports stay readable by everyone for now; later they go to
 a developer-only inbox. Worth doing at release:
-- **Maps:** move to MapLibre + OpenFreeMap tiles + Photon search (no key, no
-  bill; POI taps come free with the tiles). Check their current terms first.
+- **Maps (decided):** Google while private (free allowance covers it). At
+  launch, switch fully to MapLibre + OpenFreeMap tiles + Photon search: one
+  map, no cap, no bill. Only loss is the ★ rating. NOT Google-until-the-cap:
+  a map that dies mid-month drives people off, two maps is double the work,
+  and Google's terms bar its place data on a non-Google map. Keep search as
+  you type (debounce, 2+ letters, cache prefixes). Rough cost: €0 until
+  thousands of users, ~€25–50/month at tens of thousands — cover it with paid
+  themes as a supporter perk. Firebase leaves its free plan at that size too.
 - **Consent:** Google Maps loads on every open, not only on the map tab.
   Load it lazily, or behind a "tap to load the map" notice; a privacy page
   must list Google (Firebase, Maps) and Open-Meteo. Account deletion, imprint.
